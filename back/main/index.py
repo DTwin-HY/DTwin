@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
+from chatgpt.chat import answer
 
 app = Flask(__name__)
 CORS(app)
@@ -17,7 +18,9 @@ def echo():
     if not request.is_json:
         abort(400, description="Body must be JSON")
     data = request.get_json()
-    return jsonify({"you_sent": data})
+    print(data)
+    output = answer(data["message"])
+    return jsonify(output)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -5,13 +5,6 @@ const App = () => {
   const [inputValue, setInputValue] = useState("");
   const [result, setResult] = useState("");
 
-  const pingBackend = async () => {
-    const res = await fetch("http://localhost:5000/api/ping");
-    const data = await res.json();
-    console.log(data);
-  };
-
-  pingBackend();
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!inputValue) return;
@@ -30,7 +23,8 @@ const App = () => {
       }
 
       const data = await res.json();
-      setResult(data.you_sent.message);
+      console.log(data)
+      setResult(data.message);
       setInputValue("");
     } catch (err) {
       console.error(err);
