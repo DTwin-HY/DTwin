@@ -6,6 +6,10 @@ app = Flask(__name__)
 def ping():
     return jsonify({"ok": True, "message": "pong"})
 
+@app.get("/")
+def home():
+    return (jsonify({"ok": True, "message": "welcome to dtwin!"}))
+
 @app.post("/api/echo")
 def echo():
     if not request.is_json:
