@@ -39,7 +39,7 @@ const App = () => {
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          className=""
+          className="border"
         />
 
         <button type="submit" className="">
