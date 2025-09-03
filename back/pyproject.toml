@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "back"
+version = "0.1.0"
+description = ""
+authors = ["tiaineno <olli.vj.tiainen@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+dotenv = "^0.9.9"
+flask = "^3.1.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
