@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request, abort
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 @app.get("/api/ping")
 def ping():

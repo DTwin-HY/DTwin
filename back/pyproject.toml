@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.10"
 dotenv = "^0.9.9"
 flask = "^3.1.2"
+flask-cors = "^6.0.1"
 
 
 [build-system]
