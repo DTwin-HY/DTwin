@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
-from chatgpt.chat import answer
+from main.chatgpt.chat import answer
 
 app = Flask(__name__)
 CORS(app)
@@ -22,5 +22,8 @@ def echo():
     output = answer(data["message"])
     return jsonify(output)
 
-if __name__ == "__main__":
+def start():
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+if __name__ == "__main__":
+    start()
