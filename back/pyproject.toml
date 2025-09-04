@@ -18,6 +18,9 @@ langchain = "^0.3.27"
 langchain-openai = "^0.3.32"
 grandalf = "^0.8"
 pytest = "^8.4.2"
+sqlalchemy = "^2.0.43"
+flask-sqlalchemy = "^3.1.1"
+psycopg2 = "^2.9.10"
 
 [tool.poetry.scripts]
 back = "main.index:start"

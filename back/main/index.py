@@ -1,9 +1,16 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from main.chatgpt.chat import answer
+from chatgpt.chat import answer
+from sqlalchemy.sql import text
+from os import getenv
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 CORS(app)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
+db = SQLAlchemy(app)
 
 @app.get("/api/ping")
 def ping():
@@ -20,6 +27,12 @@ def echo():
     data = request.get_json()
     print(data)
     output = answer(data["message"])
+
+    sql = text("INSERT INTO logs (prompt, reply) VALUES (:prompt, :reply);")
+    db.session.execute(sql, {"prompt":data["message"], "reply": output["message"]})
+    db.session.commit()
+    
+    
     return jsonify(output)
 
 def start():
