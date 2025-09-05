@@ -15,6 +15,7 @@ loguru = "^0.7.3"
 langgraph = "^0.6.6"
 langchain = "^0.3.27"
 langchain-openai = "^0.3.32"
+grandalf = "^0.8"
 
 
 [build-system]

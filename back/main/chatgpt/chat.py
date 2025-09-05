@@ -38,3 +38,7 @@ graph_builder.add_node("chatbot", chatbot)
 graph_builder.add_edge(START, "chatbot")
 graph_builder.add_edge("chatbot", END)
 graph = graph_builder.compile()
+try:
+    print(graph.get_graph().draw_ascii())
+except Exception:
+    "Error in drawing graph"
