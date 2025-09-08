@@ -7,6 +7,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
+from main.utils.rate_limiter import RateLimiter
 
 
 load_dotenv()
@@ -14,6 +15,7 @@ SELECTED_MODEL = "gpt-5-nano"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 TIMEOUT = 10  # seconds
 llm = ChatOpenAI(model=SELECTED_MODEL, api_key=OPENAI_API_KEY)
+rate_limiter = RateLimiter(max_calls=5, interval=10)  # max 5 calls per 10 seconds
 
 
 class State(TypedDict):
@@ -21,6 +23,7 @@ class State(TypedDict):
 
 
 def chatbot(state: State) -> State:
+    rate_limiter.check()
     return {"messages": [llm.invoke(state["messages"])]}
 
 
