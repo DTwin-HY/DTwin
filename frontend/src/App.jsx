@@ -35,7 +35,7 @@ const App = () => {
 
       setUserMessage(inputValue);
       setResponse(data.message);
-      setSuccessMessage("Prompt and answer saved to db");
+      setSuccessMessage("Prompt and response saved to database!");
       setInputValue("");
     } catch (err) {
       console.error(err);
@@ -69,20 +69,20 @@ const App = () => {
       </form>
 
       {loading && (
-        <div className="">
-          <p>Loading answer...</p>
+        <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-blue-300 bg-blue-100 text-blue-800 shadow">
+          <p className="font-medium">Loading answer...</p>
         </div>
       )}
 
       {successMessage && !loading && !errorMessage && (
-        <div className="">
-          <p>{successMessage}</p>
+        <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-green-300 bg-green-100 text-green-800 shadow">
+          <p className="font-medium">{successMessage}</p>
         </div>
       )}
 
       {errorMessage && !loading && (
-        <div className="">
-          <p>{errorMessage}</p>
+        <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-red-300 bg-red-100 text-red-800 shadow">
+          <p className="font-medium">{errorMessage}</p>
         </div>
       )}
 
