@@ -6,14 +6,18 @@ const App = () => {
   const [userMessage, setUserMessage] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!inputValue) return;
+    // TODO ilmoitus errorista
+    if (!inputValue.trim());
 
-    setLoading(true)
-    setStatusMessage("Loading answer...")
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+    setResponse("");
 
     try {
       const res = await fetch("http://localhost:5000/api/echo", {
@@ -28,13 +32,14 @@ const App = () => {
       }
 
       const data = await res.json();
+
       setUserMessage(inputValue);
       setResponse(data.message);
-      setStatusMessage("Prompt and answer saved into database!")
+      setSuccessMessage("Prompt and answer saved to db");
       setInputValue("");
     } catch (err) {
       console.error(err);
-      setStatusMessage(`Error in the backend/database${err?.message ? `: ${err.message}` : ""}`);
+      setErrorMessage(`Error in the backend/database${err?.message ? `: ${err.message}` : ""}`);
     } finally {
       setLoading(false);
     }
@@ -63,6 +68,24 @@ const App = () => {
         </button>
       </form>
 
+      {loading && (
+        <div className="">
+          <p>Loading answer...</p>
+        </div>
+      )}
+
+      {successMessage && !loading && !errorMessage && (
+        <div className="">
+          <p>{successMessage}</p>
+        </div>
+      )}
+
+      {errorMessage && !loading && (
+        <div className="">
+          <p>{errorMessage}</p>
+        </div>
+      )}
+
       {userMessage && (
         <div className="mt-6 bg-blue-100 p-4 rounded-lg shadow max-w-2xl w-full break-words">
           <p className="text-blue-800 font-medium text-xl">Your message:</p>
@@ -74,11 +97,6 @@ const App = () => {
         <div className="mt-4 bg-green-100 p-4 rounded-lg shadow max-w-2xl w-full break-words">
           <p className="text-green-800 font-medium text-xl">Chatbot's response:</p>
           <p className="text-gray-700 text-xl">{response}</p>
-        </div>
-      )}
-      {statusMessage && (
-        <div className="">
-          <p className="">{statusMessage}</p>
         </div>
       )}
     </div>
