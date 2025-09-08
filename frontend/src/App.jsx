@@ -42,17 +42,25 @@ const App = () => {
   };
 
   return (
-    <div className="">
-      <form onSubmit={handleSubmit} className="">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+
+    <img
+      src="/vttlogo.png" 
+      alt="Logo" 
+      className="w-85 h-35 mb-5 ml-[45px] rounded-full"
+    />
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-md bg-white p-6 rounded-xl shadow-md">
+
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           disabled={loading}
-          className="border"
+          className="border border-gray-300 rounded-lg p-4 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Type your message..."
         />
-        {/* button disabled when submitting */}
-        <button type="submit" disabled={loading} className="">
+        <button type="submit" disabled={loading} className="bg-blue-500 text-white font-semibold py-3 rounded-lg shadow hover:bg-blue-600 transition-colors duration-200">
           Submit
         </button>
       </form>
