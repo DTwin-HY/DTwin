@@ -3,13 +3,17 @@ import "./index.css";
 
 const App = () => {
   const [inputValue, setInputValue] = useState("");
-const [userMessage, setUserMessage] = useState("");
-const [response, setResponse] = useState("");
-const [result, setResult] = useState("");
+  const [userMessage, setUserMessage] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!inputValue) return;
+
+    setLoading(true)
+    setStatusMessage("Loading answer...")
 
     try {
       const res = await fetch("http://localhost:5000/api/echo", {
@@ -19,19 +23,20 @@ const [result, setResult] = useState("");
         },
         body: JSON.stringify({ message: inputValue }),
       });
-
       if (!res.ok) {
-        throw new Error("Failed to send data");
+        throw new Error(`Request failed: ${res.status}`);
       }
 
       const data = await res.json();
       setUserMessage(inputValue);
       setResponse(data.message);
+      setStatusMessage("Prompt and answer saved into database!")
       setInputValue("");
-      setResult("");
     } catch (err) {
       console.error(err);
-      setResult("Error connecting to backend");
+      setStatusMessage(`Error in the backend/database${err?.message ? `: ${err.message}` : ""}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,11 +54,11 @@ const [result, setResult] = useState("");
         <textarea
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
+          disabled={loading}
           className="border border-gray-300 rounded-lg p-4 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Type your message..."
         ></textarea>
-
-        <button type="submit" className="bg-blue-500 text-white font-semibold py-3 rounded-lg shadow hover:bg-blue-600 transition-colors duration-200">
+        <button type="submit" disabled={loading} className="bg-blue-500 text-white font-semibold py-3 rounded-lg shadow hover:bg-blue-600 transition-colors duration-200">
           Submit
         </button>
       </form>
@@ -71,10 +76,9 @@ const [result, setResult] = useState("");
           <p className="text-gray-700 text-xl">{response}</p>
         </div>
       )}
-
-      {result && (
+      {statusMessage && (
         <div className="">
-          <p className="">{result}</p>
+          <p className="">{statusMessage}</p>
         </div>
       )}
     </div>
