@@ -3,11 +3,17 @@ import "./index.css";
 
 const App = () => {
   const [inputValue, setInputValue] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const [result, setResult] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!inputValue) return;
+
+    setLoading(true)
+    setResult(""); 
+    setMessage("Loading answer...")
 
     try {
       const res = await fetch("http://localhost:5000/api/echo", {
@@ -19,16 +25,19 @@ const App = () => {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to send data");
+        throw new Error(`Request failed: ${res.status}`);
       }
 
       const data = await res.json();
       console.log(data)
       setResult(data.message);
+      setMessage("Prompt and answer saved into database!")
       setInputValue("");
     } catch (err) {
       console.error(err);
-      setResult("Error connecting to backend");
+      setMessage(`Error in the backend/database${err?.message ? `: ${err.message}` : ""}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,14 +48,19 @@ const App = () => {
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
+          disabled={loading}
           className="border"
         />
-
-        <button type="submit" className="">
+        {/* button disabled when submitting */}
+        <button type="submit" disabled={loading} className="">
           Submit
         </button>
       </form>
-
+      {message && (
+        <div className="">
+          <p className="">{message}</p>
+        </div>
+      )}
       {result && (
         <div className="">
           <p className="">{result}</p>
