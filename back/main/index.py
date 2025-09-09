@@ -1,10 +1,9 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from main.chatgpt.chat import answer
-from chatgpt.chat import answer
-from sqlalchemy.sql import text
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import text
 
 app = Flask(__name__)
 CORS(app)
