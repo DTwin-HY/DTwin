@@ -65,7 +65,7 @@ def signup():
     return jsonify({"message": "User created"})
 
 @app.route("/signin", methods=["POST"])
-def login():
+def signin():
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
