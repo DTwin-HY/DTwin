@@ -21,6 +21,7 @@ langchain = "^0.3.27"
 langchain-openai = "^0.3.32"
 grandalf = "^0.8"
 pytest = "^8.4.2"
+flask-login = "^0.6.3"
 
 [tool.poetry.scripts]
 back = "main.index:start"
