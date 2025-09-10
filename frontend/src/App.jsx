@@ -49,8 +49,8 @@ const App = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
 
     <img
-      src="/vttlogo.png" 
-      alt="Logo" 
+      src="/vttlogo.png"
+      alt="Logo"
       className="w-85 h-35 mb-5 ml-[45px] rounded-full"
     />
 
