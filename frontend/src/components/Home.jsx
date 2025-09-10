@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../index.css";
+import { sendMessage } from "../api/chatgpt";
 
 const Home = () => {
   const [inputValue, setInputValue] = useState("");
@@ -9,10 +10,19 @@ const Home = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO ilmoitus errorista
-    if (!inputValue.trim());
+    if (!inputValue.trim()) {
+      setErrorMessage("Syöte ei voi olla tyhjä.");
+      return;
+    }
 
     setLoading(true);
     setSuccessMessage("");
@@ -20,19 +30,7 @@ const Home = () => {
     setResponse("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/echo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: inputValue }),
-      });
-      if (!res.ok) {
-        throw new Error(`Request failed: ${res.status}`);
-      }
-
-      const data = await res.json();
-
+      const data = await sendMessage(inputValue);
       setUserMessage(inputValue);
       setResponse(data.message);
       setSuccessMessage("Prompt and response saved to database!");
