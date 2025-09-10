@@ -5,14 +5,16 @@ from main.chatgpt.chat import answer
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
-from utils import schema
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 CORS(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
 db = SQLAlchemy(app)
-login_manager = LoginManager(db)
+login_manager = LoginManager()
+login_manager.init_app(app)
+bcrypt = Bcrypt(app)
 
 @app.get("/api/ping")
 def ping():
@@ -37,15 +39,30 @@ def echo():
 
     return jsonify(output)
 
-class User(UserMixin, db.model):
+class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    username = db.column(db.String(250), unique=True, nullable=False)
-    password = db.column(db.String(250), nullable=False)
+    username = db.Column(db.String(250), unique=True, nullable=False)
+    password = db.Column(db.String(250), nullable=False)
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.route("/signup", methods=["POST"])
+def signup():
+    data = request.json
+    username = data["username"]
+    password = data["password"]
+
+    if User.query.filter_by(username=username).first():
+        return jsonify({"error": "Username already taken"})
+
+    hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+    new_user = User(username=username, password=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"message": "User created"})
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)
