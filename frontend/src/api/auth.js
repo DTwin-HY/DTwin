@@ -6,11 +6,11 @@ export const signup = async ({ username, password }) => {
 };
 
 export const signin = async ({ username, password }) => {
-    console.log(username, password);   
   const { data } = await axios.post("/signin", { username, password });
   return data; 
 };
 
 export const signout = async () => {
-  return await axios.post("/signout"); 
+  const { data } = await axios.post("/logout");
+  return data;
 };

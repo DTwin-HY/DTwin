@@ -8,7 +8,7 @@ from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
 app.config["SECRET_KEY"] = getenv("SECRET_KEY")

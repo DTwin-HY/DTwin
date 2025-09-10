@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "../index.css";
 import { sendMessage } from "../api/chatgpt";
+import { signout } from "../api/auth";
+import { useNavigate } from "react-router-dom"; 
 
 const Home = () => {
   const [inputValue, setInputValue] = useState("");
@@ -9,6 +11,7 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (successMessage) {
@@ -43,9 +46,26 @@ const Home = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signout();
+      navigate("/signin");
+    } catch (err) {
+      console.error("Error during sign out:", err);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-
+      <div className="w-full max-w-md mb-4">
+        <button
+          onClick={handleSignOut}
+          disabled={loading}
+          className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-800 transition-colors duration-200 disabled:opacity-60"
+        >
+          Logout
+        </button>
+      </div>
     <img
       src="/vttlogo.png" 
       alt="Logo" 
