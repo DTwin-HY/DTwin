@@ -49,7 +49,7 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.route("/signup", methods=["POST"])
+@app.post("/signup")
 def signup():
     data = request.json
     username = data["username"]
@@ -64,19 +64,19 @@ def signup():
     db.session.commit()
     return jsonify({"message": "User created"})
 
-@app.route("/signin", methods=["POST"])
+@app.post("/signin")
 def signin():
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
 
     if not username or not password:
-        return jsonify({"error: Username and password required"})
+        return jsonify({"error": Username and password required"})
 
     user = User.query.filter_by(username=username).first()
     if not user:
         return jsonify({"error": "Invalid username or password"})
-    if not bcrypt.check_password_has(user.password, password):
+    if not bcrypt.check_password_hash(user.password, password):
         return jsonify({"error": "Invalid username or password"})
 
     login_user(user)
