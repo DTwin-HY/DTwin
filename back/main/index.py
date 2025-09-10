@@ -71,7 +71,7 @@ def signin():
     password = data.get("password")
 
     if not username or not password:
-        return jsonify({"error: Username and password required"})
+        return jsonify({"error": "Username and password required"})
 
     user = User.query.filter_by(username=username).first()
     if not user:
