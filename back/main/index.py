@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
-from flask_login import LoginManager, UserMixin, login_user
+from flask_login import LoginManager, UserMixin, login_user, login_required
 from main.chatgpt.chat import answer
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
@@ -71,7 +71,7 @@ def signin():
     password = data.get("password")
 
     if not username or not password:
-        return jsonify({"error": Username and password required"})
+        return jsonify({"error: Username and password required"})
 
     user = User.query.filter_by(username=username).first()
     if not user:
@@ -81,6 +81,12 @@ def signin():
 
     login_user(user)
     return jsonify({"message": "Login successful! Welcome", "username": user.username})
+
+@app.post("/logout")
+@login_required
+def logout():
+    logout_user()
+    return jsonify({"message": "Logged out successfully"})
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)
