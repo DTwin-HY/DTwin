@@ -11,6 +11,7 @@ app = Flask(__name__)
 CORS(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
+app.config["SECRET_KEY"] = getenv("SECRET_KEY")
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -92,4 +93,6 @@ def start():
     app.run(host="0.0.0.0", port=5000, debug=True)
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     start()
