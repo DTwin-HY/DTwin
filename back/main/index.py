@@ -12,8 +12,7 @@ CORS(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
 db = SQLAlchemy(app)
-login_manager = LoginManager
-login_manager.init_app(app)
+login_manager = LoginManager(db)
 
 @app.get("/api/ping")
 def ping():
@@ -38,20 +37,15 @@ def echo():
 
     return jsonify(output)
 
-class User(UserMixin):
-    def __init__(self, id, username):
-        self.id = id
-        self.username = username
+class User(UserMixin, db.model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.column(db.String(250), unique=True, nullable=False)
+    password = db.column(db.String(250), nullable=False)
 
 @login_manager.user_loader
 def load_user(user_id):
-    sql = text("SELECT id, username FROM users WHERE id = :id")
-    result = schema.session.execute(sql, {"id" = user_id}).fetchone()
-    if result:
-        return User(result.id, result.username)
-    return None
-
-
+    return User.query.get(int(user_id))
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)
