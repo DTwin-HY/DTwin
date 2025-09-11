@@ -4,6 +4,7 @@ import { sendMessage } from "../api/chatgpt";
 import { signout } from "../api/auth";
 import { useNavigate } from "react-router-dom"; 
 
+
 const Home = () => {
   const [inputValue, setInputValue] = useState("");
   const [userMessage, setUserMessage] = useState("");
@@ -12,13 +13,27 @@ const Home = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
+  const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
+  const showError = useAutoClearMessage(errorMessage, setErrorMessage);
+
+
+function useAutoClearMessage(message, setMessage, delay = 5000) {
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (successMessage) {
-      const timer = setTimeout(() => setSuccessMessage(""), 5000);
+    if (message) {
+      setVisible(true);
+      const timer = setTimeout(() => {
+        setVisible(false);
+        setTimeout(() => setMessage(""), 1000);
+      }, delay);
       return () => clearTimeout(timer);
     }
-  }, [successMessage]);
+  }, [message, setMessage, delay]);
+
+  return visible;
+}
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,10 +42,12 @@ const Home = () => {
       return;
     }
 
+
     setLoading(true);
     setSuccessMessage("");
     setErrorMessage("");
     setResponse("");
+
 
     try {
       const data = await sendMessage(inputValue);
@@ -46,6 +63,7 @@ const Home = () => {
     }
   };
 
+
   const handleSignOut = async () => {
     try {
       await signout();
@@ -54,6 +72,7 @@ const Home = () => {
       console.error("Error during sign out:", err);
     }
   };
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -93,13 +112,22 @@ const Home = () => {
       )}
 
       {successMessage && !loading && !errorMessage && (
-        <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-green-300 bg-green-100 text-green-800 shadow">
+        <div className={`mt-4 w-full max-w-md p-4 rounded-lg border border-green-300 bg-green-100 text-green-800 shadow transition-opacity duration-1000
+        ${
+        showSuccess ? "opacity-100" : "opacity-0"
+        }`}
+        >
           <p className="font-medium">{successMessage}</p>
         </div>
       )}
 
       {errorMessage && !loading && (
-        <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-red-300 bg-red-100 text-red-800 shadow">
+        <div
+          className={`mt-4 w-full max-w-md p-4 rounded-lg border border-red-300 bg-red-100 text-red-800 shadow transition-opacity duration-1000
+          ${
+          showError ? "opacity-100" : "opacity-0"
+          }`}
+        >
           <p className="font-medium">{errorMessage}</p>
         </div>
       )}
@@ -120,5 +148,6 @@ const Home = () => {
     </div>
   );
 };
+
 
 export default Home;
