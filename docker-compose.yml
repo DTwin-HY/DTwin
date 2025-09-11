@@ -1,0 +1,52 @@
+services:
+  db:
+    container_name: dtwin-db
+    image: postgres:latest
+    restart: unless-stopped
+    env_file : .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST_AUTH_METHOD=${POSTGRES_HOST_AUTH_METHOD}
+    volumes:
+      - dtwin-db:/var/lib/postgresql/data
+      - ./back/main/schema.sql:/docker-entrypoint-initdb.d/schema.sql:z #:z because selinux can prevent reads
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dtwin-network
+
+  
+  backend:
+    env_file: .env
+    build: ./back
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    networks:
+      - dtwin-network
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "8000:80"
+    networks:
+      - dtwin-network
+
+volumes:
+  frontend-build:
+  dtwin-db:
+
+networks:
+  dtwin-network:
