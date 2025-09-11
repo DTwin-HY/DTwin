@@ -8,7 +8,7 @@ from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
 app.config["SECRET_KEY"] = getenv("SECRET_KEY")
@@ -83,7 +83,7 @@ def signin():
     if not bcrypt.check_password_hash(user.password, password):
         return jsonify({"error": "Invalid username or password"})
 
-    login_user(user)
+    login_user(user, remember=True)
     return jsonify({"message": "Login successful! Welcome", "username": user.username})
 
 @app.post("/logout")
