@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const res = await fetch("/api/check_auth", { credentials: "include" });
+                const res = await fetch("http://localhosto:5000/api/check_auth", { credentials: "include" });
                 if (!res.ok) throw new Error("Auth check failed");
                 const data = await res.json();
                 setIsAuthenticated(data.authenticated);
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        setIsAuthenticated(false)
+        setIsAuthenticated(false);
         navigate("/signin");
     };
 
@@ -40,3 +40,5 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     );
 };
+
+export default AuthContext;

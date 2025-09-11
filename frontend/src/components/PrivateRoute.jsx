@@ -5,7 +5,7 @@ import AuthContext from "./Auth";
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useContext(AuthContext);
   if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  if (!isAuthenticated) return <Navigate to="/signin" />;
+  if (!isAuthenticated) return <Navigate to="/signin" replace />;
   return children;
 };
 

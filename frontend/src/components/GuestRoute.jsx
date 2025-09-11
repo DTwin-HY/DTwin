@@ -5,8 +5,8 @@ import AuthContext from "./Auth";
 const GuestRoute = ({ children }) => {
     const { isAuthenticated, loading } = useContext(AuthContext);
     if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-    if (isAuthenticated) return <Navigate to="/" />;
+    if (isAuthenticated) return <Navigate to="/" replace/>;
     return children;
 };
 
-export default GuestRoute
+export default GuestRoute;
