@@ -6,9 +6,7 @@ RUN apk add --no-cache \
     libffi-dev \
     openssl-dev \
     libpq-dev \
-    postgresql \
-    && rm -rf /var/cache/apk/*
-    # Remove apt cache, no need for any more packages
+    postgresql
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/root/.local/bin:$PATH"

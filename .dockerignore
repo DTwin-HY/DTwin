@@ -1,0 +1,5 @@
+# .dockerignore
+.env
+.pytest_cache
+__pycache__
+openai_key.env
