@@ -77,7 +77,6 @@ const SignIn = () => {
             name="username"
             value={form.username}
             onChange={handleChange}
-            required
             disabled={loading}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Your username"
@@ -91,7 +90,6 @@ const SignIn = () => {
             name="password"
             value={form.password}
             onChange={handleChange}
-            required
             disabled={loading}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Your password"
