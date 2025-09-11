@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from main.chatgpt.chat import answer
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
@@ -26,6 +26,7 @@ def home():
     return (jsonify({"ok": True, "message": "welcome to dtwin!"}))
 
 @app.post("/api/echo")
+@login_required
 def echo():
     if not request.is_json:
         abort(400, description="Body must be JSON")
@@ -88,6 +89,13 @@ def signin():
 def logout():
     logout_user()
     return jsonify({"message": "Logged out successfully"})
+
+@app.get("/api/check_auth")
+def check_auth():
+    if current_user.is_authenticated:
+        return jsonify({"authenticated": True, "username": current_user.username})
+    else:
+        return jsonify({"authenticated": False})
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)
