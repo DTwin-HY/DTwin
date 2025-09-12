@@ -22,4 +22,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["poetry", "run", "back"]
+CMD ["python3", "main/index.py"]
