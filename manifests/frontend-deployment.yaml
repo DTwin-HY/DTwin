@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.37.0 (fb0539e64)
+  labels:
+    io.kompose.service: frontend
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: frontend
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.37.0 (fb0539e64)
+      labels:
+        io.kompose.service: frontend
+    spec:
+      containers:
+        - image: jensjvh/dtwin:frontend5
+          name: frontend
+          ports:
+            - containerPort: 8080
+              protocol: TCP
