@@ -1,0 +1,19 @@
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+
+metadata:
+  name: dtwin-frontend
+  labels:
+    app: dtwin-frontend
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: staging
+      from:
+        kind: DockerImage
+        name: jensjvh/dtwin:frontend5
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Local
