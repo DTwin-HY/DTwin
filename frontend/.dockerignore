@@ -1,6 +1,6 @@
-.pytest_cache
-__pycache__
-
+build
+node_modules
+dist
 Dockerfile
 .dockerignore
 .git
