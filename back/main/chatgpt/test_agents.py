@@ -200,9 +200,12 @@ def initialize_agents():
         print(f"❌ Error initializing agents: {e}")
         return None, None
 
-def init_conversation_state(state: ConversationState) -> ConversationState:
+def init_cash_and_inventory_state(state: ConversationState) -> ConversationState:
+    '''
+    Initializes cash and inventory state
+    Must be called before the other init function
+    '''
     return {
-        "messages": state.get("messages", []),
         "cash_register": 400.00,
         "inventory": {
             "strawberries_small": {
@@ -224,29 +227,39 @@ def init_conversation_state(state: ConversationState) -> ConversationState:
                 "name": "Large box of strawberries"
             }
         },
+    }
+
+def init_conversation_state(state: ConversationState) -> ConversationState:
+    '''
+    resets conversation-specific state while preserving cash and inventory
+    must be called after the other init function
+    '''
+    return {
+        "messages": [],
+        "cash_register": state.get("cash_register", 0.0),
+        "inventory": state.get("inventory", {}),
         "current_speaker": "seller",
         "conversation_turn": 0,
         "max_turns": 10,
         "conversation_active": True,
         "pending_transaction": None,
-        "completed_transactions": [],
+        "completed_transactions": state.get("completed_transactions", []),
         "customer_intent": "browsing",
         "seller_mode": "greeting"
     }
 
-def run_console_conversation():
+def run_console_conversation(state):
     
     print("=" * 60)
     print("🤖 BERRY STAND SIMULATION")
     print("=" * 60)
+
+    state = init_conversation_state(state)
     
     customer_agent, seller_agent = initialize_agents()
     if not customer_agent or not seller_agent:
         print("❌ Could not initialize agents. Please check your OPENAI_API_KEY.")
         return
-    
-    state = init_conversation_state({})
-    
     print(f"\n📊 INITIAL BUSINESS STATE:")
     print(f"💰 Cash Register: €{state['cash_register']:.2f}")
     print(f"📦 Inventory:")
@@ -357,7 +370,10 @@ def run_console_conversation():
 
 if __name__ == "__main__":
     try:
-        run_console_conversation()
+        state = init_cash_and_inventory_state({})
+        for i in range(3):
+            print(f"\n=== Conversation #{i+1} ===")
+            state = run_console_conversation(state)
     except KeyboardInterrupt:
         print("\n\n👋 Goodbye!")
     except Exception as e:
