@@ -1,6 +1,11 @@
-# .dockerignore
 .env
 .pytest_cache
 __pycache__
 openai_key.env
 .pytest_cache
+
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.env
