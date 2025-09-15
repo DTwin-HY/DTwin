@@ -25,7 +25,8 @@ spec:
     spec:
       containers:
         - name: backend
-          image: image-registry.openshift-image-registry.svc:5000/dtwin/dtwin-backend@sha256:70c70452120429dcbf3933a2a10502b9265c0823d189831d93a9813692813552
+          image: dtwin-backend:staging
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
               protocol: TCP
