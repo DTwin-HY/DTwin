@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph, START, END
-from main.chatgpt.state import init_cash_and_inventory_state, ConversationState
-from main.chatgpt.nodes import seller_node, customer_node
-from main.chatgpt.summary import print_summary
+from .state import init_cash_and_inventory_state, ConversationState
+from .nodes import seller_node, customer_node
+from .summary import print_summary
 
 def run_conversation():
     graph = StateGraph(ConversationState)

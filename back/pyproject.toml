@@ -27,6 +27,7 @@ psycopg2-binary = "^2.9.10"
 
 [tool.poetry.scripts]
 back = "main.index:start"
+berry_stand = "main.chatgpt.main:run_conversation"
 
 [build-system]
 requires = ["poetry-core"]
