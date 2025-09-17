@@ -50,7 +50,7 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.post("/signup")
+@app.post("/api/signup")
 def signup():
     data = request.json
     username = data["username"]
@@ -65,7 +65,7 @@ def signup():
     db.session.commit()
     return jsonify({"message": "User created"})
 
-@app.post("/signin")
+@app.post("/api/signin")
 def signin():
     data = request.get_json()
     username = data.get("username")
@@ -83,7 +83,7 @@ def signin():
     login_user(user)
     return jsonify({"message": "Login successful! Welcome", "username": user.username})
 
-@app.post("/logout")
+@app.post("/api/logout")
 @login_required
 def logout():
     logout_user()
