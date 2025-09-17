@@ -64,6 +64,8 @@ def signup():
     new_user = User(username=username, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
+
+    login_user(new_user)
     return jsonify({"message": "User created"})
 
 @app.post("/signin")
