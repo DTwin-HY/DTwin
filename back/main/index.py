@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from main.chatgpt.chat import answer
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
@@ -8,7 +8,7 @@ from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
 app.config["SECRET_KEY"] = getenv("SECRET_KEY")
@@ -26,6 +26,7 @@ def home():
     return (jsonify({"ok": True, "message": "welcome to dtwin!"}))
 
 @app.post("/api/echo")
+@login_required
 def echo():
     if not request.is_json:
         abort(400, description="Body must be JSON")
@@ -63,6 +64,8 @@ def signup():
     new_user = User(username=username, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
+
+    login_user(new_user)
     return jsonify({"message": "User created"})
 
 @app.post("/signin")
@@ -80,7 +83,7 @@ def signin():
     if not bcrypt.check_password_hash(user.password, password):
         return jsonify({"error": "Invalid username or password"})
 
-    login_user(user)
+    login_user(user, remember=True)
     return jsonify({"message": "Login successful! Welcome", "username": user.username})
 
 @app.post("/logout")
@@ -88,6 +91,13 @@ def signin():
 def logout():
     logout_user()
     return jsonify({"message": "Logged out successfully"})
+
+@app.get("/api/check_auth")
+def check_auth():
+    if current_user.is_authenticated:
+        return jsonify({"authenticated": True, "username": current_user.username})
+    else:
+        return jsonify({"authenticated": False})
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)

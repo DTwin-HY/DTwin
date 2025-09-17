@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import "../index.css";
 import { signup } from "../api/auth";
+import { Link } from "react-router-dom";
+import AuthContext from "./Auth"
 
 const SignUp = () => {
   const [form, setForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const { login } = useContext(AuthContext);
 
   useEffect(() => {
   if (successMessage) {
@@ -42,6 +45,7 @@ const SignUp = () => {
       }
       setSuccessMessage("Käyttäjä luotu!");
       setForm({ username: "", password: "" });
+      login();
     } catch (err) {
       const apiErr = err?.response?.data?.error || err.message || "Tuntematon virhe";
       setErrorMessage(apiErr);
@@ -54,8 +58,8 @@ const SignUp = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
     <img
-        src="/vttlogo.png" 
-        alt="Logo" 
+        src="/vttlogo.png"
+        alt="Logo"
         className="w-85 h-35 mb-5 ml-[45px] rounded-full"
     />
       <div className="text-3xl font-bold mb-5">Sign up</div>
@@ -71,7 +75,6 @@ const SignUp = () => {
             name="username"
             value={form.username}
             onChange={handleChange}
-            required
             disabled={loading}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Your username"
@@ -85,7 +88,6 @@ const SignUp = () => {
             name="password"
             value={form.password}
             onChange={handleChange}
-            required
             disabled={loading}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Your password"
@@ -100,6 +102,10 @@ const SignUp = () => {
           {loading ? "Creating..." : "Sign Up"}
         </button>
       </form>
+
+      <div className="mt-4 text-center">
+        <Link to="/signin" className="text-blue-500 hover:underline">Sign In</Link>
+      </div>
 
       {loading && (
         <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-blue-300 bg-blue-100 text-blue-800 shadow">
