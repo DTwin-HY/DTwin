@@ -3,9 +3,7 @@ from flask_cors import CORS
 <<<<<<< HEAD
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 =======
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
->>>>>>> ae35ed1 (Update docker files and imports for openshift deployment)
-from chatgpt.chat import answer
+from main.chatgpt.chat import answer
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
