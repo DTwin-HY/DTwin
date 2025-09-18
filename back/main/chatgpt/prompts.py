@@ -10,6 +10,7 @@ Rules:
 3. If no berries are sold this turn, "berries_sold" must be [].
 4. Always provide exact 'item_id' from inventory.
 5. Do NOT include greetings or explanations outside JSON.
+6. When the sale is completed, set "conversation_should_continue" to false.
 
 Example:
 {

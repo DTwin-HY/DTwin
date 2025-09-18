@@ -13,9 +13,9 @@ class ConversationState(TypedDict):
     conversation_active: bool
     max_turns: int
 
-def init_general_state() -> GeneralState:
+def init_general_state(n) -> GeneralState:
     return {
-        "conversations": [],
+        "conversations": n*[None],
         "cash_register": 400.0,
         "inventory": {
             "strawberries_small": {"stock": 20, "price": 3.0, "name": "Small box"},

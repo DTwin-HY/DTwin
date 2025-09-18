@@ -8,7 +8,7 @@ def run_conversation(general_state, conversation_id):
     print(f"Starting conversation {conversation_id}...\n")
     graph = StateGraph(ConversationState)
     graph.add_node("seller", lambda state: seller_node(state, general_state, conversation_id))
-    graph.add_node("customer", customer_node)
+    graph.add_node("customer", lambda state: customer_node(state, conversation_id))
     graph.add_edge(START, "seller")
     graph.add_conditional_edges(
         "seller",
@@ -22,7 +22,7 @@ def run_conversation(general_state, conversation_id):
     print(f"\nConversation {conversation_id} ended.")
 
 def run_multiple_conversations(num_conversations=3):
-    general_state = init_general_state()
+    general_state = init_general_state(num_conversations)
 
     print(f"\n📊 INITIAL BUSINESS STATE:")
     print(f"💰 Cash Register: €{general_state['cash_register']:.2f}")
@@ -43,4 +43,4 @@ def run_multiple_conversations(num_conversations=3):
     print_summary(general_state)
 
 if __name__ == "__main__":
-    run_multiple_conversations(5)
+    run_multiple_conversations(3)

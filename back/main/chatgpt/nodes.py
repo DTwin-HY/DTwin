@@ -36,7 +36,8 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
 
     msg = "Seller: " + response_text
     conversation_state["messages"].append(HumanMessage(content=msg))
-    print(msg)
+    general_state["conversations"][id] = conversation_state["messages"]
+    print(f"(conversation {id}) {msg}")
 
     for sale in resp.get("berries_sold", []):
         apply_sale(general_state, sale)
@@ -45,12 +46,12 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
     conversation_state["conversation_turn"] += 1
     return conversation_state
 
-def customer_node(conversation_state: ConversationState) -> ConversationState:
+def customer_node(conversation_state: ConversationState, id) -> ConversationState:
     prompt = f"{CUSTOMER_PROMPT}\n\nConversation: {conversation_state['messages']}"
     resp = call_llm(prompt)
 
     msg = "Customer: " + resp
     conversation_state["messages"].append(HumanMessage(content=msg))
     conversation_state["conversation_turn"] += 1
-    print(msg)
+    print(f"(conversation {id}) {msg}")
     return conversation_state
