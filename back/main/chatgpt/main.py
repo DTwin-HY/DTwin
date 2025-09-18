@@ -1,11 +1,13 @@
 from langgraph.graph import StateGraph, START, END
-from .state import init_cash_and_inventory_state, ConversationState
+import threading
+from .state import GeneralState, ConversationState, init_conversation_state, init_general_state
 from .nodes import seller_node, customer_node
 from .summary import print_summary
 
-def run_conversation():
+def run_conversation(general_state, conversation_id):
+    print(f"Starting conversation {conversation_id}...\n")
     graph = StateGraph(ConversationState)
-    graph.add_node("seller", seller_node)
+    graph.add_node("seller", lambda state: seller_node(state, general_state, conversation_id))
     graph.add_node("customer", customer_node)
     graph.add_edge(START, "seller")
     graph.add_conditional_edges(
@@ -15,17 +17,30 @@ def run_conversation():
     graph.add_edge("customer", "seller")
     app = graph.compile()
 
-    state = init_cash_and_inventory_state()
+    state = init_conversation_state()
+    state = app.invoke(state)
+    print(f"\nConversation {conversation_id} ended.")
+
+def run_multiple_conversations(num_conversations=3):
+    general_state = init_general_state()
 
     print(f"\n📊 INITIAL BUSINESS STATE:")
-    print(f"💰 Cash Register: €{state['cash_register']:.2f}")
+    print(f"💰 Cash Register: €{general_state['cash_register']:.2f}")
     print(f"📦 Inventory:")
-    for i in state["inventory"].values():
+    for i in general_state["inventory"].values():
         print(f"   - {i['name']}: {i['stock']} in stock at €{i['price']:.2f} each")
     print(f"\n🎬 STARTING CONVERSATION...")
 
-    state = app.invoke(state)
-    print_summary(state)
+    threads = []
+    for conv_id in range(num_conversations):
+        t = threading.Thread(target=run_conversation, args=(general_state, conv_id))
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+
+    print_summary(general_state)
 
 if __name__ == "__main__":
-    run_conversation()
+    run_multiple_conversations(5)
