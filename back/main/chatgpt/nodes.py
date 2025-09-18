@@ -1,8 +1,10 @@
 import json
+import random
 from langchain_core.messages import HumanMessage
 from main.chatgpt.llm_utils import call_llm
 from main.chatgpt.prompts import SELLER_PROMPT, CUSTOMER_PROMPT
 from main.chatgpt.state import ConversationState, GeneralState
+from main.chatgpt.customer_personas import CUSTOMER_PERSONAS
 
 def apply_sale(state: GeneralState, sale: dict):
     item_id = sale["item_id"]
@@ -10,6 +12,12 @@ def apply_sale(state: GeneralState, sale: dict):
     state["inventory"][item_id]["stock"] -= qty
     state["cash_register"] += state["inventory"][item_id]["price"] * qty
     state["completed_transactions"].append(sale)
+
+# --- NEW helper: choose persona once per conversation ---
+def _ensure_customer_persona(conversation_state: ConversationState, conversation_id: int):
+    if "customer_persona" not in conversation_state:
+        conversation_state["customer_persona"] = random.choice(CUSTOMER_PERSONAS)
+    return conversation_state["customer_persona"]
 
 def seller_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
     prompt = f"""{SELLER_PROMPT}\n\n
@@ -47,11 +55,19 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
     return conversation_state
 
 def customer_node(conversation_state: ConversationState, id) -> ConversationState:
-    prompt = f"{CUSTOMER_PROMPT}\n\nConversation: {conversation_state['messages']}"
+    persona = _ensure_customer_persona(conversation_state, id)
+    persona_rules = persona["rules"]
+
+    prompt = (
+        f"{CUSTOMER_PROMPT}\n\n"
+        f"Persona:\n{persona_rules}\n\n"
+        f"Conversation: {conversation_state['messages']}"
+    )
     resp = call_llm(prompt)
 
     msg = "Customer: " + resp
     conversation_state["messages"].append(HumanMessage(content=msg))
     conversation_state["conversation_turn"] += 1
     print(f"(conversation {id}) {msg}")
+    print(f"(Using persona: {persona['name']})")
     return conversation_state

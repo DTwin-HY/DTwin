@@ -12,6 +12,7 @@ class ConversationState(TypedDict):
     conversation_turn: int
     conversation_active: bool
     max_turns: int
+    customer_persona: dict
 
 def init_general_state(n) -> GeneralState:
     return {
