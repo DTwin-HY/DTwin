@@ -1,15 +1,30 @@
 import json
+from datetime import datetime
+from sqlalchemy.sql import text
 from langchain_core.messages import HumanMessage
 from main.chatgpt.llm_utils import call_llm
 from main.chatgpt.prompts import SELLER_PROMPT, CUSTOMER_PROMPT
 from main.chatgpt.state import ConversationState, GeneralState
+from main.index import app, db
 
 def apply_sale(state: GeneralState, sale: dict):
     item_id = sale["item_id"]
     qty = sale["quantity"]
+    price = state["inventory"][item_id]["price"]
+    amount = price * qty
+
     state["inventory"][item_id]["stock"] -= qty
-    state["cash_register"] += state["inventory"][item_id]["price"] * qty
+    state["cash_register"] += amount
+    sale["timestamp"] = datetime.now()
+    sale["amount"] = amount
     state["completed_transactions"].append(sale)
+
+    with app.app_context():
+        sql = text("""INSERT INTO sales (item_id, quantity, amount, timestamp)
+                      VALUES (:item_id, :quantity, :amount, :timestamp)""")
+        db.session.execute(sql, {"item_id": item_id, "quantity": qty, "amount": amount,
+                                 "timestamp": sale["timestamp"]})
+        db.session.commit()
 
 def seller_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
     prompt = f"""{SELLER_PROMPT}\n\n
