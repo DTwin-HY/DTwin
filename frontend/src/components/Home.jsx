@@ -15,6 +15,8 @@ const Home = () => {
   const navigate = useNavigate();
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
+  const [sales, setSales] = useState([]);
+  const [salesLoading, setSalesLoading] = useState(false);
 
 
 function useAutoClearMessage(message, setMessage, delay = 5000) {
@@ -63,6 +65,19 @@ function useAutoClearMessage(message, setMessage, delay = 5000) {
     }
   };
 
+  const fetchSales = async () => {
+    setSalesLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/sales/today", { credentials: "include" });
+      const data = await res.json();
+      setSales(data.sales);
+    } catch (err) {
+      console.error("Error fetching sales:", err);
+      setErrorMessage("Failed to fetch today's sales.");
+    } finally {
+      setSalesLoading(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -104,6 +119,34 @@ function useAutoClearMessage(message, setMessage, delay = 5000) {
           Submit
         </button>
       </form>
+
+      <div className="mt-4 w-full max-w-md">
+        <button
+          onClick={fetchSales}
+          disabled={salesLoading}
+          className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg shadow hover:bg-purple-700 transition-colors duration-200"
+        >
+          {salesLoading ? "Loading Sales..." : "Show today's sales"}
+        </button>
+      </div>
+
+      {sales.length > 0 && (
+        <div className="mt-4 bg-white p-4 rounded-lg shadow max-w-2xl w-full break-words">
+          <h3 className="text-lg font-semibold mb-2">Today's sales</h3>
+          {sales.map((sale, idx) => (
+            <div key={idx} className="mb-2 border-b pb-2">
+              <p><strong>Item:</strong> {sale.item_name}</p>
+              <p><strong>Item ID:</strong> {sale.item_id}</p>
+              <p><strong>Quantity:</strong> {sale.quantity}</p>
+              <p><strong>Amount:</strong> €{sale.amount.toFixed(2)}</p>
+              <p><strong>Timestamp:</strong> {new Date(sale.timestamp).toLocaleTimeString()}</p>
+            </div>
+          ))}
+          <div className="mt-4 font-bold text-lg">
+            Total revenue today: €{sales.reduce((sum, s) => sum + s.amount, 0).toFixed(2)}
+          </div>
+        </div>
+      )}
 
       {loading && (
         <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-blue-300 bg-blue-100 text-blue-800 shadow">
