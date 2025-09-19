@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import "../index.css";
 import { sendMessage } from "../api/chatgpt";
 import { signout } from "../api/auth";
-import { useNavigate } from "react-router-dom"; 
+import AuthContext from "./Auth";
 
 
 const Home = () => {
@@ -12,10 +12,9 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const navigate = useNavigate();
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
-
+  const { logout } = useContext(AuthContext)
 
 function useAutoClearMessage(message, setMessage, delay = 5000) {
   const [visible, setVisible] = useState(false);
@@ -67,7 +66,7 @@ function useAutoClearMessage(message, setMessage, delay = 5000) {
   const handleSignOut = async () => {
     try {
       await signout();
-      navigate("/signin");
+      logout();
     } catch (err) {
       console.error("Error during sign out:", err);
     }
@@ -86,8 +85,8 @@ function useAutoClearMessage(message, setMessage, delay = 5000) {
         </button>
       </div>
     <img
-      src="/vttlogo.png" 
-      alt="Logo" 
+      src="/vttlogo.png"
+      alt="Logo"
       className="w-85 h-35 mb-5 ml-[45px] rounded-full"
     />
 
