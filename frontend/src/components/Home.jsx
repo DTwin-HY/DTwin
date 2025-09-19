@@ -14,11 +14,11 @@ const Home = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
+  const { logout } = useContext(AuthContext)
 
 
 function useAutoClearMessage(message, setMessage, delay = 5000) {
   const [visible, setVisible] = useState(false);
-  const { logout } = useContext(AuthContext)
 
   useEffect(() => {
     if (message) {
