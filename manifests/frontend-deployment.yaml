@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: "*"
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"dtwin-frontend:staging","namespace":"dtwin"},"fieldPath":"spec.template.spec.containers[?(@.name==\"dtwin-frontend\")].image","pause":"false"}]
+    kompose.cmd: kompose convert
+    kompose.version: 1.37.0 (fb0539e64)
+  labels:
+    io.kompose.service: frontend
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: frontend
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.37.0 (fb0539e64)
+      labels:
+        io.kompose.service: frontend
+    spec:
+      containers:
+        - image: dtwin-frontend:staging
+          name: frontend
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
