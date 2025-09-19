@@ -6,8 +6,9 @@ from main.chatgpt.llm_utils import call_llm
 from main.chatgpt.prompts import SELLER_PROMPT, CUSTOMER_PROMPT
 from main.chatgpt.state import ConversationState, GeneralState
 from main.index import app, db
+import uuid
 
-def apply_sale(state: GeneralState, sale: dict):
+def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     item_id = sale["item_id"]
     qty = sale["quantity"]
     price = state["inventory"][item_id]["price"]
@@ -17,13 +18,17 @@ def apply_sale(state: GeneralState, sale: dict):
     state["cash_register"] += amount
     sale["timestamp"] = datetime.now()
     sale["amount"] = amount
+    sale["transaction_id"] = transaction_id
     state["completed_transactions"].append(sale)
 
     with app.app_context():
-        sql = text("""INSERT INTO sales (item_id, quantity, amount, timestamp)
-                      VALUES (:item_id, :quantity, :amount, :timestamp)""")
-        db.session.execute(sql, {"item_id": item_id, "quantity": qty, "amount": amount,
-                                 "timestamp": sale["timestamp"]})
+        sql = text("""INSERT INTO sales (transaction_id, item_id, quantity, amount, timestamp)
+                      VALUES (:transaction_id, :item_id, :quantity, :amount, :timestamp)""")
+        db.session.execute(sql, {"transaction_id": transaction_id,
+                                "item_id": item_id,
+                                "quantity": qty,
+                                "amount": amount,
+                                "timestamp": sale["timestamp"]})
         db.session.commit()
 
 def seller_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
@@ -54,8 +59,10 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
     general_state["conversations"][id] = conversation_state["messages"]
     print(f"(conversation {id}) {msg}")
 
+    transaction_id = str(uuid.uuid4())
+
     for sale in resp.get("berries_sold", []):
-        apply_sale(general_state, sale)
+        apply_sale(general_state, sale, transaction_id)
 
     conversation_state["conversation_active"] = resp["conversation_should_continue"]
     conversation_state["conversation_turn"] += 1

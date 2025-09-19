@@ -13,6 +13,7 @@ CREATE TABLE users (
 
 CREATE TABLE sales (
     id SERIAL PRIMARY KEY,
+    transaction_id VARCHAR(36) NOT NULL,
     item_id VARCHAR(100) NOT NULL,
     quantity INTEGER NOT NULL,
     timestamp TIMESTAMP DEFAULT NOW(),

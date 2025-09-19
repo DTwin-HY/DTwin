@@ -97,7 +97,7 @@ def get_today_sales():
     today_end = today_start + timedelta(days=1)
 
     sql = text(
-        "SELECT item_id, quantity, amount, timestamp FROM sales "
+        "SELECT transaction_id, item_id, quantity, amount, timestamp FROM sales "
         "WHERE timestamp >= :start AND timestamp < :end ORDER BY timestamp ASC"
     )
     result = db.session.execute(sql, {"start": today_start, "end": today_end})
@@ -109,6 +109,7 @@ def get_today_sales():
 
     sales = [
         {
+            "transaction_id": row["transaction_id"],
             "item_id": row["item_id"],
             "item_name": item_names.get(row["item_id"], row["item_id"]),
             "quantity": row["quantity"],
