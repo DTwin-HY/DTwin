@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, START, END
 import threading
-from .state import GeneralState, ConversationState, init_conversation_state, init_general_state
+from .state import ConversationState, init_conversation_state, init_general_state
 from .nodes import seller_node, customer_node
 from .summary import print_summary
 
