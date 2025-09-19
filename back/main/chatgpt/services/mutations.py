@@ -29,6 +29,6 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
 # lat=36.0649, lon=120.3804 Qindao location
 # lat=60.2094, lon=24.9642 Kumpula location
 def set_raining(state: GeneralState):
-    weather = fetch_weather(60.2094, 24.9642)
+    weather = fetch_weather(36.0649, 120.3804)
     state["is_raining"] = bool(weather.get("is_raining"))
     return state["is_raining"]

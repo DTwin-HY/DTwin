@@ -10,6 +10,7 @@ def print_summary(state: GeneralState):
     print("Conversations:")
     for i in range(len(state["conversations"])):
         print(f"--- Conversation {i} ---")
+        print(f"--- Was it raining? {state['is_raining']} ---")
         for msg in state["conversations"][i]:
             print(msg.content)
         print("-" * 20)

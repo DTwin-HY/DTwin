@@ -5,6 +5,7 @@ from .llm_utils import call_llm
 from .prompts import SELLER_PROMPT, CUSTOMER_PROMPT
 from .services.mutations import apply_sale, set_raining
 from .state import ConversationState
+from .customer_personas import CUSTOMER_PERSONAS
 import uuid
 
 # --- NEW helper: choose persona once per conversation ---
@@ -59,13 +60,11 @@ def customer_node(conversation_state: ConversationState, general_state, id) -> C
         f"{CUSTOMER_PROMPT}\n\n"
         f"Persona:\n{persona_rules}\n\n"
         f"Conversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
-    print("is it raining?", is_raining)
     )
     resp = call_llm(prompt)
 
-    msg = "Customer: " + resp
+    msg = persona['name'] + ": " + resp
     conversation_state["messages"].append(HumanMessage(content=msg))
     conversation_state["conversation_turn"] += 1
     print(f"(conversation {id}) {msg}")
-    print(f"(Using persona: {persona['name']})")
     return conversation_state
