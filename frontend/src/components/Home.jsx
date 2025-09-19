@@ -70,7 +70,26 @@ function useAutoClearMessage(message, setMessage, delay = 5000) {
     try {
       const res = await fetch("http://localhost:5000/api/sales/today", { credentials: "include" });
       const data = await res.json();
-      setSales(data.sales);
+
+      const groupedSales = data.sales.reduce((acc, sale) => {
+        if (!acc[sale.transaction_id]) {
+          acc[sale.transaction_id] = {
+            transaction_id: sale.transaction_id,
+            timestamp: sale.timestamp,
+            items: [],
+            total: 0,
+          };
+        }
+        acc[sale.transaction_id].items.push({
+          name: sale.item_name,
+          quantity: sale.quantity,
+          amount: sale.amount,
+        });
+        acc[sale.transaction_id].total += sale.amount;
+        return acc;
+      }, {});
+
+      setSales(Object.values(groupedSales));
     } catch (err) {
       console.error("Error fetching sales:", err);
       setErrorMessage("Failed to fetch today's sales.");
@@ -133,17 +152,20 @@ function useAutoClearMessage(message, setMessage, delay = 5000) {
       {sales.length > 0 && (
         <div className="mt-4 bg-white p-4 rounded-lg shadow max-w-2xl w-full break-words">
           <h3 className="text-lg font-semibold mb-2">Today's sales</h3>
-          {sales.map((sale, idx) => (
-            <div key={idx} className="mb-2 border-b pb-2">
-              <p><strong>Item:</strong> {sale.item_name}</p>
-              <p><strong>Item ID:</strong> {sale.item_id}</p>
-              <p><strong>Quantity:</strong> {sale.quantity}</p>
-              <p><strong>Amount:</strong> €{sale.amount.toFixed(2)}</p>
-              <p><strong>Timestamp:</strong> {new Date(sale.timestamp).toLocaleTimeString()}</p>
+          {sales.map((transaction) => (
+            <div key={transaction.transaction_id} className="mb-4 border-b pb-2">
+              <p><strong>Transaction ID:</strong> {transaction.transaction_id}</p>
+              <p><strong>Timestamp:</strong> {new Date(transaction.timestamp).toLocaleTimeString()}</p>
+              {transaction.items.map((item, idx) => (
+                <p key={idx}>
+                  {item.quantity} x {item.name} - €{item.amount.toFixed(2)}
+                </p>
+              ))}
+              <p className="font-bold">Total: €{transaction.total.toFixed(2)}</p>
             </div>
           ))}
           <div className="mt-4 font-bold text-lg">
-            Total revenue today: €{sales.reduce((sum, s) => sum + s.amount, 0).toFixed(2)}
+            Total revenue today: €{sales.reduce((sum, t) => sum + t.total, 0).toFixed(2)}
           </div>
         </div>
       )}
