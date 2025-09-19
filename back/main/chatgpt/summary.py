@@ -1,4 +1,4 @@
-from main.chatgpt.state import GeneralState
+from .state import GeneralState
 
 def print_summary(state: GeneralState):
     print("\n📋 SALES SUMMARY")

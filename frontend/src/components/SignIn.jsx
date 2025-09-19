@@ -1,15 +1,16 @@
 // src/pages/SignIn.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import "../index.css";
 import { signin } from "../api/auth";
-import { useNavigate } from "react-router-dom";  
+import { Link } from "react-router-dom";
+import AuthContext from "./Auth";
 
 const SignIn = () => {
   const [form, setForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   useEffect(() => {
     if (successMessage) {
@@ -45,7 +46,7 @@ const SignIn = () => {
       }
       setSuccessMessage("Kirjautuminen onnistui!");
       setForm({ username: "", password: "" });
-      navigate("/");
+      login();
 
     } catch (err) {
       const apiErr = err?.response?.data?.error || err.message || "Tuntematon virhe";
@@ -59,8 +60,8 @@ const SignIn = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
     <img
-        src="/vttlogo.png" 
-        alt="Logo" 
+        src="/vttlogo.png"
+        alt="Logo"
         className="w-85 h-35 mb-5 ml-[45px] rounded-full"
     />
       <div className="text-3xl font-bold mb-5">Sign in</div>
@@ -76,7 +77,6 @@ const SignIn = () => {
             name="username"
             value={form.username}
             onChange={handleChange}
-            required
             disabled={loading}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Your username"
@@ -90,7 +90,6 @@ const SignIn = () => {
             name="password"
             value={form.password}
             onChange={handleChange}
-            required
             disabled={loading}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Your password"
@@ -105,6 +104,10 @@ const SignIn = () => {
           {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
+
+      <div className="mt-4 text-center">
+        <Link to="/signup" className="text-blue-500 hover:underline">Sign Up</Link>
+      </div>
 
       {loading && (
         <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-blue-300 bg-blue-100 text-blue-800 shadow">

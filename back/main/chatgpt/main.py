@@ -8,7 +8,7 @@ def run_conversation(general_state, conversation_id):
     print(f"Starting conversation {conversation_id}...\n")
     graph = StateGraph(ConversationState)
     graph.add_node("seller", lambda state: seller_node(state, general_state, conversation_id))
-    graph.add_node("customer", lambda state: customer_node(state, conversation_id))
+    graph.add_node("customer", lambda state: customer_node(state, general_state, conversation_id))
     graph.add_edge(START, "seller")
     graph.add_conditional_edges(
         "seller",

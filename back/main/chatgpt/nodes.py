@@ -47,21 +47,25 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
     general_state["conversations"][id] = conversation_state["messages"]
     print(f"(conversation {id}) {msg}")
 
+    transaction_id = str(uuid.uuid4())
+
     for sale in resp.get("berries_sold", []):
-        apply_sale(general_state, sale)
+        apply_sale(general_state, sale, transaction_id)
 
     conversation_state["conversation_active"] = resp["conversation_should_continue"]
     conversation_state["conversation_turn"] += 1
     return conversation_state
 
-def customer_node(conversation_state: ConversationState, id) -> ConversationState:
+def customer_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
+    is_raining = set_raining(general_state)
     persona = _ensure_customer_persona(conversation_state, id)
     persona_rules = persona["rules"]
 
     prompt = (
         f"{CUSTOMER_PROMPT}\n\n"
         f"Persona:\n{persona_rules}\n\n"
-        f"Conversation: {conversation_state['messages']}"
+        f"Conversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
+    print("is it raining?", is_raining)
     )
     resp = call_llm(prompt)
 
