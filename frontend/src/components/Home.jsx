@@ -19,6 +19,7 @@ const Home = () => {
   const [salesLoading, setSalesLoading] = useState(false);
 
 
+  
 function useAutoClearMessage(message, setMessage, delay = 5000) {
   const [visible, setVisible] = useState(false);
 

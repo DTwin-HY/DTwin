@@ -2,8 +2,12 @@ name: Run backend tests
 
 on:
   push:
+    paths:
+      - back/**
     branches: [ main ]
   pull_request:
+    paths:
+      - back/**
     branches: [ main ]
 
 jobs:
@@ -30,5 +34,5 @@ jobs:
         run: poetry install
 
       - name: Run tests
-        working-directory: ./back/tests
+        working-directory: ./back
         run: poetry run pytest

@@ -2,14 +2,21 @@ FROM node:lts-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . .
 RUN npm run build
 
-RUN chmod -R 755 /app/dist
-
 FROM nginx:alpine
+
+# These cause some permission errors on openshift
+RUN rm -rf /usr/share/nginx/html/* \
+ && mkdir -p /var/cache/nginx/client_temp /var/cache/nginx/proxy_temp /var/cache/nginx/fastcgi_temp \
+               /var/cache/nginx/uwsgi_temp /var/cache/nginx/scgi_temp /var/run /var/log/nginx \
+ && chmod -R 0777 /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d
+
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 8080
+CMD ["nginx", "-g", "daemon off;"]

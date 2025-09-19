@@ -1,17 +1,11 @@
 import json
 import random
 from langchain_core.messages import HumanMessage
-from main.chatgpt.llm_utils import call_llm
-from main.chatgpt.prompts import SELLER_PROMPT, CUSTOMER_PROMPT
-from main.chatgpt.state import ConversationState, GeneralState
-from main.chatgpt.customer_personas import CUSTOMER_PERSONAS
-
-def apply_sale(state: GeneralState, sale: dict):
-    item_id = sale["item_id"]
-    qty = sale["quantity"]
-    state["inventory"][item_id]["stock"] -= qty
-    state["cash_register"] += state["inventory"][item_id]["price"] * qty
-    state["completed_transactions"].append(sale)
+from .llm_utils import call_llm
+from .prompts import SELLER_PROMPT, CUSTOMER_PROMPT
+from .services.mutations import apply_sale, set_raining
+from .state import ConversationState
+import uuid
 
 # --- NEW helper: choose persona once per conversation ---
 def _ensure_customer_persona(conversation_state: ConversationState, conversation_id: int):

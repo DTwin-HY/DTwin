@@ -23,7 +23,7 @@ services:
   
   backend:
     env_file: .env
-    image: jensjvh/dtwin:backend
+    image: jensjvh/dtwin:backend3
     #build: ./back
     restart: unless-stopped
     depends_on:
@@ -36,13 +36,13 @@ services:
 
   frontend:
     #build: ./frontend
-    image: jensjvh/dtwin:frontend
+    image: jensjvh/dtwin:frontend5
     restart: unless-stopped
     depends_on:
       backend:
         condition: service_started
     ports:
-      - "8000:80"
+      - "8080:8080"
     networks:
       - dtwin-network
 
