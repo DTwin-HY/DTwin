@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from main.chatgpt.chat import answer
+from main.main.chatgpt.chat import answer
 from main.chatgpt.main import run_multiple_conversations
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
