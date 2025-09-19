@@ -43,6 +43,7 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
 def customer_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
     is_raining = set_raining(general_state)
     prompt = f"{CUSTOMER_PROMPT}\n\nConversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
+    print("is it raining?", is_raining)
     resp = call_llm(prompt)
 
     msg = "Customer: " + resp
