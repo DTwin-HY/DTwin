@@ -1,15 +1,9 @@
 import json
 from langchain_core.messages import HumanMessage
-from main.chatgpt.llm_utils import call_llm
-from main.chatgpt.prompts import SELLER_PROMPT, CUSTOMER_PROMPT
-from main.chatgpt.state import ConversationState, GeneralState
-
-def apply_sale(state: GeneralState, sale: dict):
-    item_id = sale["item_id"]
-    qty = sale["quantity"]
-    state["inventory"][item_id]["stock"] -= qty
-    state["cash_register"] += state["inventory"][item_id]["price"] * qty
-    state["completed_transactions"].append(sale)
+from .llm_utils import call_llm
+from .prompts import SELLER_PROMPT, CUSTOMER_PROMPT
+from .services.mutations import apply_sale, set_raining
+from .state import ConversationState
 
 def seller_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
     prompt = f"""{SELLER_PROMPT}\n\n
@@ -46,8 +40,9 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
     conversation_state["conversation_turn"] += 1
     return conversation_state
 
-def customer_node(conversation_state: ConversationState, id) -> ConversationState:
-    prompt = f"{CUSTOMER_PROMPT}\n\nConversation: {conversation_state['messages']}"
+def customer_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
+    is_raining = set_raining(general_state)
+    prompt = f"{CUSTOMER_PROMPT}\n\nConversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
     resp = call_llm(prompt)
 
     msg = "Customer: " + resp

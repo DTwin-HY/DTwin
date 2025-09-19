@@ -6,6 +6,7 @@ class GeneralState(TypedDict):
     cash_register: float
     inventory: Dict[str, Dict[str, Any]]
     completed_transactions: List[Dict[str, Any]]
+    is_raining: bool
 
 class ConversationState(TypedDict):
     messages: Annotated[list, add_messages]
@@ -21,7 +22,8 @@ def init_general_state(n) -> GeneralState:
             "strawberries_small": {"stock": 20, "price": 3.0, "name": "Small box"},
             "strawberries_medium": {"stock": 15, "price": 5.0, "name": "Medium box"},
         },
-        "completed_transactions": []
+        "completed_transactions": [],
+        "is_raining": False
     }
 
 def init_conversation_state() -> ConversationState:

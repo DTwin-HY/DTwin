@@ -29,4 +29,5 @@ Rules:
 3. Do not repeat questions.
 4. If the order is ready or repeated questions occur, thank the seller and leave.
 5. Only return natural customer response, no JSON or extra formatting.
+6. If its raining you are MUCH LESS likely to buy berries!
 """
