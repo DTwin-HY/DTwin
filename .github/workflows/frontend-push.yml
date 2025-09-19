@@ -1,9 +1,9 @@
-name: Build and push backend image to Docker Hub
+name: Build and push frontend image to Docker Hub
 
 on:
   push:
     paths:
-      - back/**
+      - frontend/**
     branches: [ "deployment" ]
 
 jobs:
@@ -25,6 +25,6 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
-        context: back
+        context: frontend
         push: true
-        tags: ${{ vars.DOCKERHUB_USERNAME }}/dtwin:backend3
+        tags: ${{ vars.DOCKERHUB_USERNAME }}/dtwin:frontend5
