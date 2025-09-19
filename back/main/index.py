@@ -6,6 +6,7 @@ from os import getenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
@@ -98,6 +99,35 @@ def check_auth():
         return jsonify({"authenticated": True, "username": current_user.username})
     else:
         return jsonify({"authenticated": False})
+@app.get("/api/sales/today")
+@login_required
+def get_today_sales():
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+
+    sql = text(
+        "SELECT transaction_id, item_id, quantity, amount, timestamp FROM sales "
+        "WHERE timestamp >= :start AND timestamp < :end ORDER BY timestamp ASC"
+    )
+    result = db.session.execute(sql, {"start": today_start, "end": today_end})
+
+    item_names = {
+        "strawberries_small": "Small box of strawberries",
+        "strawberries_medium": "Medium box of strawberries"
+    }
+
+    sales = [
+        {
+            "transaction_id": row["transaction_id"],
+            "item_id": row["item_id"],
+            "item_name": item_names.get(row["item_id"], row["item_id"]),
+            "quantity": row["quantity"],
+            "amount": float(row["amount"]),
+            "timestamp": row["timestamp"].isoformat()
+        }
+        for row in result.mappings()
+    ]
+    return jsonify({"sales": sales})
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)

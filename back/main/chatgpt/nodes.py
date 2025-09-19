@@ -1,9 +1,27 @@
 import json
+from datetime import datetime
+from sqlalchemy.sql import text
 from langchain_core.messages import HumanMessage
-from .llm_utils import call_llm
-from .prompts import SELLER_PROMPT, CUSTOMER_PROMPT
-from .services.mutations import apply_sale, set_raining
-from .state import ConversationState
+from main.chatgpt.llm_utils import call_llm
+from main.chatgpt.prompts import SELLER_PROMPT, CUSTOMER_PROMPT
+from main.chatgpt.state import ConversationState, GeneralState
+
+def apply_sale(state: GeneralState, sale: dict):
+    item_id = sale["item_id"]
+    qty = sale["quantity"]
+    state["inventory"][item_id]["stock"] -= qty
+    state["cash_register"] += state["inventory"][item_id]["price"] * qty
+    state["completed_transactions"].append(sale)
+
+    with app.app_context():
+        sql = text("""INSERT INTO sales (transaction_id, item_id, quantity, amount, timestamp)
+                      VALUES (:transaction_id, :item_id, :quantity, :amount, :timestamp)""")
+        db.session.execute(sql, {"transaction_id": transaction_id,
+                                "item_id": item_id,
+                                "quantity": qty,
+                                "amount": amount,
+                                "timestamp": sale["timestamp"]})
+        db.session.commit()
 
 def seller_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
     prompt = f"""{SELLER_PROMPT}\n\n
@@ -33,8 +51,10 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
     general_state["conversations"][id] = conversation_state["messages"]
     print(f"(conversation {id}) {msg}")
 
+    transaction_id = str(uuid.uuid4())
+
     for sale in resp.get("berries_sold", []):
-        apply_sale(general_state, sale)
+        apply_sale(general_state, sale, transaction_id)
 
     conversation_state["conversation_active"] = resp["conversation_should_continue"]
     conversation_state["conversation_turn"] += 1
