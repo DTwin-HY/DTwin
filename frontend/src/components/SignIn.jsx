@@ -1,16 +1,14 @@
-// src/pages/SignIn.jsx
-import { useState, useEffect, useContext } from 'react';
-import '../index.css';
-import { signin } from '../api/auth';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import AuthContext from './Auth';
+import { useAuth } from '../context/Auth';
 
 const SignIn = () => {
   const [form, setForm] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const { login } = useContext(AuthContext);
+
+  const { login } = useAuth();
 
   useEffect(() => {
     if (successMessage) {
@@ -30,7 +28,7 @@ const SignIn = () => {
     const password = form.password;
 
     if (!username || !password) {
-      setErrorMessage('Täytä käyttäjänimi ja salasana.');
+      setErrorMessage('Please fill in your username and password');
       return;
     }
 
@@ -39,16 +37,11 @@ const SignIn = () => {
     setSuccessMessage('');
 
     try {
-      const data = await signin({ username, password });
-      if (data?.error) {
-        setErrorMessage(data.error);
-        return;
-      }
-      setSuccessMessage('Kirjautuminen onnistui!');
+      await login({ username, password });
+      setSuccessMessage('Logged in successfully!');
       setForm({ username: '', password: '' });
-      login();
     } catch (err) {
-      const apiErr = err?.response?.data?.error || err.message || 'Tuntematon virhe';
+      const apiErr = err?.response?.data?.error || err.message || 'Unknown error';
       setErrorMessage(apiErr);
       console.error(err);
     } finally {
@@ -58,7 +51,6 @@ const SignIn = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
-      <img src="/vttlogo.png" alt="Logo" className="mb-5 ml-[45px] h-35 w-85 rounded-full" />
       <div className="mb-5 text-3xl font-bold">Sign in</div>
 
       <form
@@ -101,6 +93,7 @@ const SignIn = () => {
       </form>
 
       <div className="mt-4 text-center">
+        Don't have an account?{' '}
         <Link to="/signup" className="text-blue-500 hover:underline">
           Sign Up
         </Link>

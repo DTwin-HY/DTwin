@@ -4,39 +4,21 @@ import SignUp from './components/SignUp';
 import Login from './components/SignIn';
 import PrivateRoute from './components/PrivateRoute';
 import GuestRoute from './components/GuestRoute';
-import { AuthProvider } from './components/Auth';
-import './index.css';
+import Layout from './components/Layout';
 
 const App = () => {
   return (
-    <AuthProvider>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Home />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/signin"
-          element={
-            <GuestRoute>
-              <Login />
-            </GuestRoute>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <GuestRoute>
-              <SignUp />
-            </GuestRoute>
-          }
-        />
-      </Routes>
-    </AuthProvider>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route element={<PrivateRoute />}>
+          <Route index element={<Home />} />
+        </Route>
+        <Route element={<GuestRoute />}>
+          <Route path="/signin" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Route>
+      </Route>
+    </Routes>
   );
 };
 

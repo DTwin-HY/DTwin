@@ -14,3 +14,8 @@ export const signout = async () => {
   const { data } = await axios.post('/api/logout');
   return data;
 };
+
+export const checkAuth = async () => {
+  const { data } = await axios.get('/api/check_auth');
+  return data;
+};

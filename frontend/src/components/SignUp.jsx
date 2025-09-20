@@ -1,8 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
-import '../index.css';
 import { signup } from '../api/auth';
 import { Link } from 'react-router-dom';
-import AuthContext from './Auth';
+import AuthContext from '../context/Auth';
 
 const SignUp = () => {
   const [form, setForm] = useState({ username: '', password: '' });
@@ -29,7 +28,7 @@ const SignUp = () => {
     const password = form.password;
 
     if (!username || !password) {
-      setErrorMessage('Täytä käyttäjänimi ja salasana.');
+      setErrorMessage('Please fill in username and password');
       return;
     }
 
@@ -43,11 +42,11 @@ const SignUp = () => {
         setErrorMessage(data.error);
         return;
       }
-      setSuccessMessage('Käyttäjä luotu!');
+      await login();
+      setSuccessMessage('User created!');
       setForm({ username: '', password: '' });
-      login();
     } catch (err) {
-      const apiErr = err?.response?.data?.error || err.message || 'Tuntematon virhe';
+      const apiErr = err?.response?.data?.error || err.message || 'Unknown error';
       setErrorMessage(apiErr);
       console.error(err);
     } finally {
@@ -57,7 +56,6 @@ const SignUp = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
-      <img src="/vttlogo.png" alt="Logo" className="mb-5 ml-[45px] h-35 w-85 rounded-full" />
       <div className="mb-5 text-3xl font-bold">Sign up</div>
 
       <form
@@ -100,6 +98,7 @@ const SignUp = () => {
       </form>
 
       <div className="mt-4 text-center">
+        Already have an account?{' '}
         <Link to="/signin" className="text-blue-500 hover:underline">
           Sign In
         </Link>
