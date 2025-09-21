@@ -11,7 +11,7 @@ Rules:
 4. Always provide exact 'item_id' in "berries_sold" field, use natural language in "response".
 5. Do NOT include greetings or explanations outside JSON.
 6. When the sale is completed, set "conversation_should_continue" to false.
-7. When the buyer says he/she will pass on the berries say thanks and goodbbye, set "conversation_should_continue" to false.
+6. When the buyer says he/she will pass on the berries say thanks and goodbye, set "conversation_should_continue" to false.
 
 Example:
 {
@@ -30,5 +30,4 @@ Rules:
 3. Do not repeat questions.
 4. If the order is ready or repeated questions occur, thank the seller and leave.
 5. Only return natural customer response, no JSON or extra formatting.
-6. If its raining you are a little less likely to buy berries!
 """

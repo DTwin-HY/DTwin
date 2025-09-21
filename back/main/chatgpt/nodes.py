@@ -1,4 +1,5 @@
 import json
+import random
 from datetime import datetime
 from sqlalchemy.sql import text
 from langchain_core.messages import HumanMessage
@@ -58,7 +59,13 @@ def customer_node(conversation_state: ConversationState, general_state, id) -> C
     Adds messages to the conversation state
     """
     is_raining = set_raining(general_state)
-    prompt = f"{CUSTOMER_PROMPT}\n\nConversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
+
+    if is_raining and random.random()>0.3:
+        rain_context = "\n\nIt's raining. You've decided not to buy berries because of weather."
+        prompt = f"{CUSTOMER_PROMPT}{rain_context}\n\nConversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
+    else:
+        prompt = f"{CUSTOMER_PROMPT}\n\nConversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
+
     print("is it raining?", is_raining)
     resp = call_llm(prompt)
 
