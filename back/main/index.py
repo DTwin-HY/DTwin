@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from main.chatgpt.chat import answer
+from main.chatgpt.main import run_full_day_simulation
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
@@ -38,7 +39,6 @@ def echo():
     sql = text("INSERT INTO logs (prompt, reply) VALUES (:prompt, :reply);")
     db.session.execute(sql, {"prompt":data["message"], "reply": output["message"]})
     db.session.commit()
-
 
     return jsonify(output)
 
@@ -108,8 +108,6 @@ def get_sales():
         day = datetime.strptime(date_str, "%Y-%m-%d")
     else:
         day = datetime.now()
-        
-    
     
     day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
     day_end = day_start + timedelta(days=1)
@@ -137,6 +135,39 @@ def get_sales():
         for row in result.mappings()
     ]
     return jsonify({"sales": sales})
+
+@app.post("/api/simulate-sales")
+@login_required
+def simulate_sales():
+    if not request.is_json:
+        abort(400, description="Body must be JSON")
+    
+    data = request.get_json()
+    date_str = data.get("date")
+    
+    if not date_str:
+        return jsonify({"error": "Date is required"}), 400
+    
+    try:       
+        print(f"Starting full day sales simulation for {date_str}...")
+        
+        conversation_log, simulated_sales = run_full_day_simulation()
+                
+        print(f"Simulation completed. Generated {len(simulated_sales)} transactions")
+        
+        return jsonify({
+            "sales": simulated_sales,
+            "conversation": conversation_log,
+            "simulation_date": date_str,
+            "total_sales": len(simulated_sales),
+            "message": f"Successfully simulated full day: {len(simulated_sales)} sales transactions"
+        })
+        
+    except ValueError as e:
+        return jsonify({"error": f"Invalid date format: {str(e)}"}), 400
+    except Exception as e:
+        print(f"Error during simulation: {str(e)}")
+        return jsonify({"error": f"Simulation failed: {str(e)}"}), 500
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)

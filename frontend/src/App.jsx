@@ -5,6 +5,7 @@ import Login from './components/SignIn';
 import PrivateRoute from './components/PrivateRoute';
 import GuestRoute from './components/GuestRoute';
 import Layout from './components/Layout';
+import Chatbot from './components/Chatbot';
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
       <Route path="/" element={<Layout />}>
         <Route element={<PrivateRoute />}>
           <Route index element={<Home />} />
+          <Route path="chatbot" element={<Chatbot />} />
         </Route>
         <Route element={<GuestRoute />}>
           <Route path="/signin" element={<Login />} />

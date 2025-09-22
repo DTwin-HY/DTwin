@@ -1,13 +1,14 @@
 import { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
-import AuthContext from './Auth';
+import { Navigate, Outlet } from 'react-router-dom';
+import AuthContext from '../context/Auth';
 
-const GuestRoute = ({ children }) => {
+const GuestRoute = () => {
   const { isAuthenticated, loading } = useContext(AuthContext);
+
   if (loading)
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
-  if (isAuthenticated) return <Navigate to="/" replace />;
-  return children;
+
+  return !isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
 };
 
 export default GuestRoute;

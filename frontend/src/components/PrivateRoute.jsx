@@ -1,13 +1,14 @@
 import { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
-import AuthContext from './Auth';
+import { Navigate, Outlet } from 'react-router-dom';
+import AuthContext from '../context/Auth';
 
-const PrivateRoute = ({ children }) => {
+const PrivateRoute = () => {
   const { isAuthenticated, loading } = useContext(AuthContext);
+
   if (loading)
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
-  if (!isAuthenticated) return <Navigate to="/signin" replace />;
-  return children;
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/signin" replace />;
 };
 
 export default PrivateRoute;
