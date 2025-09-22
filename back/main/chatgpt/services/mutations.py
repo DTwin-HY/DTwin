@@ -1,8 +1,9 @@
 from ..state import GeneralState
 from ..requests.req_weather import fetch_weather
-from main.index import app, db
 from datetime import datetime
 from sqlalchemy import text
+from flask import current_app
+from flask_sqlalchemy import SQLAlchemy
 
 def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     item_id = sale["item_id"]
@@ -16,6 +17,9 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     sale["amount"] = amount
     sale["transaction_id"] = transaction_id
     state["completed_transactions"].append(sale)
+    
+    from main.index import app, db
+
     with app.app_context():
         sql = text("""INSERT INTO sales (transaction_id, item_id, quantity, amount, timestamp)
                       VALUES (:transaction_id, :item_id, :quantity, :amount, :timestamp)""")

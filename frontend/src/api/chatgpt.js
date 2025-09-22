@@ -1,6 +1,16 @@
-import axios from "./axiosInstance";
+import axios from './axiosInstance';
 
 export const sendMessage = async (message) => {
-  const res = await axios.post("/api/echo", { message });
-  return res.data; 
+  const res = await axios.post('/api/echo', { message });
+  return res.data;
+};
+
+export const fetchSalesByDate = async ({ date }) => {
+  const res = await axios.get('/api/sales', { params: { date } });
+  return res.data;
+};
+
+export const simulateSalesForDate = async ({ date }) => {
+  const res = await axios.post('/api/simulate-sales', { date });
+  return res.data;
 };

@@ -1,21 +1,18 @@
-import { useState, useEffect, useContext } from "react";
-import "../index.css";
-import { signup } from "../api/auth";
-import { Link } from "react-router-dom";
-import AuthContext from "./Auth"
+import { useState, useEffect, useContext } from 'react';
+import { signup } from '../api/auth';
+import { Link } from 'react-router-dom';
 
 const SignUp = () => {
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const { login } = useContext(AuthContext);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-  if (successMessage) {
-    const timer = setTimeout(() => setSuccessMessage(""), 5000);
-    return () => clearTimeout(timer);
-  }
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(''), 5000);
+      return () => clearTimeout(timer);
+    }
   }, [successMessage]);
 
   const handleChange = (e) => {
@@ -29,25 +26,24 @@ const SignUp = () => {
     const password = form.password;
 
     if (!username || !password) {
-      setErrorMessage("Täytä käyttäjänimi ja salasana.");
+      setErrorMessage('Please fill in username and password');
       return;
     }
 
     setLoading(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+    setErrorMessage('');
+    setSuccessMessage('');
 
     try {
       const data = await signup({ username, password });
-      if (data?.error) {
+      if (data.error) {
         setErrorMessage(data.error);
-        return;
+      } else {
+        setSuccessMessage('User created!');
+        setForm({ username: '', password: '' });
       }
-      setSuccessMessage("Käyttäjä luotu!");
-      setForm({ username: "", password: "" });
-      login();
     } catch (err) {
-      const apiErr = err?.response?.data?.error || err.message || "Tuntematon virhe";
+      const apiErr = err?.response?.data?.error || err.message || 'Unknown error';
       setErrorMessage(apiErr);
       console.error(err);
     } finally {
@@ -56,17 +52,12 @@ const SignUp = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-    <img
-        src="/vttlogo.png"
-        alt="Logo"
-        className="w-85 h-35 mb-5 ml-[45px] rounded-full"
-    />
-      <div className="text-3xl font-bold mb-5">Sign up</div>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
+      <div className="mb-5 text-3xl font-bold">Sign up</div>
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4 w-full max-w-md bg-white p-6 rounded-xl shadow-md"
+        className="flex w-full max-w-md flex-col gap-4 rounded-xl bg-white p-6 shadow-md"
       >
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-gray-700">Username</span>
@@ -76,7 +67,7 @@ const SignUp = () => {
             value={form.username}
             onChange={handleChange}
             disabled={loading}
-            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             placeholder="Your username"
           />
         </label>
@@ -89,7 +80,7 @@ const SignUp = () => {
             value={form.password}
             onChange={handleChange}
             disabled={loading}
-            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             placeholder="Your password"
           />
         </label>
@@ -97,30 +88,33 @@ const SignUp = () => {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-500 text-white font-semibold py-3 rounded-lg shadow hover:bg-blue-600 transition-colors duration-200 disabled:opacity-60"
+          className="rounded-lg bg-blue-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-blue-600 disabled:opacity-60"
         >
-          {loading ? "Creating..." : "Sign Up"}
+          {loading ? 'Creating...' : 'Sign Up'}
         </button>
       </form>
 
       <div className="mt-4 text-center">
-        <Link to="/signin" className="text-blue-500 hover:underline">Sign In</Link>
+        Already have an account?{' '}
+        <Link to="/signin" className="text-blue-500 hover:underline">
+          Sign In
+        </Link>
       </div>
 
       {loading && (
-        <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-blue-300 bg-blue-100 text-blue-800 shadow">
+        <div className="mt-4 w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
           <p className="font-medium">Processing…</p>
         </div>
       )}
 
       {successMessage && !loading && !errorMessage && (
-        <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-green-300 bg-green-100 text-green-800 shadow">
+        <div className="mt-4 w-full max-w-md rounded-lg border border-green-300 bg-green-100 p-4 text-green-800 shadow">
           <p className="font-medium">{successMessage}</p>
         </div>
       )}
 
       {errorMessage && !loading && (
-        <div className="mt-4 w-full max-w-md p-4 rounded-lg border border-red-300 bg-red-100 text-red-800 shadow">
+        <div className="mt-4 w-full max-w-md rounded-lg border border-red-300 bg-red-100 p-4 text-red-800 shadow">
           <p className="font-medium">{errorMessage}</p>
         </div>
       )}
