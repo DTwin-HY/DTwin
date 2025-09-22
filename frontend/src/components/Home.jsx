@@ -17,6 +17,7 @@ const Home = () => {
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
 
+
   const [conversationsLoading, setConversationsLoading] = useState(false);
 
   function useAutoClearMessage(message, setMessage, delay = 5000) {
@@ -206,6 +207,21 @@ const Home = () => {
       }
     } catch (e) {
       setErrorMessage(e?.response?.data?.error || e?.message || "Error fetching weather data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage(null);
+    setWeather(null);
+    try {
+      const data = await fetchWeather({ lat: parseFloat(lat), lon: parseFloat(lon) });
+      setWeather(data);
+    } catch (e) {
+      setErrorMessage(e?.response?.data?.message || e.message || "Virhe haussa");
     } finally {
       setLoading(false);
     }
