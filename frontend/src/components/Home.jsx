@@ -16,6 +16,7 @@ const Home = () => {
   const [weather, setWeather] = useState(null);
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
+
   const [conversationsLoading, setConversationsLoading] = useState(false);
 
   function useAutoClearMessage(message, setMessage, delay = 5000) {
@@ -202,6 +203,21 @@ const Home = () => {
   };
 
   console.log(agentConversations);
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage(null);
+    setWeather(null);
+    try {
+      const data = await fetchWeather({ lat: parseFloat(lat), lon: parseFloat(lon) });
+      setWeather(data);
+    } catch (e) {
+      setErrorMessage(e?.response?.data?.message || e.message || "Virhe haussa");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-gray-100 p-4 pt-8">
@@ -405,7 +421,50 @@ const Home = () => {
             </div>
           </div>
         )}
+        <form onSubmit={onSubmit} className="mt-6 space-y-3 rounded-lg bg-white p-4 shadow">
+          <div>
+            <label className="block text-sm font-medium">Lat</label>
+            <input
+              type="number"
+              step="any"
+              value={lat}
+              onChange={(e) => setLat(e.target.value)}
+              required
+              className="mt-1 w-full rounded border px-3 py-2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Lon</label>
+            <input
+              type="number"
+              step="any"
+              value={lon}
+              onChange={(e) => setLon(e.target.value)}
+              required
+              className="mt-1 w-full rounded border px-3 py-2"
+            />
+          </div>
+          <div className="pt-2">
+            <button type="submit" disabled={loading} className="rounded bg-black px-4 py-2 font-semibold text-white disabled:bg-gray-400">
+              {loading ? "Haetaan..." : "Hae sää"}
+            </button>
+          </div>
+        </form>
+        {weather && (
+          <>
+            <div
+              className={`mt-3 rounded-lg p-3 font-medium ${
+                weather.is_raining ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"
+              }`}
+            >
+              {weather.is_raining ? "It’s raining today" : "It’s not raining today"}
+            </div>
 
+            <pre className="mt-3 max-w-4xl overflow-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+              {JSON.stringify(weather, null, 2)}
+            </pre>
+          </>
+        )}
         {sales.length > 0 && (
           <div className="mb-6 rounded-lg bg-white p-6 shadow">
             <h3 className="mb-4 flex items-center text-xl font-semibold text-gray-800">
