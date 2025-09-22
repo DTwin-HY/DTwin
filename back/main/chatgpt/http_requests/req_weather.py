@@ -2,10 +2,16 @@ import requests
 
 RAIN_CODES = {51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99}
 
+<<<<<<< HEAD:back/main/chatgpt/requests/req_weather.py
 def fetch_weather(lat, lon):
     """
     Fetch current weather data from Open-Meteo API.
     """
+=======
+def fetch_weather(location):
+    lat, lon = location.get("lat"), location.get("lon")
+    print(lat, lon)
+>>>>>>> f4b308e (Add weather fetching function to front):back/main/chatgpt/http_requests/req_weather.py
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": lat,
