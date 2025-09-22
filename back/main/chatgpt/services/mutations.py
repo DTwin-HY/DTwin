@@ -1,5 +1,5 @@
 from ..state import GeneralState
-from ..requests.req_weather import fetch_weather
+from ..http_requests.req_weather import fetch_weather
 from datetime import datetime
 from sqlalchemy import text
 from flask import current_app
@@ -32,7 +32,7 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
 
 # lat=36.0649, lon=120.3804 Qindao location
 # lat=60.2094, lon=24.9642 Kumpula location
-def set_raining(state: GeneralState):
+def set_raining(state: GeneralState = None):
     weather = fetch_weather(60.2094, 24.9642)
     state["is_raining"] = bool(weather.get("is_raining"))
     return state["is_raining"]

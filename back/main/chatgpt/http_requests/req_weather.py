@@ -2,7 +2,9 @@ import requests
 
 RAIN_CODES = {51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99}
 
-def fetch_weather(lat, lon):
+def fetch_weather(location):
+    lat, lon = location.get("lat"), location.get("lon")
+    print(lat, lon)
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": lat,

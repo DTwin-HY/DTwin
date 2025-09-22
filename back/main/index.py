@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
+from main.chatgpt.http_requests.req_weather import fetch_weather
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
@@ -168,6 +169,12 @@ def simulate_sales():
     except Exception as e:
         print(f"Error during simulation: {str(e)}")
         return jsonify({"error": f"Simulation failed: {str(e)}"}), 500
+
+@app.post("/api/weather")
+@login_required
+def get_weather():
+    location = request.json
+    return fetch_weather(location)
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)
