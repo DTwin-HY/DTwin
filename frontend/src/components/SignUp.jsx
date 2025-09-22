@@ -1,14 +1,12 @@
 import { useState, useEffect, useContext } from 'react';
 import { signup } from '../api/auth';
 import { Link } from 'react-router-dom';
-import AuthContext from '../context/Auth';
 
 const SignUp = () => {
   const [form, setForm] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const { login } = useContext(AuthContext);
 
   useEffect(() => {
     if (successMessage) {
@@ -38,13 +36,12 @@ const SignUp = () => {
 
     try {
       const data = await signup({ username, password });
-      if (data?.error) {
+      if (data.error) {
         setErrorMessage(data.error);
-        return;
+      } else {
+        setSuccessMessage('User created!');
+        setForm({ username: '', password: '' });
       }
-      await login();
-      setSuccessMessage('User created!');
-      setForm({ username: '', password: '' });
     } catch (err) {
       const apiErr = err?.response?.data?.error || err.message || 'Unknown error';
       setErrorMessage(apiErr);

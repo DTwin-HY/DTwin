@@ -67,7 +67,7 @@ def signup():
     db.session.commit()
 
     login_user(new_user)
-    return jsonify({"message": "User created"})
+    return jsonify({"message": "User created", "user": {"username": new_user.username}})
 
 @app.post("/api/signin")
 def signin():
