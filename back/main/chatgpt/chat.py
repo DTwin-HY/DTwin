@@ -7,7 +7,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
-from utils.rate_limiter import RateLimiter
+from main.utils.rate_limiter import RateLimiter
 
 
 load_dotenv()
@@ -27,7 +27,7 @@ def chatbot(state: State) -> State:
     return {"messages": [llm.invoke(state["messages"])]}
 
 
-def answer(prompt: str) -> dict[str, str]:
+def answer(prompt: str) -> dict[str, str] | None:
     try:
         response = graph.invoke({"messages": [HumanMessage(content=prompt)]})
         response_text = response["messages"][-1].content
