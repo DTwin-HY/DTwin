@@ -156,7 +156,7 @@ def simulate_sales():
     try:       
         print(f"Starting full day sales simulation for {date_str}...")
 
-        result = run_multiple_conversations(2)
+        result = run_multiple_conversations(10)
         for i in result["sales"]:
             i["item_name"] = item_name(i.get("item_id"))
         return jsonify(result)
