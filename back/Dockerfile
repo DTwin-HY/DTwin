@@ -22,4 +22,6 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["python3", "main/index.py"]
+#CMD ["python3", "main/index.py"]
+
+CMD ["gunicorn", "--config", "gunicorn_config.py", "main.index:app"]
