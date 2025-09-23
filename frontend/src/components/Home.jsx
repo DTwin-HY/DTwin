@@ -101,6 +101,7 @@ const Home = () => {
 
         if (data.conversations && Array.isArray(data.conversations)) {
           setAgentConversations(data.conversations);
+          console.log(agentConversations)
         }
       } else {
         data = await fetchSalesByDate({ date: selectedDate });
@@ -466,6 +467,13 @@ const Home = () => {
           </div>
         )}
       </div>
+
+      {loading && (
+        <div className="mt-4 w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
+          <p className="font-medium">Loading answer...</p>
+        </div>
+      )}
+
 
       {successMessage && !loading && !errorMessage && (
         <div
