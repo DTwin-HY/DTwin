@@ -7,14 +7,20 @@ from os import getenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
+from flask_migrate import Migrate
 from datetime import datetime, timedelta
+
+from main.models import db, User, Log, Sale
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
 app.config["SECRET_KEY"] = getenv("SECRET_KEY")
-db = SQLAlchemy(app)
+
+db.init_app(app)
+
+migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 bcrypt = Bcrypt(app)
@@ -36,21 +42,16 @@ def echo():
     print(data)
     output = answer(data["message"])
 
-    sql = text("INSERT INTO logs (prompt, reply) VALUES (:prompt, :reply);")
-    db.session.execute(sql, {"prompt":data["message"], "reply": output["message"]})
+    log = Log(prompt=data["message"], reply=output["message"])
+
+    db.session.add(log)
     db.session.commit()
 
     return jsonify(output)
 
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(250), unique=True, nullable=False)
-    password = db.Column(db.String(250), nullable=False)
-
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, user_id)
 
 @app.post("/api/signup")
 def signup():

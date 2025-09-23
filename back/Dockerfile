@@ -22,6 +22,7 @@ COPY . .
 
 EXPOSE 5000
 
-#CMD ["python3", "main/index.py"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-CMD ["gunicorn", "--config", "gunicorn_config.py", "main.index:app"]
+ENTRYPOINT ["entrypoint.sh"]

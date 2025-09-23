@@ -30,7 +30,7 @@ def chatbot(state: State) -> State:
     return {"messages": [llm.invoke(state["messages"])]}
 
 
-def answer(prompt: str) -> dict[str, str] | None:
+def answer(prompt: str) -> dict[str, str]:
     try:
         response = graph.invoke({"messages": [HumanMessage(content=prompt)]})
         response_text = response["messages"][-1].content
@@ -38,6 +38,7 @@ def answer(prompt: str) -> dict[str, str] | None:
 
     except KeyError:
         logger.error("Invalid response")
+        return {"message": "Error: Could not generate response"}
 
 graph_builder = StateGraph(State)
 graph_builder.add_node("chatbot", chatbot)
