@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from main.utils.item_name import item_name
 from main.chatgpt.main import run_multiple_conversations
 from main.models import Sale
+from main.chatgpt.requests.req_weather import fetch_weather
 
 @app.get("/api/sales")
 @login_required
@@ -19,7 +20,7 @@ def get_sales():
         day = datetime.strptime(date_str, "%Y-%m-%d")
     else:
         day = datetime.now()
-    
+
     day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
     day_end = day_start + timedelta(days=1)
 
@@ -52,18 +53,25 @@ def simulate_sales():
     """
     if not request.is_json:
         abort(400, description="Body must be JSON")
-    
+
     data = request.get_json()
     date_str = data.get("date")
-    
+    lat = data.get("lat")
+    lon = data.get("lon")
+
     if not date_str:
         return jsonify({"error": "Date is required"}), 400
+    if lat is None or lon is None:
+        return jsonify({"error": "Latitude and longitude are required"}), 400
 
     try:
         simulation_date = datetime.strptime(date_str, "%Y-%m-%d")
         print(f"Starting full day sales simulation for {simulation_date.date()}...")
 
-        result = run_multiple_conversations(10, simulation_date=simulation_date)
+
+        weather = fetch_weather(lat, lon, date_str)
+        is_raining =weather.get("is_raining", False)
+        result = run_multiple_conversations(10, simulation_date=simulation_date, is_raining=is_raining)
 
         simulated_sales = result.get("sales", [])
 
@@ -89,7 +97,7 @@ def simulate_sales():
         db.session.commit()
 
         return jsonify(result)
-        
+
     except ValueError as e:
         return jsonify({"error": f"Invalid date format: {str(e)}"}), 400
     except Exception as e:
