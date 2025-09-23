@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchSalesByDate, simulateSalesForDate, fetchWeather } from '../api/chatgpt';
+import { fetchSalesByDate, simulateSalesForDate, fetchWeather } from '../api/chatgpt';
 
 const Home = () => {
   const [loading, setLoading] = useState(false);
@@ -74,6 +75,29 @@ const Home = () => {
     return null;
   };
 
+  const validateCoordinates = () => {
+    if (!lat.trim() || !lon.trim()) {
+      return "Please enter both latitude and longitude.";
+    }
+
+    const latNum = parseFloat(lat);
+    const lonNum = parseFloat(lon);
+
+    if (isNaN(latNum) || isNaN(lonNum)) {
+      return "Please enter valid numbers for coordinates.";
+    }
+
+    if (latNum < -90 || latNum > 90) {
+      return "Latitude must be between -90 and 90.";
+    }
+
+    if (lonNum < -180 || lonNum > 180) {
+      return "Longitude must be between -180 and 180.";
+    }
+
+    return null;
+  };
+
   const fetchSales = async () => {
     const futureDate = isFutureDate(selectedDate);
     setIsSimulation(futureDate);
@@ -111,7 +135,6 @@ const Home = () => {
         console.log(data)
         if (data.conversations && Array.isArray(data.conversations)) {
           setAgentConversations(data.conversations);
-          console.log(agentConversations)
         }
       } else {
         data = await fetchSalesByDate({ date: selectedDate });
@@ -142,13 +165,13 @@ const Home = () => {
         setSuccessMessage(
           futureDate
             ? `Sales simulation completed for ${formatDateForDisplay(selectedDate)}!`
-            : `Sales data loaded for ${formatDateForDisplay(selectedDate)}!`,
+            : `Sales data loaded for ${formatDateForDisplay(selectedDate)}!`
         );
       } else {
         setSuccessMessage(
           futureDate
             ? `No sales simulated for ${formatDateForDisplay(selectedDate)}`
-            : `No sales found for ${formatDateForDisplay(selectedDate)}`,
+            : `No sales found for ${formatDateForDisplay(selectedDate)}`
         );
       }
     } catch (err) {
@@ -156,7 +179,7 @@ const Home = () => {
       setErrorMessage(
         futureDate
           ? `Failed to simulate sales for ${formatDateForDisplay(selectedDate)}.`
-          : `Failed to fetch sales for ${formatDateForDisplay(selectedDate)}.`,
+          : `Failed to fetch sales for ${formatDateForDisplay(selectedDate)}.`
       );
     } finally {
       setSalesLoading(false);

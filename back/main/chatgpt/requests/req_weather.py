@@ -48,4 +48,3 @@ def fetch_weather(lat, lon, date=None):
             "longitude": lon,
             "date": date_str
         }
->>>>>>> f212a85 (Add weather feature to future date simulation)

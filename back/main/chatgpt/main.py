@@ -1,8 +1,12 @@
 from langgraph.graph import StateGraph, START, END
 import threading
+import uuid
+from datetime import datetime, timedelta
 from .state import ConversationState, init_conversation_state, init_general_state
 from .nodes import seller_node, customer_node
-from .summary import print_summary, general_state_to_jsonable
+from .services.mutations import set_raining
+from .summary import print_summary
+from main.chatgpt.http_requests.req_weather import fetch_weather
 from datetime import datetime
 
 def run_conversation(general_state, conversation_id, simulation_date):
@@ -28,7 +32,7 @@ def run_conversation(general_state, conversation_id, simulation_date):
     state = app.invoke(state)
     print(f"\nConversation {conversation_id} ended.")
 
-def run_multiple_conversations(num_conversations=3, simulation_date=None):
+def run_multiple_conversations(num_conversations=3, simulation_date=None, is_raining=False):
     """
     for running multiple conversations in parallel threads
     initializes the general state and starts multiple conversation threads
@@ -37,6 +41,7 @@ def run_multiple_conversations(num_conversations=3, simulation_date=None):
         simulation_date = datetime.now()
 
     general_state = init_general_state(num_conversations)
+    general_state["is_raining"] = is_raining
 
     print(f"\n📊 INITIAL BUSINESS STATE ({simulation_date.date()}):")
     print(f"💰 Cash Register: €{general_state['cash_register']:.2f}")
