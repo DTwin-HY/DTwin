@@ -1,12 +1,14 @@
 import { useState, useEffect, useContext } from 'react';
-import { signup } from '../api/auth';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/Auth';
 
 const SignUp = () => {
   const [form, setForm] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  const { createUser } = useAuth();
 
   useEffect(() => {
     if (successMessage) {
@@ -35,11 +37,11 @@ const SignUp = () => {
     setSuccessMessage('');
 
     try {
-      const data = await signup({ username, password });
+      const data = await createUser({ username, password });
       if (data.error) {
         setErrorMessage(data.error);
       } else {
-        setSuccessMessage('User created!');
+        setSuccessMessage('User created, redirecting...');
         setForm({ username: '', password: '' });
       }
     } catch (err) {
