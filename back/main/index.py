@@ -2,10 +2,12 @@ from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from main.chatgpt.chat import answer
+from main.chatgpt.main import run_multiple_conversations
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
@@ -38,7 +40,6 @@ def echo():
     db.session.execute(sql, {"prompt":data["message"], "reply": output["message"]})
     db.session.commit()
 
-
     return jsonify(output)
 
 class User(UserMixin, db.Model):
@@ -66,7 +67,7 @@ def signup():
     db.session.commit()
 
     login_user(new_user)
-    return jsonify({"message": "User created"})
+    return jsonify({"message": "User created", "user": {"username": new_user.username}})
 
 @app.post("/api/signin")
 def signin():
@@ -84,7 +85,7 @@ def signin():
         return jsonify({"error": "Invalid username or password"})
 
     login_user(user, remember=True)
-    return jsonify({"message": "Login successful! Welcome", "username": user.username})
+    return jsonify({"message": "Login successful! Welcome", "user": {"username": user.username}})
 
 @app.post("/api/logout")
 @login_required
@@ -95,9 +96,76 @@ def logout():
 @app.get("/api/check_auth")
 def check_auth():
     if current_user.is_authenticated:
-        return jsonify({"authenticated": True, "username": current_user.username})
+        return jsonify({"authenticated": True, "user": {"username": current_user.username}})
     else:
-        return jsonify({"authenticated": False})
+        return jsonify({"authenticated": False, "user": None})
+
+'''
+return a user-friendly name for an item_id
+'''
+def item_name(item_id):
+    names = {
+        "strawberries_small": "Small box of strawberries",
+        "strawberries_medium": "Medium box of strawberries"
+    }
+    return names.get(item_id, item_id)
+
+@app.get("/api/sales")
+@login_required
+def get_sales():
+    date_str = request.args.get("date")
+    if date_str:
+        day = datetime.strptime(date_str, "%Y-%m-%d")
+    else:
+        day = datetime.now()
+    
+    day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = day_start + timedelta(days=1)
+
+    sql = text(
+        "SELECT transaction_id, item_id, quantity, amount, timestamp FROM sales "
+        "WHERE timestamp >= :start AND timestamp < :end ORDER BY timestamp ASC"
+    )
+    result = db.session.execute(sql, {"start": day_start, "end": day_end})
+
+    sales = [
+        {
+            "transaction_id": row["transaction_id"],
+            "item_id": row["item_id"],
+            "item_name": item_name(row["item_id"]),
+            "quantity": row["quantity"],
+            "amount": float(row["amount"]),
+            "timestamp": row["timestamp"].isoformat()
+        }
+        for row in result.mappings()
+    ]
+    return jsonify({"sales": sales})
+
+@app.post("/api/simulate-sales")
+@login_required
+def simulate_sales():
+    if not request.is_json:
+        abort(400, description="Body must be JSON")
+    
+    data = request.get_json()
+    date_str = data.get("date")
+    
+    if not date_str:
+        return jsonify({"error": "Date is required"}), 400
+
+    try:       
+        print(f"Starting full day sales simulation for {date_str}...")
+
+        result = run_multiple_conversations(10)
+        for i in result["sales"]:
+            i["item_name"] = item_name(i.get("item_id"))
+        return jsonify(result)
+        
+    except ValueError as e:
+        return jsonify({"error": f"Invalid date format: {str(e)}"}), 400
+    except Exception as e:
+        print(f"Error during simulation: {str(e)}")
+        return jsonify({"error": f"Simulation failed: {str(e)}"}), 500
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)

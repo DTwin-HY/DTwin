@@ -28,6 +28,7 @@ gunicorn = "^23.0.0"
 
 [tool.poetry.scripts]
 back = "main.index:start"
+berry_stand = "main.chatgpt.main:run_multiple_conversations"
 
 [build-system]
 requires = ["poetry-core"]
