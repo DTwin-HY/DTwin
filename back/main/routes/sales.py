@@ -1,0 +1,64 @@
+from ..index import app, db
+from flask import jsonify, request, abort
+from flask_login import login_required, current_user
+from sqlalchemy.sql import text
+from datetime import datetime, timedelta
+from main.utils.item_name import item_name
+from main.chatgpt.main import run_multiple_conversations
+
+@app.get("/api/sales")
+@login_required
+def get_sales():
+    date_str = request.args.get("date")
+    if date_str:
+        day = datetime.strptime(date_str, "%Y-%m-%d")
+    else:
+        day = datetime.now()
+    
+    day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = day_start + timedelta(days=1)
+
+    sql = text(
+        "SELECT transaction_id, item_id, quantity, amount, timestamp FROM sales "
+        "WHERE timestamp >= :start AND timestamp < :end ORDER BY timestamp ASC"
+    )
+    result = db.session.execute(sql, {"start": day_start, "end": day_end})
+
+    sales = [
+        {
+            "transaction_id": row["transaction_id"],
+            "item_id": row["item_id"],
+            "item_name": item_name(row["item_id"]),
+            "quantity": row["quantity"],
+            "amount": float(row["amount"]),
+            "timestamp": row["timestamp"].isoformat()
+        }
+        for row in result.mappings()
+    ]
+    return jsonify({"sales": sales})
+
+@app.post("/api/simulate-sales")
+@login_required
+def simulate_sales():
+    if not request.is_json:
+        abort(400, description="Body must be JSON")
+    
+    data = request.get_json()
+    date_str = data.get("date")
+    
+    if not date_str:
+        return jsonify({"error": "Date is required"}), 400
+
+    try:       
+        print(f"Starting full day sales simulation for {date_str}...")
+
+        result = run_multiple_conversations(10)
+        for i in result["sales"]:
+            i["item_name"] = item_name(i.get("item_id"))
+        return jsonify(result)
+        
+    except ValueError as e:
+        return jsonify({"error": f"Invalid date format: {str(e)}"}), 400
+    except Exception as e:
+        print(f"Error during simulation: {str(e)}")
+        return jsonify({"error": f"Simulation failed: {str(e)}"}), 500
