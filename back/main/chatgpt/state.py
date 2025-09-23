@@ -12,6 +12,8 @@ class GeneralState(TypedDict):
     is_raining: bool
     lat: float
     lon: float
+    lat: float
+    lon: float
 
 class ConversationState(TypedDict):
     """
@@ -21,7 +23,6 @@ class ConversationState(TypedDict):
     conversation_turn: int
     conversation_active: bool
     max_turns: int
-
 
 def init_general_state(n, lat=None, lon=None) -> GeneralState:
     """

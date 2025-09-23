@@ -33,7 +33,7 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
                                 "timestamp": sale["timestamp"]})
         db.session.commit()
 
-def set_raining(state: GeneralState = None, lat=None, lon=None):
+def set_raining(state: GeneralState, coords: tuple=(60.2094, 24.9642)):
     """
     set state["is_raining"] based on weather at given coordinates
     default coords are for Kumpula, Helsinki

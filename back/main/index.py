@@ -120,6 +120,7 @@ def get_sales():
     else:
         day = datetime.now()
 
+
     day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
     day_end = day_start + timedelta(days=1)
 
@@ -148,17 +149,22 @@ def simulate_sales():
     if not request.is_json:
         abort(400, description="Body must be JSON")
 
+
     data = request.get_json()
     date_str = data.get("date")
     lat = data.get("lat")
     lon = data.get("lon")
 
+
     if not date_str:
         return jsonify({"error": "Date is required"}), 400
     if lat is None or lon is None:
         return jsonify({"error", "Latitude and longitude are required"}), 400
+    if lat is None or lon is None:
+        return jsonify({"error", "Latitude and longitude are required"}), 400
 
     try:
+        simulation_date = datetime.strptime(date_str, "%Y-%m-%d")
         simulation_date = datetime.strptime(date_str, "%Y-%m-%d")
         print(f"Starting full day sales simulation for {date_str}...")
 
@@ -169,6 +175,17 @@ def simulate_sales():
         for i in result["sales"]:
             i["item_name"] = item_name(i.get("item_id"))
         return jsonify(result)
+
+
+        print(f"Simulation completed. Generated {len(simulated_sales)} transactions")
+
+        return jsonify({
+            "sales": simulated_sales,
+            "conversation": conversation_log,
+            "simulation_date": date_str,
+            "total_sales": len(simulated_sales),
+            "message": f"Successfully simulated full day: {len(simulated_sales)} sales transactions"
+        })
 
     except ValueError as e:
         return jsonify({"error": f"Invalid date format: {str(e)}"}), 400
@@ -186,6 +203,7 @@ def get_weather():
 
     if lat is None or lon is None:
         return jsonify({"error": "lat and lon required"}), 400
+
 
     weather = fetch_weather(lat, lon, date)
     return jsonify(weather)
