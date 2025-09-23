@@ -12,6 +12,8 @@ class GeneralState(TypedDict):
     is_raining: bool
     lat: float
     lon: float
+    lat: float
+    lon: float
 
 class ConversationState(TypedDict):
     """

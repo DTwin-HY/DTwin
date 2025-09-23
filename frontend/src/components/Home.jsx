@@ -215,13 +215,24 @@ const Home = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMessage(null);
+    setErrorMessage('');
     setWeather(null);
+
     try {
-      const data = await fetchWeather({ lat: parseFloat(lat), lon: parseFloat(lon) });
-      setWeather(data);
+      const data = await fetchWeather({
+        lat: parseFloat(lat),
+        lon: parseFloat(lon),
+        date: selectedDate,
+      });
+
+      if (data.error) {
+        setErrorMessage(data.error);
+      } else {
+        setWeather(data);
+        setSuccessMessage("Weather data loaded successfully!");
+      }
     } catch (e) {
-      setErrorMessage(e?.response?.data?.message || e.message || "Virhe haussa");
+      setErrorMessage(e?.response?.data?.error || e?.message || "Error fetching weather data");
     } finally {
       setLoading(false);
     }
@@ -372,7 +383,112 @@ const Home = () => {
           </div>
         )}
 
-        {conversationLoading && (
+        {isFutureDate(selectedDate) && (
+          <div className="mb-6 rounded-lg bg-white p-6 shadow">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+              Weather Information Required for Simulation
+            </h3>
+            <p className="mb-4 text-sm text-gray-600">
+              Enter coordinates to check weather conditions for the simulation.
+            </p>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Latitude *</label>
+                <input
+                  type="number"
+                  step="any"
+                  min="-90"
+                  max="90"
+                  value={lat}
+                  onChange={(e) => setLat(e.target.value)}
+                  required
+                  placeholder="e.g., 60.2094"
+                  className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Longitude *</label>
+                <input
+                  type="number"
+                  step="any"
+                  min="-180"
+                  max="180"
+                  value={lon}
+                  onChange={(e) => setLon(e.target.value)}
+                  required
+                  placeholder="e.g., 24.9624"
+                  className="mt-1 w-full rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Example: Helsinki (60.1708, 24.9375)
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={checkWeather}
+                  disabled={loading}
+                  className="rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white shadow transition-colors hover:bg-blue-600 disabled:bg-gray-400"
+                >
+                  {loading ? "Checking..." : "Check Weather"}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setLat('60.1708');
+                  setLon('24.9375');
+                }}
+                className="text-sm text-blue-500 hover:underline"
+              >
+                Helsinki
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLat('60.2094');
+                  setLon('24.9624');
+                }}
+                className="text-sm text-blue-500 hover:underline"
+              >
+                Kumpula
+              </button>
+            </div>
+          </div>
+        )}
+        {weather && !weather.error && (
+          <div className="mb-6 rounded-lg bg-white p-6 shadow">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800">Weather Conditions for {formatDateForDisplay(selectedDate)}</h3>
+            <div className={`mb-4 rounded-lg p-4 ${
+              weather.is_raining ? "bg-blue-100 border-l-4 border-blue-400" : "bg-green-100 border-l-4 border-green-400"
+            }`}>
+              <div className="flex items-center">
+                <span className={`text-2xl mr-3 ${weather.is_raining ? "text-blue-600" : "text-green-600"}`}>
+                  {weather.is_raining ? "🌧️" : "☀️"}
+                <span className={`text-2xl mr-3 ${weather.is_raining ? "text-blue-600" : "text-green-600"}`}>
+                  {weather.is_raining ? "🌧️" : "☀️"}
+                </span>
+                <div>
+                  <p className={`font-semibold ${weather.is_raining ? "text-blue-800" : "text-green-800"}`}>
+                    {weather.is_raining ? "It's raining" : "Clear weather"}
+                  <p className={`font-semibold ${weather.is_raining ? "text-blue-800" : "text-green-800"}`}>
+                    {weather.is_raining ? "It's raining" : "Clear weather"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {conversationsLoading && (
+
           <div className="mb-6 rounded-lg bg-white p-4 shadow">
             <div className="flex items-center space-x-2">
               <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
