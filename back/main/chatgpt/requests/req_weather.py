@@ -1,5 +1,5 @@
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 
 RAIN_CODES = {51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99}
 

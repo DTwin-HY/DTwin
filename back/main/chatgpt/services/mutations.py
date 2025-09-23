@@ -1,9 +1,6 @@
 from ..state import GeneralState
 from ..requests.req_weather import fetch_weather
 from datetime import datetime, timedelta
-from sqlalchemy import text
-from flask import current_app
-from flask_sqlalchemy import SQLAlchemy
 
 def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     """
@@ -21,7 +18,7 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     sale["transaction_id"] = transaction_id
     state["completed_transactions"].append(sale)
 
-def set_raining(state: GeneralState, coords: tuple=(60.2094, 24.9642)):
+def set_raining(state: GeneralState = None, lat=None, lon=None):
     """
     set state["is_raining"] based on weather at given coordinates
     default coords are for Kumpula, Helsinki

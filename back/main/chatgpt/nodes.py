@@ -1,5 +1,6 @@
 import json
 import random
+import uuid
 from datetime import datetime
 from sqlalchemy.sql import text
 from langchain_core.messages import HumanMessage

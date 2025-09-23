@@ -20,21 +20,6 @@ bcrypt = Bcrypt(app)
 
 from . import routes
 
-@app.post("/api/weather")
-@login_required
-def get_weather():
-    data = request.json
-    lat = data.get("lat")
-    lon = data.get("lon")
-    date = data.get("date")
-
-    if lat is None or lon is None:
-        return jsonify({"error": "lat and lon required"}), 400
-
-
-    weather = fetch_weather(lat, lon, date)
-    return jsonify(weather)
-
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)
 
