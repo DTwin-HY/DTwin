@@ -15,7 +15,7 @@ def run_conversation(general_state, conversation_id, simulation_date):
     graph = StateGraph(ConversationState)
     graph.add_node("seller", lambda state: seller_node(state, general_state, conversation_id))
     graph.add_node("customer", lambda state: customer_node(state, general_state, conversation_id))
-    
+
     graph.add_edge(START, "seller")
     graph.add_conditional_edges(
         "seller",

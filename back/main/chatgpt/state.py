@@ -10,6 +10,8 @@ class GeneralState(TypedDict):
     inventory: Dict[str, Dict[str, Any]]
     completed_transactions: List[Dict[str, Any]]
     is_raining: bool
+    lat: float
+    lon: float
 
 class ConversationState(TypedDict):
     """
@@ -20,11 +22,11 @@ class ConversationState(TypedDict):
     conversation_active: bool
     max_turns: int
 
-def init_general_state(n) -> GeneralState:
+def init_general_state(n, lat=None, lon=None) -> GeneralState:
     """
     inits the general state with n empty conversations and some initial cash and inventory
     """
-    return {
+    state = {
         "conversations": n*[None],
         "cash_register": 400.0,
         "inventory": {
@@ -34,6 +36,11 @@ def init_general_state(n) -> GeneralState:
         "completed_transactions": [],
         "is_raining": False
     }
+    if lat is not None:
+        state["lat"] = lat
+    if lon is not None:
+        state["lon"] = lon
+    return state
 
 def init_conversation_state() -> ConversationState:
     """

@@ -1,6 +1,6 @@
 from ..state import GeneralState
 from ..http_requests.req_weather import fetch_weather
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     """

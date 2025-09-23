@@ -10,8 +10,8 @@ export const fetchSalesByDate = async ({ date }) => {
   return res.data;
 };
 
-export const simulateSalesForDate = async ({ date }) => {
-  const res = await axios.post('/api/simulate-sales', { date });
+export const simulateSalesForDate = async ({ date, lat, lon }) => {
+  const res = await axios.post('/api/simulate-sales', { date, lat: Number(lat), lon: Number(lon) });
   return res.data;
 };
 
