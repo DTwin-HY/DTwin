@@ -9,6 +9,10 @@ from main.chatgpt.main import run_multiple_conversations
 @app.get("/api/sales")
 @login_required
 def get_sales():
+    """
+    fetch sales for a specific day (default today)
+    body: { "date": "YYYY-MM-DD" }
+    """
     date_str = request.args.get("date")
     if date_str:
         day = datetime.strptime(date_str, "%Y-%m-%d")
@@ -24,6 +28,7 @@ def get_sales():
     )
     result = db.session.execute(sql, {"start": day_start, "end": day_end})
 
+    #format the result
     sales = [
         {
             "transaction_id": row["transaction_id"],
@@ -40,6 +45,10 @@ def get_sales():
 @app.post("/api/simulate-sales")
 @login_required
 def simulate_sales():
+    """
+    simulate a full day of sales using AI conversations
+    body: { "date": "YYYY-MM-DD" }
+    """
     if not request.is_json:
         abort(400, description="Body must be JSON")
     

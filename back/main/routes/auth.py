@@ -1,5 +1,5 @@
 from ..index import app, db, bcrypt, login_manager
-from flask import jsonify, request, abort
+from flask import jsonify, request
 from flask_login import login_user, logout_user, login_required, current_user
 from main.models import User
 
@@ -9,6 +9,9 @@ def load_user(user_id):
 
 @app.post("/api/signup")
 def signup():
+    """
+    create a new user and log them in
+    """
     data = request.json
     username = data["username"]
     password = data["password"]
@@ -26,6 +29,9 @@ def signup():
 
 @app.post("/api/signin")
 def signin():
+    """
+    log in an existing user
+    """
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
@@ -45,11 +51,17 @@ def signin():
 @app.post("/api/logout")
 @login_required
 def logout():
+    """
+    log out the current user
+    """
     logout_user()
     return jsonify({"message": "Logged out successfully"})
 
 @app.get("/api/check_auth")
 def check_auth():
+    """
+    check if the user is logged in
+    """
     if current_user.is_authenticated:
         return jsonify({"authenticated": True, "user": {"username": current_user.username}})
     else:
