@@ -5,6 +5,7 @@ from sqlalchemy.sql import text
 from datetime import datetime, timedelta
 from main.utils.item_name import item_name
 from main.chatgpt.main import run_multiple_conversations
+from main.models import Sale
 
 @app.get("/api/sales")
 @login_required
@@ -33,7 +34,7 @@ def get_sales():
         {
             "transaction_id": row["transaction_id"],
             "item_id": row["item_id"],
-            "item_name": item_name(row["item_id"]),
+            "item_name": item_name(row["item_id"]) or row["item_id"],
             "quantity": row["quantity"],
             "amount": float(row["amount"]),
             "timestamp": row["timestamp"].isoformat()
@@ -58,12 +59,35 @@ def simulate_sales():
     if not date_str:
         return jsonify({"error": "Date is required"}), 400
 
-    try:       
-        print(f"Starting full day sales simulation for {date_str}...")
+    try:
+        simulation_date = datetime.strptime(date_str, "%Y-%m-%d")
+        print(f"Starting full day sales simulation for {simulation_date.date()}...")
 
-        result = run_multiple_conversations(10)
-        for i in result["sales"]:
-            i["item_name"] = item_name(i.get("item_id"))
+        result = run_multiple_conversations(10, simulation_date=simulation_date)
+
+        simulated_sales = result.get("sales", [])
+
+        for sale in simulated_sales:
+            sale["item_name"] = item_name(sale.get("item_id")) or sale.get("item_id")
+            original_time = datetime.fromisoformat(sale["timestamp"])
+            simulated_timestamp = simulation_date.replace(
+                hour=original_time.hour,
+                minute=original_time.minute,
+                second=original_time.second,
+                microsecond=original_time.microsecond
+            )
+
+            new_sale = Sale(
+                transaction_id=sale["transaction_id"],
+                item_id=sale["item_id"],
+                quantity=sale["quantity"],
+                amount=sale["amount"],
+                timestamp=simulated_timestamp
+            )
+            db.session.add(new_sale)
+
+        db.session.commit()
+
         return jsonify(result)
         
     except ValueError as e:
