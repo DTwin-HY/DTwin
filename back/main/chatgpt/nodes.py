@@ -9,6 +9,12 @@ from .state import ConversationState
 import uuid
 
 def seller_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
+    """
+    Seller agent node in the conversation graph
+    Calls the LLM with the given prompt and current state
+    Updates the transactions to the general state
+    Adds messages to the conversation state
+    """
     prompt = f"""{SELLER_PROMPT}\n\n
         Inventory: {json.dumps(general_state['inventory'])}\n
         Conversation: {conversation_state['messages']}
@@ -46,6 +52,11 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
     return conversation_state
 
 def customer_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
+    """
+    Customer agent node in the conversation graph
+    Calls the LLM with the given prompt and current state
+    Adds messages to the conversation state
+    """
     is_raining = set_raining(general_state)
     prompt = f"{CUSTOMER_PROMPT}\n\nConversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
     print("is it raining?", is_raining)

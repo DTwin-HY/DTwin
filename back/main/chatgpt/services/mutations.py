@@ -6,6 +6,9 @@ from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 
 def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
+    """
+    update state with the given sale and log it to the database
+    """
     item_id = sale["item_id"]
     qty = sale["quantity"]
     price = state["inventory"][item_id]["price"]
@@ -30,9 +33,14 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
                                 "timestamp": sale["timestamp"]})
         db.session.commit()
 
-# lat=36.0649, lon=120.3804 Qindao location
-# lat=60.2094, lon=24.9642 Kumpula location
-def set_raining(state: GeneralState):
-    weather = fetch_weather(60.2094, 24.9642)
+def set_raining(state: GeneralState, coords: tuple=(60.2094, 24.9642)):
+    """
+    set state["is_raining"] based on weather at given coordinates
+    default coords are for Kumpula, Helsinki
+
+    lat=36.0649, lon=120.3804 Qindao location
+    lat=60.2094, lon=24.9642 Kumpula location
+    """
+    weather = fetch_weather(coords)
     state["is_raining"] = bool(weather.get("is_raining"))
     return state["is_raining"]

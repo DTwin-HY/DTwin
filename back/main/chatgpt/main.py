@@ -5,6 +5,10 @@ from .nodes import seller_node, customer_node
 from .summary import print_summary, general_state_to_jsonable
 
 def run_conversation(general_state, conversation_id):
+    """
+    for running a single conversation between a seller and a customer
+    initializes its own conversation-specific state, runs the conversation and updates the general state
+    """
     print(f"Starting conversation {conversation_id}...\n")
     graph = StateGraph(ConversationState)
     graph.add_node("seller", lambda state: seller_node(state, general_state, conversation_id))
@@ -22,6 +26,10 @@ def run_conversation(general_state, conversation_id):
     print(f"\nConversation {conversation_id} ended.")
 
 def run_multiple_conversations(num_conversations=3):
+    """
+    for running multiple conversations in parallel threads
+    initializes the general state and starts multiple conversation threads
+    """
     general_state = init_general_state(num_conversations)
 
     print(f"\n📊 INITIAL BUSINESS STATE:")

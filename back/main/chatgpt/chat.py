@@ -9,7 +9,9 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from main.utils.rate_limiter import RateLimiter
 
-
+"""
+A simple chatbot implementation using LangGraph and LangChain with OpenAI's GPT model.
+"""
 load_dotenv()
 SELECTED_MODEL = "gpt-5-nano"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

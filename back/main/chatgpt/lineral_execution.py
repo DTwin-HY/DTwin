@@ -6,6 +6,9 @@ from .state import ConversationState, init_conversation_state, init_general_stat
 from .nodes import seller_node, customer_node
 from langgraph.graph import StateGraph, START, END
 
+"""
+currently unnecessary functions are stored here jujstin case
+"""
 conversation_logs = {}
 lock = threading.Lock()
 
