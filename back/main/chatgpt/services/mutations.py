@@ -22,11 +22,10 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     sale["amount"] = amount
     sale["transaction_id"] = transaction_id
     state["completed_transactions"].append(sale)
+    
+    from main.index import app, db
 
-    try:
-        # Try to access current_app to see if we're in a context
-        current_app.name
-        
+    with app.app_context():
         sql = text("""INSERT INTO sales (transaction_id, item_id, quantity, amount, timestamp)
                       VALUES (:transaction_id, :item_id, :quantity, :amount, :timestamp)""")
         db.session.execute(sql, {"transaction_id": transaction_id,
@@ -35,18 +34,6 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
                                 "amount": amount,
                                 "timestamp": sale["timestamp"]})
         db.session.commit()
-    except RuntimeError:
-        # No app context - we need to create one
-        from main.index import app
-        with app.app_context():
-            sql = text("""INSERT INTO sales (transaction_id, item_id, quantity, amount, timestamp)
-                          VALUES (:transaction_id, :item_id, :quantity, :amount, :timestamp)""")
-            db.session.execute(sql, {"transaction_id": transaction_id,
-                                    "item_id": item_id,
-                                    "quantity": qty,
-                                    "amount": amount,
-                                    "timestamp": sale["timestamp"]})
-            db.session.commit()
 
 def set_raining(state: GeneralState, coords: tuple=(60.2094, 24.9642)):
     """
