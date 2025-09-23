@@ -41,6 +41,6 @@ def set_raining(state: GeneralState, coords: tuple=(60.2094, 24.9642)):
     lat=36.0649, lon=120.3804 Qindao location
     lat=60.2094, lon=24.9642 Kumpula location
     """
-    weather = fetch_weather(coords)
+    weather = fetch_weather(*coords)
     state["is_raining"] = bool(weather.get("is_raining"))
     return state["is_raining"]
