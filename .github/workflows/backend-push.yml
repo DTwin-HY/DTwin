@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - back/**
-    branches: [ "deployment" ]
+    branches: [ "main" ]
 
 jobs:
 
