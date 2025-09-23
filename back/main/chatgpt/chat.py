@@ -10,6 +10,9 @@ from langchain_core.messages import HumanMessage
 from main.utils.rate_limiter import RateLimiter
 
 
+"""
+A simple chatbot implementation using LangGraph and LangChain with OpenAI's GPT model.
+"""
 load_dotenv()
 SELECTED_MODEL = "gpt-5-nano"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -27,7 +30,7 @@ def chatbot(state: State) -> State:
     return {"messages": [llm.invoke(state["messages"])]}
 
 
-def answer(prompt: str) -> dict[str, str]:
+def answer(prompt: str) -> dict[str, str] | None:
     try:
         response = graph.invoke({"messages": [HumanMessage(content=prompt)]})
         response_text = response["messages"][-1].content

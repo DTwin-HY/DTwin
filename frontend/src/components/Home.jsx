@@ -12,12 +12,11 @@ const Home = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [isSimulation, setIsSimulation] = useState(false);
   const [sales, setSales] = useState([]);
-  const [agentConversation, setAgentConversation] = useState([]);
+  const [agentConversations, setAgentConversations] = useState([]);
   const [weather, setWeather] = useState(null);
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
-
-  const [conversationLoading, setConversationLoading] = useState(false);
+  const [conversationsLoading, setConversationsLoading] = useState(false);
 
   function useAutoClearMessage(message, setMessage, delay = 5000) {
     const [visible, setVisible] = useState(false);
@@ -77,8 +76,8 @@ const Home = () => {
     const futureDate = isFutureDate(selectedDate);
     setIsSimulation(futureDate);
     setSalesLoading(true);
-    setConversationLoading(futureDate);
-    setAgentConversation([]);
+    setConversationsLoading(futureDate);
+    setAgentConversations([]);
     setErrorMessage('');
 
     if (futureDate) {
@@ -86,7 +85,7 @@ const Home = () => {
       if (validationError) {
         setErrorMessage(validationError);
         setSalesLoading(false);
-        setConversationLoading(false);
+        setConversationsLoading(false);
         return;
       }
     }
@@ -94,22 +93,14 @@ const Home = () => {
     try {
       let data;
       if (futureDate) {
-        const latNum = parseFloat(lat);
-        const lonNum = parseFloat(lon);
-
-        if (isNaN(latNum) || isNaN(lonNum)) {
-          setErrorMessage("Latitude and longitude must be valid numbers.");
-          setSalesLoading(false);
-          setConversationLoading(false);
-        }
         data = await simulateSalesForDate({
           date: selectedDate,
           lat: parseFloat(lat),
-          lon: parseFloat(lon)
+          lon: parseFloat(lon),
         });
 
-        if (data.conversation && Array.isArray(data.conversation)) {
-          setAgentConversation(data.conversation);
+        if (data.conversations && Array.isArray(data.conversations)) {
+          setAgentConversations(data.conversations);
         }
       } else {
         data = await fetchSalesByDate({ date: selectedDate });
@@ -140,13 +131,13 @@ const Home = () => {
         setSuccessMessage(
           futureDate
             ? `Sales simulation completed for ${formatDateForDisplay(selectedDate)}!`
-            : `Sales data loaded for ${formatDateForDisplay(selectedDate)}!`,
+            : `Sales data loaded for ${formatDateForDisplay(selectedDate)}!`
         );
       } else {
         setSuccessMessage(
           futureDate
             ? `No sales simulated for ${formatDateForDisplay(selectedDate)}`
-            : `No sales found for ${formatDateForDisplay(selectedDate)}`,
+            : `No sales found for ${formatDateForDisplay(selectedDate)}`
         );
       }
     } catch (err) {
@@ -154,18 +145,18 @@ const Home = () => {
       setErrorMessage(
         futureDate
           ? `Failed to simulate sales for ${formatDateForDisplay(selectedDate)}.`
-          : `Failed to fetch sales for ${formatDateForDisplay(selectedDate)}.`,
+          : `Failed to fetch sales for ${formatDateForDisplay(selectedDate)}.`
       );
     } finally {
       setSalesLoading(false);
-      setConversationLoading(false);
+      setConversationsLoading(false);
     }
   };
 
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
     setSales([]);
-    setAgentConversation([]);
+    setAgentConversations([]);
     setSalesDate('');
     setWeather(null);
     setErrorMessage('');
@@ -173,7 +164,7 @@ const Home = () => {
 
   const clearResults = () => {
     setSales([]);
-    setAgentConversation([]);
+    setAgentConversations([]);
     setSalesDate('');
     setIsSimulation(false);
     setWeather(null);
@@ -210,6 +201,8 @@ const Home = () => {
     }
   };
 
+  console.log(agentConversations);
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-gray-100 p-4 pt-8">
       <div className="w-full max-w-4xl">
@@ -233,7 +226,7 @@ const Home = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => fetchSales()}
-                disabled={salesLoading || conversationLoading}
+                disabled={salesLoading || conversationsLoading}
                 className="rounded-lg bg-black px-6 py-2 font-semibold text-white shadow transition-colors duration-200 hover:cursor-pointer hover:bg-blue-700 disabled:bg-gray-400"
               >
                 {salesLoading
@@ -243,7 +236,7 @@ const Home = () => {
                     : 'Fetch Sales'}
               </button>
 
-              {(sales.length > 0 || agentConversation.length > 0) && (
+              {(sales.length > 0 || agentConversations.length > 0) && (
                 <button
                   onClick={clearResults}
                   className="rounded-lg bg-gray-500 px-4 py-2 font-semibold text-white shadow transition-colors duration-200 hover:cursor-pointer hover:bg-gray-600"
@@ -335,19 +328,34 @@ const Home = () => {
             </div>
           </div>
         )}
+
         {weather && !weather.error && (
           <div className="mb-6 rounded-lg bg-white p-6 shadow">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">Weather Conditions for {formatDateForDisplay(selectedDate)}</h3>
-            <div className={`mb-4 rounded-lg p-4 ${
-              weather.is_raining ? "bg-blue-100 border-l-4 border-blue-400" : "bg-green-100 border-l-4 border-green-400"
-            }`}>
+            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+              Weather Conditions for {formatDateForDisplay(selectedDate)}
+            </h3>
+            <div
+              className={`mb-4 rounded-lg p-4 ${
+                weather.is_raining
+                  ? 'bg-blue-100 border-l-4 border-blue-400'
+                  : 'bg-green-100 border-l-4 border-green-400'
+              }`}
+            >
               <div className="flex items-center">
-                <span className={`text-2xl mr-3 ${weather.is_raining ? "text-blue-600" : "text-green-600"}`}>
-                  {weather.is_raining ? "🌧️" : "☀️"}
+                <span
+                  className={`text-2xl mr-3 ${
+                    weather.is_raining ? 'text-blue-600' : 'text-green-600'
+                  }`}
+                >
+                  {weather.is_raining ? '🌧️' : '☀️'}
                 </span>
                 <div>
-                  <p className={`font-semibold ${weather.is_raining ? "text-blue-800" : "text-green-800"}`}>
-                    {weather.is_raining ? "It's raining" : "Clear weather"}
+                  <p
+                    className={`font-semibold ${
+                      weather.is_raining ? 'text-blue-800' : 'text-green-800'
+                    }`}
+                  >
+                    {weather.is_raining ? "It's raining" : 'Clear weather'}
                   </p>
                 </div>
               </div>
@@ -355,7 +363,7 @@ const Home = () => {
           </div>
         )}
 
-        {conversationLoading && (
+        {conversationsLoading && (
           <div className="mb-6 rounded-lg bg-white p-4 shadow">
             <div className="flex items-center space-x-2">
               <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
@@ -364,41 +372,40 @@ const Home = () => {
           </div>
         )}
 
-        {agentConversation.length > 0 && (
+        {agentConversations.length > 0 && (
           <div className="mb-6 rounded-lg bg-white p-6 shadow">
             <h3 className="mb-4 flex items-center text-lg font-semibold text-gray-800">
-              Agent Conversation Log
+              Agent Conversations Log
             </h3>
-            <div className="max-h-96 space-y-3 overflow-y-auto">
-              {agentConversation.map((message, index) => (
-                <div
-                  key={index}
-                  className={`rounded-lg p-3 ${
-                    message.type === 'user'
-                      ? 'border-l-4 border-blue-400 bg-blue-50'
-                      : message.type === 'assistant'
-                        ? 'border-l-4 border-green-400 bg-green-50'
-                        : 'border-l-4 border-gray-400 bg-gray-50'
-                  }`}
-                >
-                  <div className="mb-1 flex items-center space-x-2">
-                    <span className="text-sm font-medium">
-                      {message.agent || message.type || 'Agent'}
-                    </span>
-                    {message.timestamp && (
-                      <span className="text-xs text-gray-400">
-                        {new Date(message.timestamp).toLocaleTimeString()}
-                      </span>
-                    )}
+            <div className="max-h-96 space-y-6 overflow-y-auto">
+              {agentConversations.map((conversation, convIdx) => (
+                <div key={convIdx} className="rounded border border-gray-200 bg-gray-50 p-3">
+                  <div className="mb-2 text-sm font-semibold text-gray-700">
+                    Conversation {convIdx + 1}
                   </div>
-                  <p className="text-sm leading-relaxed text-gray-700">
-                    {message.content || message.message}
-                  </p>
+                  <div className="space-y-2">
+                    {conversation.map((msg, msgIdx) => {
+                      const [speaker, ...rest] = msg.split(':');
+                      const message = rest.join(':').trim();
+                      return (
+                        <div
+                          key={msgIdx}
+                          className="grid grid-cols-[110px_1fr] gap-x-2 items-start"
+                        >
+                          <span className="font-medium text-gray-600 col-span-1 min-w-[90px] text-right pr-2">
+                            {speaker}:
+                          </span>
+                          <span className="text-gray-800 col-span-1">{message}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
+
         {sales.length > 0 && (
           <div className="mb-6 rounded-lg bg-white p-6 shadow">
             <h3 className="mb-4 flex items-center text-xl font-semibold text-gray-800">

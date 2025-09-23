@@ -2,13 +2,13 @@ from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from main.chatgpt.chat import answer
-from main.chatgpt.main import run_full_day_simulation
+from main.chatgpt.main import run_multiple_conversations
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
-from main.chatgpt.http_requests.req_weather import fetch_weather
+from main.chatgpt.requests.req_weather import fetch_weather
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
@@ -101,6 +101,16 @@ def check_auth():
     else:
         return jsonify({"authenticated": False, "user": None})
 
+'''
+return a user-friendly name for an item_id
+'''
+def item_name(item_id):
+    names = {
+        "strawberries_small": "Small box of strawberries",
+        "strawberries_medium": "Medium box of strawberries"
+    }
+    return names.get(item_id, item_id)
+
 @app.get("/api/sales")
 @login_required
 def get_sales():
@@ -119,16 +129,11 @@ def get_sales():
     )
     result = db.session.execute(sql, {"start": day_start, "end": day_end})
 
-    item_names = {
-        "strawberries_small": "Small box of strawberries",
-        "strawberries_medium": "Medium box of strawberries"
-    }
-
     sales = [
         {
             "transaction_id": row["transaction_id"],
             "item_id": row["item_id"],
-            "item_name": item_names.get(row["item_id"], row["item_id"]),
+            "item_name": item_name(row["item_id"]),
             "quantity": row["quantity"],
             "amount": float(row["amount"]),
             "timestamp": row["timestamp"].isoformat()
@@ -157,21 +162,13 @@ def simulate_sales():
         simulation_date = datetime.strptime(date_str, "%Y-%m-%d")
         print(f"Starting full day sales simulation for {date_str}...")
 
-        conversation_log, simulated_sales = run_full_day_simulation(
-            simulation_date=simulation_date,
-            lat=float(lat),
-            lon=float(lon),
-        )
+        weather = fetch_weather(lat, lon, date_str)
+        is_raining = weather.get("is_raining", False)
 
-        print(f"Simulation completed. Generated {len(simulated_sales)} transactions")
-
-        return jsonify({
-            "sales": simulated_sales,
-            "conversation": conversation_log,
-            "simulation_date": date_str,
-            "total_sales": len(simulated_sales),
-            "message": f"Successfully simulated full day: {len(simulated_sales)} sales transactions"
-        })
+        result = run_multiple_conversations(10, is_raining=is_raining)
+        for i in result["sales"]:
+            i["item_name"] = item_name(i.get("item_id"))
+        return jsonify(result)
 
     except ValueError as e:
         return jsonify({"error": f"Invalid date format: {str(e)}"}), 400
@@ -189,7 +186,6 @@ def get_weather():
 
     if lat is None or lon is None:
         return jsonify({"error": "lat and lon required"}), 400
-
 
     weather = fetch_weather(lat, lon, date)
     return jsonify(weather)

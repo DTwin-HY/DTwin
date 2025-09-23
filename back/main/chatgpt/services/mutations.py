@@ -1,11 +1,14 @@
 from ..state import GeneralState
-from ..http_requests.req_weather import fetch_weather
+from ..requests.req_weather import fetch_weather
 from datetime import datetime, timedelta
 from sqlalchemy import text
 from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 
 def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
+    """
+    update state with the given sale and log it to the database
+    """
     item_id = sale["item_id"]
     qty = sale["quantity"]
     price = state["inventory"][item_id]["price"]
@@ -30,9 +33,14 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
                                 "timestamp": sale["timestamp"]})
         db.session.commit()
 
-# lat=36.0649, lon=120.3804 Qindao location
-# lat=60.2094, lon=24.9642 Kumpula location
 def set_raining(state: GeneralState = None, lat=None, lon=None):
+    """
+    set state["is_raining"] based on weather at given coordinates
+    default coords are for Kumpula, Helsinki
+
+    lat=36.0649, lon=120.3804 Qindao location
+    lat=60.2094, lon=24.9642 Kumpula location
+    """
     if state and "lat" in state:
         lat = lat or state["lat"]
         lon = lon or state["lon"]
@@ -47,9 +55,13 @@ def set_raining(state: GeneralState = None, lat=None, lon=None):
         if state["simulation_date"].date() <= max_forecast_date:
             date = state["simulation_date"].strftime("%Y-%m-%d")
 
-    weather = fetch_weather(lat, lon, date=date)
+    if date is None:
+        is_raining = False
+    else:
+        weather = fetch_weather(lat, lon, date=date)
+        is_raining = bool(weather.get("is_raining"))
 
     if state:
-        state["is_raining"] = bool(weather.get("is_raining"))
+        state["is_raining"] = is_raining
 
-    return bool(weather.get("is_raining"))
+    return is_raining
