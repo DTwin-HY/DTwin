@@ -17,7 +17,7 @@ def signup():
     password = data["password"]
 
     if User.query.filter_by(username=username).first():
-        return jsonify({"error": "Username already taken"})
+        return jsonify({"error": "Username already taken"}), 409
 
     hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
     new_user = User(username=username, password=hashed_password)
@@ -41,9 +41,9 @@ def signin():
 
     user = User.query.filter_by(username=username).first()
     if not user:
-        return jsonify({"error": "Invalid username or password"})
+        return jsonify({"error": "Invalid username or password"}), 401
     if not bcrypt.check_password_hash(user.password, password):
-        return jsonify({"error": "Invalid username or password"})
+        return jsonify({"error": "Invalid username or password"}), 401
 
     login_user(user, remember=True)
     return jsonify({"message": "Login successful! Welcome", "user": {"username": user.username}})

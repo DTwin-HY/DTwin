@@ -1,6 +1,8 @@
 import pkgutil
 import importlib
-
+"""
+This package imports all route modules in the current directory.
+"""
 __all__ = []
 
 for loader, module_name, is_pkg in pkgutil.iter_modules(__path__):
