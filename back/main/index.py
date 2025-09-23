@@ -109,7 +109,7 @@ def get_sales():
         day = datetime.strptime(date_str, "%Y-%m-%d")
     else:
         day = datetime.now()
-    
+
     day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
     day_end = day_start + timedelta(days=1)
 
@@ -142,20 +142,29 @@ def get_sales():
 def simulate_sales():
     if not request.is_json:
         abort(400, description="Body must be JSON")
-    
+
     data = request.get_json()
     date_str = data.get("date")
-    
+    lat = data.get("lat")
+    lon = data.get("lon")
+
     if not date_str:
         return jsonify({"error": "Date is required"}), 400
-    
-    try:       
+    if lat is None or lon is None:
+        return jsonify({"error", "Latitude and longitude are required"}), 400
+
+    try:
+        simulation_date = datetime.strptime(date_str, "%Y-%m-%d")
         print(f"Starting full day sales simulation for {date_str}...")
-        
-        conversation_log, simulated_sales = run_full_day_simulation()
-                
+
+        conversation_log, simulated_sales = run_full_day_simulation(
+            simulation_date=simulation_date,
+            lat=float(lat),
+            lon=float(lon),
+        )
+
         print(f"Simulation completed. Generated {len(simulated_sales)} transactions")
-        
+
         return jsonify({
             "sales": simulated_sales,
             "conversation": conversation_log,
@@ -163,7 +172,7 @@ def simulate_sales():
             "total_sales": len(simulated_sales),
             "message": f"Successfully simulated full day: {len(simulated_sales)} sales transactions"
         })
-        
+
     except ValueError as e:
         return jsonify({"error": f"Invalid date format: {str(e)}"}), 400
     except Exception as e:
@@ -173,8 +182,17 @@ def simulate_sales():
 @app.post("/api/weather")
 @login_required
 def get_weather():
-    location = request.json
-    return fetch_weather(location)
+    data = request.json
+    lat = data.get("lat")
+    lon = data.get("lon")
+    date = data.get("date")
+
+    if lat is None or lon is None:
+        return jsonify({"error": "lat and lon required"}), 400
+
+
+    weather = fetch_weather(lat, lon, date)
+    return jsonify(weather)
 
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)

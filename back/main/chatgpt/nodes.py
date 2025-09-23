@@ -47,7 +47,7 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
     return conversation_state
 
 def customer_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
-    is_raining = set_raining(general_state)
+    is_raining = general_state.get("is_raining", False)
 
     if is_raining and random.random()>0.3:
         rain_context = "\n\nIt's raining. You've decided not to buy berries because of weather."
