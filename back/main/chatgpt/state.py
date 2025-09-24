@@ -5,13 +5,13 @@ from langgraph.graph.message import add_messages
 
 class GeneralState(TypedDict):
     """
-    general state shared across all conversations
+    general state
     """
 
     conversations: List
     cash_register: float
-    inventory: Dict[str, Dict[str, Any]]
-    completed_transactions: List[Dict[str, Any]]
+    inventory: Dict[int, InventoryItem]
+    logs: List[LogEntry]
     is_raining: bool
     lat: float
     lon: float
