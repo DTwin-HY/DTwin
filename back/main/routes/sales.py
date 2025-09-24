@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from main.utils.item_name import item_name
 from main.chatgpt.main import run_multiple_conversations
 from main.models import Sale
-from main.chatgpt.requests.req_weather import fetch_weather
+from main.chatgpt.http_requests.req_weather import fetch_weather
 
 @app.get("/api/sales")
 @login_required

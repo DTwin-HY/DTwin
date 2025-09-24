@@ -17,7 +17,7 @@ sqlalchemy = "^2.0.43"
 flask-sqlalchemy = "^3.1.1"
 psycopg2 = "^2.9.10"
 langgraph = "^0.6.6"
-langchain = "^0.3.27"
+langchain = {extras = ["openai"], version = "^0.3.27"}
 langchain-openai = "^0.3.32"
 grandalf = "^0.8"
 pytest = "^8.4.2"
@@ -25,6 +25,8 @@ flask-login = "^0.6.3"
 flask-bcrypt = "^1.0.1"
 psycopg2-binary = "^2.9.10"
 gunicorn = "^23.0.0"
+langgraph-supervisor = "^0.0.29"
+langchain-tavily = "^0.2.11"
 
 [tool.poetry.scripts]
 back = "main.index:start"

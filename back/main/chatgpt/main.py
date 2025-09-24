@@ -6,7 +6,7 @@ from .state import ConversationState, init_conversation_state, init_general_stat
 from .nodes import seller_node, customer_node
 from .services.mutations import set_raining
 from .summary import print_summary, general_state_to_jsonable
-from main.chatgpt.requests.req_weather import fetch_weather
+from main.chatgpt.http_requests.req_weather import fetch_weather
 from datetime import datetime
 
 def run_conversation(general_state, conversation_id, simulation_date):
