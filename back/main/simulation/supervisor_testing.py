@@ -4,12 +4,13 @@ from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import convert_to_messages
 from langgraph_supervisor import create_supervisor
 from langchain.chat_models import init_chat_model
-from typing import Annotated
+from typing_extensions import Annotated
 from langchain_core.tools import tool, InjectedToolCallId
 from langgraph.prebuilt import InjectedState
 from langgraph.graph import StateGraph, START, MessagesState, END
 from langgraph.types import Command
 from langgraph.types import Send
+from seller_testing import seller_agent
 
 
 from dotenv import load_dotenv
@@ -118,9 +119,9 @@ def create_handoff_tool(*, agent_name: str, description: str | None = None):
             "tool_call_id": tool_call_id,
         }
         return Command(
-            goto=agent_name,  
-            update={**state, "messages": state["messages"] + [tool_message]},  
-            graph=Command.PARENT,  
+            goto=agent_name,
+            update={**state, "messages": state["messages"] + [tool_message]},
+            graph=Command.PARENT,
         )
 
     return handoff_tool
@@ -137,13 +138,19 @@ assign_to_math_agent = create_handoff_tool(
     description="Assign task to a math agent.",
 )
 
+assign_to_seller_agent = create_handoff_tool(
+    agent_name="seller_agent",
+    description="Assign task to a seller agent"
+)
+
 supervisor_agent = create_react_agent(
     model="openai:gpt-4.1",
-    tools=[assign_to_research_agent, assign_to_math_agent],
+    tools=[assign_to_research_agent, assign_to_math_agent, assign_to_seller_agent],
     prompt=(
-        "You are a supervisor managing two agents:\n"
+        "You are a supervisor managing three agents:\n"
         "- a research agent. Assign research-related tasks to this agent\n"
         "- a math agent. Assign math-related tasks to this agent\n"
+        "- a seller agent. Assign if asked to do a simulation task to this agent\n"
         "Assign work to one agent at a time, do not call agents in parallel.\n"
         "Do not do any work yourself."
     ),
@@ -154,13 +161,15 @@ supervisor_agent = create_react_agent(
 supervisor = (
     StateGraph(MessagesState)
     # NOTE: `destinations` is only needed for visualization and doesn't affect runtime behavior
-    .add_node(supervisor_agent, destinations=("research_agent", "math_agent", END))
+    .add_node(supervisor_agent, destinations=("research_agent", "math_agent", "seller_agent", END))
     .add_node(research_agent)
     .add_node(math_agent)
+    .add_node(seller_agent)
     .add_edge(START, "supervisor")
     # always return back to the supervisor
     .add_edge("research_agent", "supervisor")
     .add_edge("math_agent", "supervisor")
+    .add_edge("seller_agent", "supervisor")
     .compile()
 )
 
@@ -200,16 +209,23 @@ assign_to_math_agent_with_description = create_task_description_handoff_tool(
     description="Assign task to a math agent.",
 )
 
+assign_to_seller_agent_with_description = create_task_description_handoff_tool(
+    agent_name="seller_agent",
+    description="Assign task to a seller_agent.",
+)
+
 supervisor_agent_with_description = create_react_agent(
     model="openai:gpt-4.1",
     tools=[
         assign_to_research_agent_with_description,
         assign_to_math_agent_with_description,
+        assign_to_seller_agent_with_description,
     ],
     prompt=(
-        "You are a supervisor managing two agents:\n"
+        "You are a supervisor managing three agents:\n"
         "- a research agent. Assign research-related tasks to this assistant\n"
         "- a math agent. Assign math-related tasks to this assistant\n"
+        "- a seller agent. Assign if asked to do a simulation task to this assistant\n"
         "Assign work to one agent at a time, do not call agents in parallel.\n"
         "Do not do any work yourself."
     ),
@@ -219,13 +235,15 @@ supervisor_agent_with_description = create_react_agent(
 supervisor_with_description = (
     StateGraph(MessagesState)
     .add_node(
-        supervisor_agent_with_description, destinations=("research_agent", "math_agent")
+        supervisor_agent_with_description, destinations=("research_agent", "math_agent", "seller_agent")
     )
     .add_node(research_agent)
     .add_node(math_agent)
+    .add_node(seller_agent)
     .add_edge(START, "supervisor")
     .add_edge("research_agent", "supervisor")
     .add_edge("math_agent", "supervisor")
+    .add_edge("seller_agent", "supervisor")
     .compile()
 )
 
@@ -234,9 +252,9 @@ for chunk in supervisor_with_description.stream(
         "messages": [
             {
                 "role": "user",
-                "content": "find Finlands and Uusimaas GDP in 2024. what % of Finlands GDP was Uusimaas?",
+                "content": "Make a simulation once",
             }
-        ]
+        ],
     },
     subgraphs=True,
 ):
