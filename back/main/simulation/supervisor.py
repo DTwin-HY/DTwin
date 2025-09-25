@@ -75,7 +75,7 @@ for chunk in supervisor.stream(
         "messages": [
             {
                 "role": "user",
-                "content": "Get the weather for New York City, NY, USA (lat: 40.7128, lon: -74.0060)",
+                "content": "Get the weather for Guangzhou",
             }
         ],
     },
