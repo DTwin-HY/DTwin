@@ -24,6 +24,7 @@ bcrypt = Bcrypt(app)
 
 from .main import routes
 
+<<<<<<< HEAD
 
 def start():
     with app.app_context():
@@ -33,3 +34,12 @@ def start():
 
 if __name__ == "__main__":
     start()
+=======
+def start():
+    with app.app_context():
+        db.create_all()
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
+if __name__ == "__main__":
+    start()
+>>>>>>> 64c1242 (Fix db table creation)
