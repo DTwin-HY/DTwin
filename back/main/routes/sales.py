@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from datetime import datetime, timedelta
 
 from flask import abort, jsonify, request
@@ -11,6 +12,17 @@ from main.utils.item_name import item_name
 
 from ..index import app, db
 
+=======
+from flask import jsonify, request, abort
+from flask_login import login_required
+from sqlalchemy.sql import text
+from datetime import datetime, timedelta
+from ..utils.item_name import item_name
+from ..simulation.simulation import run_multiple_conversations
+from ..models.models import Sale
+from ..http_requests.req_weather import fetch_weather
+from ..index import app, db
+>>>>>>> f31294b (Refactor the backend and removed useless imports)
 
 @app.get("/api/sales")
 @login_required

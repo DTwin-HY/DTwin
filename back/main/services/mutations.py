@@ -1,3 +1,8 @@
+<<<<<<< HEAD:back/main/chatgpt/services/mutations.py
+=======
+from ..simulation.state import GeneralState
+from ..http_requests.req_weather import fetch_weather
+>>>>>>> f31294b (Refactor the backend and removed useless imports):back/main/services/mutations.py
 from datetime import datetime, timedelta
 
 from main.models import db

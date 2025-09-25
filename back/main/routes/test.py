@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 from flask import abort, jsonify, request
 from flask_login import login_required
 from sqlalchemy.sql import text
 
 from main.chatgpt.chat import answer
+=======
+from flask import jsonify, request, abort
+from flask_login import login_required
+from sqlalchemy.sql import text
+from ..simulation.chat import answer
+from back.index import app, db
+>>>>>>> f31294b (Refactor the backend and removed useless imports)
 
 from ..index import app, db
 

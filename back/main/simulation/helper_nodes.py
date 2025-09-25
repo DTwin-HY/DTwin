@@ -1,4 +1,4 @@
-from state import GeneralState, LogEntry
+from .state import GeneralState, LogEntry
 
 def update_inventory(state: GeneralState, product_id: int, change: int) -> GeneralState:
     """

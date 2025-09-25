@@ -1,5 +1,14 @@
 import os
 from typing import Annotated
+<<<<<<< HEAD:back/main/chatgpt/chat.py
+=======
+from typing_extensions import TypedDict
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
+from ..utils.rate_limiter import RateLimiter
+>>>>>>> f31294b (Refactor the backend and removed useless imports):back/main/simulation/chat.py
 
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage

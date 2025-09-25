@@ -1,12 +1,21 @@
 import json
 import random
 import uuid
+<<<<<<< HEAD:back/main/chatgpt/nodes.py
 
+=======
+from sqlalchemy.sql import text
+>>>>>>> f31294b (Refactor the backend and removed useless imports):back/main/simulation/nodes.py
 from langchain_core.messages import HumanMessage
 
 from .llm_utils import call_llm
+<<<<<<< HEAD:back/main/chatgpt/nodes.py
 from .prompts import CUSTOMER_PROMPT, SELLER_PROMPT
 from .services.mutations import apply_sale
+=======
+from .prompts import SELLER_PROMPT, CUSTOMER_PROMPT
+from ..services.mutations import apply_sale
+>>>>>>> f31294b (Refactor the backend and removed useless imports):back/main/simulation/nodes.py
 from .state import ConversationState
 
 

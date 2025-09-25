@@ -1,6 +1,10 @@
 from flask_login import UserMixin
+<<<<<<< HEAD:back/main/models.py
 
 from main.index import db
+=======
+from back.index import db
+>>>>>>> f31294b (Refactor the backend and removed useless imports):back/main/models/models.py
 
 
 class User(UserMixin, db.Model):
