@@ -1,9 +1,13 @@
+<<<<<<< HEAD
 <<<<<<< HEAD:back/main/chatgpt/state.py
 from typing import Annotated, Any, Dict, List, TypedDict
 
 =======
 from typing import TypedDict, Annotated, List, Dict
 >>>>>>> f31294b (Refactor the backend and removed useless imports):back/main/simulation/state.py
+=======
+from typing_extensions import TypedDict, Annotated, List, Dict
+>>>>>>> 1220f09 (Add seller agent)
 from langgraph.graph.message import add_messages
 
 
