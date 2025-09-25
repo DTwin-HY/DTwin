@@ -19,7 +19,7 @@ from sqlalchemy.sql import text
 from datetime import datetime, timedelta
 from ..utils.item_name import item_name
 from ..simulation.simulation import run_multiple_conversations
-from ..models.models import Sale
+from ..models.sale import Sale
 from ..http_requests.req_weather import fetch_weather
 from ..index import app, db
 >>>>>>> f31294b (Refactor the backend and removed useless imports)

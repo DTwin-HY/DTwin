@@ -5,11 +5,15 @@ from flask_login import current_user, login_required, login_user, logout_user
 from main.models import User
 =======
 from flask_login import login_user, logout_user, login_required, current_user
+<<<<<<< HEAD
 from ..models.models import User
 >>>>>>> f31294b (Refactor the backend and removed useless imports)
 
 from ..index import app, bcrypt, db, login_manager
 
+=======
+from ..models.user import User
+>>>>>>> 14faae7 (Refactor models.py and change imports in routes)
 
 @login_manager.user_loader
 def load_user(user_id):
