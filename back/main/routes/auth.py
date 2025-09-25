@@ -1,7 +1,7 @@
 from ..index import app, db, bcrypt, login_manager
 from flask import jsonify, request
 from flask_login import login_user, logout_user, login_required, current_user
-from main.models import User
+from ..models.models import User
 
 @login_manager.user_loader
 def load_user(user_id):

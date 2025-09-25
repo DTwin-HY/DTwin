@@ -1,7 +1,7 @@
-from ..index import app
+from back.index import app
 from flask import jsonify, request
 from flask_login import login_required
-from main.chatgpt.http_requests.req_weather import fetch_weather
+from ..http_requests.req_weather import fetch_weather
 
 @app.post("/api/weather")
 @login_required

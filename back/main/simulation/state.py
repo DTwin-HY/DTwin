@@ -1,4 +1,4 @@
-from typing import TypedDict, Annotated, List, Dict, Any
+from typing import TypedDict, Annotated, List, Dict
 from langgraph.graph.message import add_messages
 
 class LogEntry(TypedDict):

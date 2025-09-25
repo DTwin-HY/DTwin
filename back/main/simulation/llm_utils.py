@@ -8,8 +8,6 @@ SELECTED_MODEL = "gpt-5-nano"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 llm = ChatOpenAI(model=SELECTED_MODEL, api_key=OPENAI_API_KEY)
 
-import json
-
 def call_llm(prompt: str, expect_json: bool = False, retries: int = 3):
     """
     for calling the llm with retries and optional json parsing

@@ -1,8 +1,8 @@
-from ..index import app, db
 from flask import jsonify, request, abort
-from flask_login import login_required, current_user
+from flask_login import login_required
 from sqlalchemy.sql import text
-from main.chatgpt.chat import answer
+from ..simulation.chat import answer
+from back.index import app, db
 
 @app.get("/api/ping")
 def ping():

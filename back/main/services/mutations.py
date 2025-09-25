@@ -1,4 +1,4 @@
-from ..state import GeneralState
+from ..simulation.state import GeneralState
 from ..http_requests.req_weather import fetch_weather
 from datetime import datetime, timedelta
 

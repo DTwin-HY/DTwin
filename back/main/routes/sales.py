@@ -1,12 +1,12 @@
-from ..index import app, db
 from flask import jsonify, request, abort
-from flask_login import login_required, current_user
+from flask_login import login_required
 from sqlalchemy.sql import text
 from datetime import datetime, timedelta
-from main.utils.item_name import item_name
-from main.chatgpt.main import run_multiple_conversations
-from main.models import Sale
-from main.chatgpt.http_requests.req_weather import fetch_weather
+from ..utils.item_name import item_name
+from ..simulation.simulation import run_multiple_conversations
+from ..models.models import Sale
+from ..http_requests.req_weather import fetch_weather
+from ..index import app, db
 
 @app.get("/api/sales")
 @login_required

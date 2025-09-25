@@ -1,12 +1,11 @@
 import json
 import random
 import uuid
-from datetime import datetime
 from sqlalchemy.sql import text
 from langchain_core.messages import HumanMessage
 from .llm_utils import call_llm
 from .prompts import SELLER_PROMPT, CUSTOMER_PROMPT
-from .services.mutations import apply_sale, set_raining
+from ..services.mutations import apply_sale
 from .state import ConversationState
 import uuid
 
