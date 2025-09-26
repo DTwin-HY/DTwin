@@ -23,8 +23,7 @@ services:
   
   backend:
     env_file: .env
-    image: jensjvh/dtwin:backend3
-    #build: ./back
+    build: ./back
     restart: unless-stopped
     depends_on:
       db:
@@ -35,8 +34,7 @@ services:
       - dtwin-network
 
   frontend:
-    #build: ./frontend
-    image: jensjvh/dtwin:frontend5
+    build: ./frontend
     restart: unless-stopped
     depends_on:
       backend:
