@@ -1,7 +1,7 @@
 from back.index import db
 from datetime import datetime
 from back.index import db
-from models.models import Counter, Sale, History, Product, Inventory
+from main.models.models import Counter, Sale, History, Product, Inventory
 
 
 def get_inventory_item(item_id: int) -> Inventory | None:

@@ -18,11 +18,15 @@ from flask_login import login_required
 from sqlalchemy.sql import text
 from datetime import datetime, timedelta
 from ..utils.item_name import item_name
-from ..simulation.simulation import run_multiple_conversations
-from ..models.sale import Sale
+#from ..simulation.simulation import run_multiple_conversations
+from main.models.models import Sale
 from ..http_requests.req_weather import fetch_weather
+<<<<<<< HEAD
 from ..index import app, db
 >>>>>>> f31294b (Refactor the backend and removed useless imports)
+=======
+from back.index import app, db
+>>>>>>> 7210642 (Add tests for products and inventory, fix imports in routes and db functions)
 
 @app.get("/api/sales")
 @login_required
