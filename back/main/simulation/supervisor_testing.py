@@ -10,7 +10,7 @@ from langgraph.prebuilt import InjectedState
 from langgraph.graph import StateGraph, START, MessagesState, END
 from langgraph.types import Command
 from langgraph.types import Send
-from seller_testing import seller_agent
+from seller import seller_agent
 
 
 from dotenv import load_dotenv
