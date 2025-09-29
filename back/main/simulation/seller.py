@@ -3,8 +3,10 @@ from typing import Dict, Any
 from langgraph.prebuilt import create_react_agent
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
-from state import GeneralState
+from datetime import datetime, timezone
+from state import GeneralState, LogEntry
 from llm_utils import OPENAI_API_KEY
+from helper_nodes import update_inventory, update_cash_register, add_log
 
 
 MAX_PER_CUSTOMER = 3  # Max items per customer
@@ -37,16 +39,19 @@ def process_sale(state: GeneralState, item_id: int) -> float:
     if item["quantity"] <= 0:
         return 0.0
 
-    item["quantity"] -= 1
+    state = update_inventory(state, item_id, -1)
     price = item["price"]
-    state["cash_register"] += price
+    state = update_cash_register(state, price)
 
 
-    state["logs"].append({
+    log_entry: LogEntry = {
         "product_id": str(item_id),
-        "amount": item["price"],
-        "event": "sale",
-    })
+        "amount": price,
+        "event_type": "sale",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    state = add_log(state, log_entry)
+
     return price
 
 
