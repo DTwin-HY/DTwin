@@ -97,6 +97,10 @@ def add_history_event(product_id: int, event_type: str, amount: int, time: datet
     return history
 
 
+def get_history_for_product(product_id: int) -> list[History]:
+    return History.query.filter_by(product_id=product_id).all()
+
+
 def get_counter() -> Counter:
     """fetch the counter record, creating it if it doesnt exist"""
 

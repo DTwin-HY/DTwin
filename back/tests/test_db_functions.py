@@ -14,6 +14,10 @@ from main.services.db_functions import (
     update_inventory,
     add_sale,
     get_sales_for_day,
+    add_history_event,
+    get_counter,
+    update_counter_balance,
+    get_history_for_product
 )
 
 
@@ -70,6 +74,20 @@ def created_sale(test_app, product_with_inventory):
         )
 
         yield sale
+
+
+@pytest.fixture
+def created_history(test_app, created_product):
+    """Add a history event for the product"""
+    app, _ = test_app
+    with app.app_context():
+        event = add_history_event(
+            product_id=created_product.id,
+            event_type="stock_change",
+            amount=5,
+            time=datetime(2025, 1, 1)
+        )
+        yield event
 
 
 class TestProductFunctions:
@@ -201,3 +219,58 @@ class TestSaleFunctions:
             sales_list = get_sales_for_day(day)
 
             assert len(sales_list) == 0
+
+
+class TestCounterFunctions:
+    def test_get_counter_creates_if_missing(self, test_app):
+        """get_counter should create a new Counter if none exists"""
+        app, _ = test_app
+        with app.app_context():
+            # remove all existing counters
+            db.session.query(Counter).delete()
+            db.session.commit()
+
+            counter = get_counter()
+            assert counter is not None
+            assert counter.balance == 0
+
+
+    def test_update_counter_balance(self, test_app):
+        """update_counter_balance should increase or decrease balance and prevent negative"""
+        app, _ = test_app
+        with app.app_context():
+            counter = get_counter()
+            original_balance = counter.balance
+
+            updated = update_counter_balance(50)
+            assert updated.balance == original_balance + 50
+
+            with pytest.raises(ValueError):
+                update_counter_balance(-1000)
+
+
+class TestHistoryFunctions:
+    def test_add_history_event(self, test_app, created_product):
+        """Adding a history event should save it to db"""
+        app, _ = test_app
+        with app.app_context():
+            event = add_history_event(
+                product_id=created_product.id,
+                event_type="sale",
+                amount=3,
+                time=datetime(2025, 1, 2)
+            )
+            saved_event = db.session.get(History, event.id)
+            assert saved_event is not None
+            assert saved_event.product_id == created_product.id
+            assert saved_event.event_type == "sale"
+            assert saved_event.amount == 3
+
+
+    def test_get_history_for_product(self, test_app, created_history):
+        app, _ = test_app
+        with app.app_context():
+            #search for all history events for a spesific product_id
+            events = get_history_for_product(created_history.product_id)
+            assert len(events) > 0
+            assert events[0].id == created_history.id
