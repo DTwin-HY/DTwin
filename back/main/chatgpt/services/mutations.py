@@ -2,6 +2,8 @@ from ..state import GeneralState
 from ..requests.req_weather import fetch_weather
 from datetime import datetime, timedelta
 
+from main.models import db
+
 def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     """
     update state with the given sale and log it to the database

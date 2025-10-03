@@ -25,6 +25,7 @@ flask-login = "^0.6.3"
 flask-bcrypt = "^1.0.1"
 psycopg2-binary = "^2.9.10"
 gunicorn = "^23.0.0"
+flask-migrate = "^4.1.0"
 
 [tool.poetry.scripts]
 back = "main.index:start"
