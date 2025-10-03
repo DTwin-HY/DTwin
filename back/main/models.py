@@ -1,9 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
-
-db = SQLAlchemy()
-
+from main.index import db
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -25,5 +23,5 @@ class Sale(db.Model):
     transaction_id = db.Column(db.String(36), nullable=False)
     item_id = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.now(), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=True)

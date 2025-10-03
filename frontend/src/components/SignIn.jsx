@@ -37,9 +37,13 @@ const SignIn = () => {
     setSuccessMessage('');
 
     try {
-      await login({ username, password });
-      setSuccessMessage('Logged in successfully!');
-      setForm({ username: '', password: '' });
+      const data = await login({ username, password });
+      if (data.error) {
+        setErrorMessage(data.error);
+      } else {
+        setSuccessMessage('Logged in successfully!');
+        setForm({ username: '', password: '' });
+      }
     } catch (err) {
       const apiErr = err?.response?.data?.error || err.message || 'Unknown error';
       setErrorMessage(apiErr);

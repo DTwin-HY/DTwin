@@ -16,7 +16,7 @@ CREATE TABLE sales (
     transaction_id VARCHAR(36) NOT NULL,
     item_id VARCHAR(100) NOT NULL,
     quantity INTEGER NOT NULL,
-    timestamp TIMESTAMP DEFAULT NOW(),
+    timestamp TIMESTAMP,
     amount NUMERIC(10,2)
 );
 
