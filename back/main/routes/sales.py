@@ -1,12 +1,16 @@
-from ..index import app, db
-from flask import jsonify, request, abort
-from flask_login import login_required, current_user
-from sqlalchemy.sql import text
 from datetime import datetime, timedelta
-from main.utils.item_name import item_name
+
+from flask import abort, jsonify, request
+from flask_login import login_required
+from sqlalchemy.sql import text
+
 from main.chatgpt.main import run_multiple_conversations
-from main.models import Sale
 from main.chatgpt.requests.req_weather import fetch_weather
+from main.models import Sale
+from main.utils.item_name import item_name
+
+from ..index import app, db
+
 
 @app.get("/api/sales")
 @login_required
@@ -30,7 +34,7 @@ def get_sales():
     )
     result = db.session.execute(sql, {"start": day_start, "end": day_end})
 
-    #format the result
+    # format the result
     sales = [
         {
             "transaction_id": row["transaction_id"],
@@ -38,11 +42,12 @@ def get_sales():
             "item_name": item_name(row["item_id"]) or row["item_id"],
             "quantity": row["quantity"],
             "amount": float(row["amount"]),
-            "timestamp": row["timestamp"].isoformat()
+            "timestamp": row["timestamp"].isoformat(),
         }
         for row in result.mappings()
     ]
     return jsonify({"sales": sales})
+
 
 @app.post("/api/simulate-sales")
 @login_required
@@ -68,10 +73,11 @@ def simulate_sales():
         simulation_date = datetime.strptime(date_str, "%Y-%m-%d")
         print(f"Starting full day sales simulation for {simulation_date.date()}...")
 
-
         weather = fetch_weather(lat, lon, date_str)
-        is_raining =weather.get("is_raining", False)
-        result = run_multiple_conversations(10, simulation_date=simulation_date, is_raining=is_raining)
+        is_raining = weather.get("is_raining", False)
+        result = run_multiple_conversations(
+            10, simulation_date=simulation_date, is_raining=is_raining
+        )
 
         simulated_sales = result.get("sales", [])
 
@@ -82,7 +88,7 @@ def simulate_sales():
                 hour=original_time.hour,
                 minute=original_time.minute,
                 second=original_time.second,
-                microsecond=original_time.microsecond
+                microsecond=original_time.microsecond,
             )
 
             new_sale = Sale(
@@ -90,7 +96,7 @@ def simulate_sales():
                 item_id=sale["item_id"],
                 quantity=sale["quantity"],
                 amount=sale["amount"],
-                timestamp=simulated_timestamp
+                timestamp=simulated_timestamp,
             )
             db.session.add(new_sale)
 

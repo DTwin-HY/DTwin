@@ -1,14 +1,15 @@
-import os, json
+import json
+import os
+
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 SELECTED_MODEL = "gpt-5-nano"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 llm = ChatOpenAI(model=SELECTED_MODEL, api_key=OPENAI_API_KEY)
 
-import json
 
 def call_llm(prompt: str, expect_json: bool = False, retries: int = 3):
     """

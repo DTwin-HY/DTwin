@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const data = await checkAuth();
         setUser(data.user || null);
-      } catch (err) {
+      } catch {
         setUser(null);
       } finally {
         setLoading(false);
@@ -63,7 +63,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, createUser, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, logout, createUser, isAuthenticated: !!user }}
+    >
       {children}
     </AuthContext.Provider>
   );

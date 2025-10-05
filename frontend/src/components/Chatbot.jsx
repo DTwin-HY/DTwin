@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { sendMessage } from '../api/chatgpt';
+import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
@@ -11,23 +12,6 @@ const Chatbot = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
-
-  function useAutoClearMessage(message, setMessage, delay = 5000) {
-    const [visible, setVisible] = useState(false);
-
-    useEffect(() => {
-      if (message) {
-        setVisible(true);
-        const timer = setTimeout(() => {
-          setVisible(false);
-          setTimeout(() => setMessage(''), 1000);
-        }, delay);
-        return () => clearTimeout(timer);
-      }
-    }, [message, setMessage, delay]);
-
-    return visible;
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

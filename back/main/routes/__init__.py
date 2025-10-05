@@ -1,5 +1,6 @@
-import pkgutil
 import importlib
+import pkgutil
+
 """
 This package imports all route modules in the current directory.
 """

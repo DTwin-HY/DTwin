@@ -17,6 +17,6 @@ export const simulateSalesForDate = async ({ date, lat, lon }) => {
 
 export const fetchWeather = async (location) => {
   const res = await axios.post('/api/weather', location);
-  console.log("chatgpt.js: ",res.data);
+  console.log('chatgpt.js: ', res.data);
   return res.data;
-}
+};

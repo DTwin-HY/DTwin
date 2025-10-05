@@ -1,14 +1,15 @@
 import os
-from dotenv import load_dotenv
-from loguru import logger
 from typing import Annotated
-from typing_extensions import TypedDict
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
-from main.utils.rate_limiter import RateLimiter
 
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, StateGraph
+from langgraph.graph.message import add_messages
+from loguru import logger
+from typing_extensions import TypedDict
+
+from main.utils.rate_limiter import RateLimiter
 
 """
 A simple chatbot implementation using LangGraph and LangChain with OpenAI's GPT model.
@@ -39,6 +40,7 @@ def answer(prompt: str) -> dict[str, str]:
     except KeyError:
         logger.error("Invalid response")
         return {"message": "Error: Could not generate response"}
+
 
 graph_builder = StateGraph(State)
 graph_builder.add_node("chatbot", chatbot)

@@ -1,8 +1,10 @@
-from ..state import GeneralState
-from ..requests.req_weather import fetch_weather
 from datetime import datetime, timedelta
 
 from main.models import db
+
+from ..requests.req_weather import fetch_weather
+from ..state import GeneralState
+
 
 def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     """
@@ -19,6 +21,7 @@ def apply_sale(state: GeneralState, sale: dict, transaction_id: str):
     sale["amount"] = amount
     sale["transaction_id"] = transaction_id
     state["completed_transactions"].append(sale)
+
 
 def set_raining(state: GeneralState = None, lat=None, lon=None):
     """
