@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from main.models import db
+
 from ..requests.req_weather import fetch_weather
 from ..state import GeneralState
 
