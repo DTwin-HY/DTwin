@@ -22,7 +22,7 @@ def fetch_weather(lat, lon, date=None):
             params["end_date"] = date_str
         else:
             date_str = datetime.now().strftime("%Y-%m-%d")
-
+        
         url = "https://api.open-meteo.com/v1/forecast"
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
@@ -32,7 +32,7 @@ def fetch_weather(lat, lon, date=None):
         weather_code = daily.get("weather_code", [0])[0]
         precipitation = daily.get("precipitation_sum", [0])[0]
         is_raining = precipitation > 0 or weather_code in RAIN_CODES
-
+        print("is it raining from req weather", is_raining)
         return {
             "is_raining": is_raining,
             "weather_code": weather_code,
