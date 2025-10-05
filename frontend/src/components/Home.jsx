@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { fetchSalesByDate, simulateSalesForDate, fetchWeather } from '../api/chatgpt';
+import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 
 const Home = () => {
   const [loading, setLoading] = useState(false);
@@ -18,23 +19,6 @@ const Home = () => {
   const [lon, setLon] = useState('');
   const [conversationsLoading, setConversationsLoading] = useState(false);
 
-  function useAutoClearMessage(message, setMessage, delay = 5000) {
-    const [visible, setVisible] = useState(false);
-
-    useEffect(() => {
-      if (message) {
-        setVisible(true);
-        const timer = setTimeout(() => {
-          setVisible(false);
-          setTimeout(() => setMessage(''), 1000);
-        }, delay);
-        return () => clearTimeout(timer);
-      }
-    }, [message, setMessage, delay]);
-
-    return visible;
-  }
-
   const isFutureDate = (date) => {
     const today = new Date().toISOString().split('T')[0];
     return date > today;
@@ -51,22 +35,22 @@ const Home = () => {
 
   const validateCoordinates = () => {
     if (!lat.trim() || !lon.trim()) {
-      return "Please enter both latitude and longitude.";
+      return 'Please enter both latitude and longitude.';
     }
 
     const latNum = parseFloat(lat);
     const lonNum = parseFloat(lon);
 
     if (isNaN(latNum) || isNaN(lonNum)) {
-      return "Please enter valid numbers for coordinates.";
+      return 'Please enter valid numbers for coordinates.';
     }
 
     if (latNum < -90 || latNum > 90) {
-      return "Latitude must be between -90 and 90.";
+      return 'Latitude must be between -90 and 90.';
     }
 
     if (lonNum < -180 || lonNum > 180) {
-      return "Longitude must be between -180 and 180.";
+      return 'Longitude must be between -180 and 180.';
     }
 
     return null;
@@ -101,7 +85,7 @@ const Home = () => {
 
         if (data.conversations && Array.isArray(data.conversations)) {
           setAgentConversations(data.conversations);
-          console.log(agentConversations)
+          console.log(agentConversations);
         }
       } else {
         data = await fetchSalesByDate({ date: selectedDate });
@@ -132,13 +116,13 @@ const Home = () => {
         setSuccessMessage(
           futureDate
             ? `Sales simulation completed for ${formatDateForDisplay(selectedDate)}!`
-            : `Sales data loaded for ${formatDateForDisplay(selectedDate)}!`
+            : `Sales data loaded for ${formatDateForDisplay(selectedDate)}!`,
         );
       } else {
         setSuccessMessage(
           futureDate
             ? `No sales simulated for ${formatDateForDisplay(selectedDate)}`
-            : `No sales found for ${formatDateForDisplay(selectedDate)}`
+            : `No sales found for ${formatDateForDisplay(selectedDate)}`,
         );
       }
     } catch (err) {
@@ -146,7 +130,7 @@ const Home = () => {
       setErrorMessage(
         futureDate
           ? `Failed to simulate sales for ${formatDateForDisplay(selectedDate)}.`
-          : `Failed to fetch sales for ${formatDateForDisplay(selectedDate)}.`
+          : `Failed to fetch sales for ${formatDateForDisplay(selectedDate)}.`,
       );
     } finally {
       setSalesLoading(false);
@@ -193,10 +177,10 @@ const Home = () => {
         setErrorMessage(data.error);
       } else {
         setWeather(data);
-        setSuccessMessage("Weather data loaded successfully!");
+        setSuccessMessage('Weather data loaded successfully!');
       }
     } catch (e) {
-      setErrorMessage(e?.response?.data?.error || e?.message || "Error fetching weather data");
+      setErrorMessage(e?.response?.data?.error || e?.message || 'Error fetching weather data');
     } finally {
       setLoading(false);
     }
@@ -290,9 +274,7 @@ const Home = () => {
             </div>
 
             <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                Example: Helsinki (60.1708, 24.9375)
-              </div>
+              <div className="text-sm text-gray-600">Example: Helsinki (60.1708, 24.9375)</div>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -300,7 +282,7 @@ const Home = () => {
                   disabled={loading}
                   className="rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white shadow transition-colors hover:bg-blue-600 disabled:bg-gray-400"
                 >
-                  {loading ? "Checking..." : "Check Weather"}
+                  {loading ? 'Checking...' : 'Check Weather'}
                 </button>
               </div>
             </div>
@@ -338,13 +320,13 @@ const Home = () => {
             <div
               className={`mb-4 rounded-lg p-4 ${
                 weather.is_raining
-                  ? 'bg-blue-100 border-l-4 border-blue-400'
-                  : 'bg-green-100 border-l-4 border-green-400'
+                  ? 'border-l-4 border-blue-400 bg-blue-100'
+                  : 'border-l-4 border-green-400 bg-green-100'
               }`}
             >
               <div className="flex items-center">
                 <span
-                  className={`text-2xl mr-3 ${
+                  className={`mr-3 text-2xl ${
                     weather.is_raining ? 'text-blue-600' : 'text-green-600'
                   }`}
                 >
@@ -391,12 +373,12 @@ const Home = () => {
                       return (
                         <div
                           key={msgIdx}
-                          className="grid grid-cols-[110px_1fr] gap-x-2 items-start"
+                          className="grid grid-cols-[110px_1fr] items-start gap-x-2"
                         >
-                          <span className="font-medium text-gray-600 col-span-1 min-w-[90px] text-right pr-2">
+                          <span className="col-span-1 min-w-[90px] pr-2 text-right font-medium text-gray-600">
                             {speaker}:
                           </span>
-                          <span className="text-gray-800 col-span-1">{message}</span>
+                          <span className="col-span-1 text-gray-800">{message}</span>
                         </div>
                       );
                     })}
@@ -473,7 +455,6 @@ const Home = () => {
           <p className="font-medium">Loading answer...</p>
         </div>
       )}
-
 
       {successMessage && !loading && !errorMessage && (
         <div
