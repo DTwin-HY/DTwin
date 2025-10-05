@@ -1,14 +1,14 @@
 import json
 import random
 import uuid
-from datetime import datetime
-from sqlalchemy.sql import text
+
 from langchain_core.messages import HumanMessage
+
 from .llm_utils import call_llm
-from .prompts import SELLER_PROMPT, CUSTOMER_PROMPT
-from .services.mutations import apply_sale, set_raining
+from .prompts import CUSTOMER_PROMPT, SELLER_PROMPT
+from .services.mutations import apply_sale
 from .state import ConversationState
-import uuid
+
 
 def seller_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
     """
@@ -31,8 +31,10 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
         items_text.append(f"{qty} x {name}")
 
     if items_text:
-        total = sum(general_state["inventory"][sale["item_id"]]["price"] *
-                    sale["quantity"] for sale in resp["berries_sold"])
+        total = sum(
+            general_state["inventory"][sale["item_id"]]["price"] * sale["quantity"]
+            for sale in resp["berries_sold"]
+        )
         response_text = f"Sale complete: {', '.join(items_text)}. Total: ${total:.2f}."
     else:
         response_text = resp["response"]
@@ -53,6 +55,7 @@ def seller_node(conversation_state: ConversationState, general_state, id) -> Con
     conversation_state["conversation_turn"] += 1
     return conversation_state
 
+
 def customer_node(conversation_state: ConversationState, general_state, id) -> ConversationState:
     """
     Customer agent node in the conversation graph
@@ -61,9 +64,9 @@ def customer_node(conversation_state: ConversationState, general_state, id) -> C
     """
     is_raining = general_state.get("is_raining", False)
 
-    if is_raining and random.random()>0.3:
+    if is_raining and random.random() > 0.3:
         rain_context = "\n\nIt's raining. You've decided not to buy berries because of weather."
-        prompt = f"{CUSTOMER_PROMPT}{rain_context}\n\nConversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
+        prompt = f"{CUSTOMER_PROMPT}{rain_context}\n\nConversation:{conversation_state['messages']} \n\nIs it raining? {is_raining}"
     else:
         prompt = f"{CUSTOMER_PROMPT}\n\nConversation: {conversation_state['messages']} \n\nIs it raining? {is_raining}"
 

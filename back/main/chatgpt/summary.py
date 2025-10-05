@@ -1,5 +1,7 @@
-from .state import GeneralState
 import datetime
+
+from .state import GeneralState
+
 
 def print_summary(state: GeneralState):
     """
@@ -19,10 +21,12 @@ def print_summary(state: GeneralState):
         print("-" * 20)
     print("\n✅ Sales completed!")
 
+
 def general_state_to_jsonable(state):
     """
     convert GeneralState to a JSON-serializable dict
     """
+
     def serialize_message(msg):
         # Handles HumanMessage or similar objects
         return getattr(msg, "content", str(msg))
@@ -35,14 +39,10 @@ def general_state_to_jsonable(state):
 
     return {
         "conversations": [
-            [serialize_message(msg) for msg in conv]
-            for conv in state.get("conversations", [])
+            [serialize_message(msg) for msg in conv] for conv in state.get("conversations", [])
         ],
         "cash_register": state.get("cash_register"),
         "inventory": state.get("inventory"),
-        "sales": [
-            serialize_transaction(tx)
-            for tx in state.get("completed_transactions", [])
-        ],
-        "is_raining": state.get("is_raining")
+        "sales": [serialize_transaction(tx) for tx in state.get("completed_transactions", [])],
+        "is_raining": state.get("is_raining"),
     }

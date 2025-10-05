@@ -1,13 +1,12 @@
-from langgraph.graph import StateGraph, START, END
 import threading
-import uuid
-from datetime import datetime, timedelta
-from .state import ConversationState, init_conversation_state, init_general_state
-from .nodes import seller_node, customer_node
-from .services.mutations import set_raining
-from .summary import print_summary, general_state_to_jsonable
-from main.chatgpt.requests.req_weather import fetch_weather
 from datetime import datetime
+
+from langgraph.graph import END, START, StateGraph
+
+from .nodes import customer_node, seller_node
+from .state import ConversationState, init_conversation_state, init_general_state
+from .summary import general_state_to_jsonable, print_summary
+
 
 def run_conversation(general_state, conversation_id, simulation_date):
     """
@@ -23,7 +22,11 @@ def run_conversation(general_state, conversation_id, simulation_date):
     graph.add_edge(START, "seller")
     graph.add_conditional_edges(
         "seller",
-        lambda s: END if not s["conversation_active"] or s["conversation_turn"] >= s["max_turns"] else "customer"
+        lambda s: (
+            END
+            if not s["conversation_active"] or s["conversation_turn"] >= s["max_turns"]
+            else "customer"
+        ),
     )
     graph.add_edge("customer", "seller")
 
@@ -31,6 +34,7 @@ def run_conversation(general_state, conversation_id, simulation_date):
     state = init_conversation_state()
     state = app.invoke(state)
     print(f"\nConversation {conversation_id} ended.")
+
 
 def run_multiple_conversations(num_conversations=3, simulation_date=None, is_raining=False):
     """
@@ -45,14 +49,16 @@ def run_multiple_conversations(num_conversations=3, simulation_date=None, is_rai
 
     print(f"\n📊 INITIAL BUSINESS STATE ({simulation_date.date()}):")
     print(f"💰 Cash Register: €{general_state['cash_register']:.2f}")
-    print(f"📦 Inventory:")
+    print("📦 Inventory:")
     for i in general_state["inventory"].values():
         print(f"   - {i['name']}: {i['stock']} in stock at €{i['price']:.2f} each")
-    print(f"\n🎬 STARTING CONVERSATIONS...")
+    print("\n🎬 STARTING CONVERSATIONS...")
 
     threads = []
     for conv_id in range(num_conversations):
-        t = threading.Thread(target=run_conversation, args=(general_state, conv_id, simulation_date))
+        t = threading.Thread(
+            target=run_conversation, args=(general_state, conv_id, simulation_date)
+        )
         threads.append(t)
         t.start()
 
@@ -62,6 +68,7 @@ def run_multiple_conversations(num_conversations=3, simulation_date=None, is_rai
     print_summary(general_state)
     result = general_state_to_jsonable(general_state)
     return result
+
 
 if __name__ == "__main__":
     run_multiple_conversations(3)

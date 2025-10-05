@@ -1,16 +1,21 @@
-from ..index import app, db
-from flask import jsonify, request, abort
-from flask_login import login_required, current_user
+from flask import abort, jsonify, request
+from flask_login import login_required
 from sqlalchemy.sql import text
+
 from main.chatgpt.chat import answer
+
+from ..index import app, db
+
 
 @app.get("/api/ping")
 def ping():
     return jsonify({"ok": True, "message": "pong"})
 
+
 @app.get("/")
 def home():
-    return (jsonify({"ok": True, "message": "welcome to dtwin!"}))
+    return jsonify({"ok": True, "message": "welcome to dtwin!"})
+
 
 @app.post("/api/echo")
 @login_required
@@ -22,7 +27,7 @@ def echo():
     output = answer(data["message"])
 
     sql = text("INSERT INTO logs (prompt, reply) VALUES (:prompt, :reply);")
-    db.session.execute(sql, {"prompt":data["message"], "reply": output["message"]})
+    db.session.execute(sql, {"prompt": data["message"], "reply": output["message"]})
     db.session.commit()
 
     return jsonify(output)

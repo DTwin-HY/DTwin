@@ -1,10 +1,11 @@
+from os import getenv
+
+from dotenv import load_dotenv
 from flask import Flask
+from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_login import LoginManager
-from os import getenv
-from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
@@ -20,8 +21,10 @@ bcrypt = Bcrypt(app)
 
 from . import routes
 
+
 def start():
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 if __name__ == "__main__":
     with app.app_context():

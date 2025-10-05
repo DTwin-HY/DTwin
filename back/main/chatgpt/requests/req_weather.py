@@ -1,7 +1,9 @@
-import requests
 from datetime import datetime
 
-RAIN_CODES = {51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99}
+import requests
+
+RAIN_CODES = {51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99}
+
 
 def fetch_weather(lat, lon, date=None):
     try:
@@ -9,7 +11,7 @@ def fetch_weather(lat, lon, date=None):
             "latitude": lat,
             "longitude": lon,
             "daily": "weather_code,precipitation_sum",
-            "timezone": "auto"
+            "timezone": "auto",
         }
 
         if date:
@@ -35,7 +37,7 @@ def fetch_weather(lat, lon, date=None):
             "precipitation": precipitation,
             "latitude": lat,
             "longitude": lon,
-            "date": date_str
+            "date": date_str,
         }
 
     except Exception as e:
@@ -46,5 +48,5 @@ def fetch_weather(lat, lon, date=None):
             "precipitation": 0,
             "latitude": lat,
             "longitude": lon,
-            "date": date_str
+            "date": date_str,
         }
