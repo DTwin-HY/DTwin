@@ -4,9 +4,9 @@ from langgraph.prebuilt import create_react_agent
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 from datetime import datetime, timezone
-from state import GeneralState, LogEntry
-from llm_utils import OPENAI_API_KEY
-from helper_nodes import update_inventory, update_cash_register, add_log
+from .state import GeneralState, LogEntry
+from .llm_utils import OPENAI_API_KEY
+from .helper_nodes import update_inventory, update_cash_register, add_log
 
 
 MAX_PER_CUSTOMER = 3  # Max items per customer
@@ -89,15 +89,17 @@ def simulate_sales() -> Dict[str, Any]:
     return result
 
 
-seller_agent = create_react_agent(
-    model=ChatOpenAI(model="gpt-5-nano", api_key=OPENAI_API_KEY),
-    tools=[simulate_sales],
-    prompt=(
-        "You are a seller agent responsible for simulating sales at a stand.\n"
-        "INSTRUCTIONS:\n"
-        "- When asked to simulate sales, use the simulate_sales tool once to do a simulation.\n"
-        "- The tool doesn't require any parameters - just call it. \n"
-        "- Return only the results of the simulation to the supervisor."
-    ),
-    name="seller_agent",
-)
+def build_seller_agent():
+    seller_agent = create_react_agent(
+        model=ChatOpenAI(model="gpt-5-nano", api_key=OPENAI_API_KEY),
+        tools=[simulate_sales],
+        prompt=(
+            "You are a seller agent responsible for simulating sales at a stand.\n"
+            "INSTRUCTIONS:\n"
+            "- When asked to simulate sales, use the simulate_sales tool once to do a simulation.\n"
+            "- The tool doesn't require any parameters - just call it. \n"
+            "- Return only the results of the simulation to the supervisor."
+        ),
+        name="seller_agent",
+    )
+    return seller_agent
