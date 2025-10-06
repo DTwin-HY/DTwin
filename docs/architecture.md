@@ -26,3 +26,9 @@ The PostgreSQL Pod is implemented with OKD's (or CSC's Rahti's) default PostgreS
 ## CI/CD pipeline diagram
 
 ![cicd pipeline diagram](./assets/cicd-diagram.png)
+
+The CI/CD pipeline of the project consists of three main steps.
+
+1. Running tests and building and pushing Docker images to an image registry once code is pushed to the `main` branch.
+2. Storing of the Docker images on a registry (by default Docker Hub).
+3. Updating the deployment on OpenShift OKD via image streams and triggers.
