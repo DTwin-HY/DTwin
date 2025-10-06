@@ -1,5 +1,10 @@
 # Software architecture
 
+## Table of Contents
+
+* [Deployment diagram](#deployment-diagram)
+* [CI/CD pipeline diagram](#cicd-pipeline-diagram)
+
 ## Deployment diagram
 
 ![deployment diagram](./assets/deployment-diagram.png)
@@ -17,3 +22,7 @@ The Flask Backend Pod contains all the backend logic of the project, implemented
 
 ### PostgreSQL Pod
 The PostgreSQL Pod is implemented with OKD's (or CSC's Rahti's) default PostgreSQL template with persistent storage.
+
+## CI/CD pipeline diagram
+
+![cicd pipeline diagram](./assets/cicd-diagram.png)

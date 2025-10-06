@@ -6,6 +6,10 @@ A LangGraph digital twin project.
 
 * [Backlog](https://github.com/orgs/DTwin-HY/projects/1)
 
+## Documentation
+
+* [Software architecture](./docs/architecture.md)
+
 ## Setting up the development environment locally
 
 ### Backend
