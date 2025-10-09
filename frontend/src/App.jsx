@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom';
-import Home from './components/Home';
 import SignUp from './components/SignUp';
 import Login from './components/SignIn';
 import PrivateRoute from './components/PrivateRoute';
@@ -12,8 +11,7 @@ const App = () => {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route element={<PrivateRoute />}>
-          <Route index element={<Home />} />
-          <Route path="chatbot" element={<Chatbot />} />
+          <Route index element={<Chatbot />} />
         </Route>
         <Route element={<GuestRoute />}>
           <Route path="/signin" element={<Login />} />
