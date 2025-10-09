@@ -1,7 +1,11 @@
+<<<<<<< HEAD:back/main/routes/auth.py
 <<<<<<< HEAD
 =======
 from back.index import app, db, bcrypt, login_manager
 >>>>>>> 7210642 (Add tests for products and inventory, fix imports in routes and db functions)
+=======
+from ..index import app, db, bcrypt, login_manager
+>>>>>>> 898d943 (Fix imports to work with -m flag, rename main folder to src for clarity):back/src/routes/auth.py
 from flask import jsonify, request
 <<<<<<< HEAD
 from flask_login import current_user, login_required, login_user, logout_user
@@ -9,6 +13,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from main.models import User
 =======
 from flask_login import login_user, logout_user, login_required, current_user
+<<<<<<< HEAD:back/main/routes/auth.py
 <<<<<<< HEAD
 <<<<<<< HEAD
 from ..models.models import User
@@ -22,6 +27,9 @@ from ..models.user import User
 =======
 from main.models.models import User
 >>>>>>> 7210642 (Add tests for products and inventory, fix imports in routes and db functions)
+=======
+from src.models.models import User
+>>>>>>> 898d943 (Fix imports to work with -m flag, rename main folder to src for clarity):back/src/routes/auth.py
 
 @login_manager.user_loader
 def load_user(user_id):

@@ -1,3 +1,4 @@
+<<<<<<< HEAD:back/main/models/models.py
 <<<<<<< HEAD
 from flask_login import UserMixin
 <<<<<<< HEAD:back/main/models.py
@@ -8,6 +9,9 @@ from back.index import db
 >>>>>>> f31294b (Refactor the backend and removed useless imports):back/main/models/models.py
 =======
 from back.index import db
+=======
+from ..index import db
+>>>>>>> 898d943 (Fix imports to work with -m flag, rename main folder to src for clarity):back/src/models/models.py
 from flask_login import UserMixin
 
 class Log(db.Model):

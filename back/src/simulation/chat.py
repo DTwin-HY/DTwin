@@ -7,8 +7,12 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
+<<<<<<< HEAD:back/main/simulation/chat.py
 from ..utils.rate_limiter import RateLimiter
 >>>>>>> f31294b (Refactor the backend and removed useless imports):back/main/simulation/chat.py
+=======
+from src.utils.rate_limiter import RateLimiter
+>>>>>>> 898d943 (Fix imports to work with -m flag, rename main folder to src for clarity):back/src/simulation/chat.py
 
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage

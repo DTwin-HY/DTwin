@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "main"
+name = "src"
 version = "0.1.0"
 description = ""
 authors = ["tiaineno <olli.vj.tiainen@gmail.com>"]
@@ -30,8 +30,7 @@ langgraph-supervisor = "^0.0.29"
 langchain-tavily = "^0.2.11"
 
 [tool.poetry.scripts]
-back = "main.index:start"
-berry_stand = "main.simulation.simulation:run_simulation"
+back = "src.index:start"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.3.8"
