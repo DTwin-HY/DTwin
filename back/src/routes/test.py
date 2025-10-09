@@ -2,7 +2,7 @@ from flask import abort, jsonify, request
 from flask_login import login_required
 from sqlalchemy.sql import text
 
-from main.chatgpt.chat import answer
+from src.simulation.chat import answer
 
 from ..index import app, db
 

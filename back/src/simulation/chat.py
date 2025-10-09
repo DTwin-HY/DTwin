@@ -9,7 +9,7 @@ from langgraph.graph.message import add_messages
 from loguru import logger
 from typing_extensions import TypedDict
 
-from main.utils.rate_limiter import RateLimiter
+from src.utils.rate_limiter import RateLimiter
 
 """
 A simple chatbot implementation using LangGraph and LangChain with OpenAI's GPT model.

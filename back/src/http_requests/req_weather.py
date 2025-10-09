@@ -6,6 +6,10 @@ RAIN_CODES = {51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99}
 
 
 def fetch_weather(lat, lon, date=None):
+    """
+    Fetch daily weather for given lat/lon (optionally a specific date 'YYYY-MM-DD' or datetime).
+    Returns a JSON-serializable dict with is_raining, weathercode, precipitation, coords, date.
+    """
     try:
         params = {
             "latitude": lat,
@@ -30,7 +34,7 @@ def fetch_weather(lat, lon, date=None):
         weather_code = daily.get("weather_code", [0])[0]
         precipitation = daily.get("precipitation_sum", [0])[0]
         is_raining = precipitation > 0 or weather_code in RAIN_CODES
-
+        print("is it raining from req weather", is_raining)
         return {
             "is_raining": is_raining,
             "weather_code": weather_code,

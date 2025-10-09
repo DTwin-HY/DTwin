@@ -18,12 +18,6 @@ const Layout = () => {
         {user && (
           <div className="flex gap-4">
             <button
-              onClick={() => navigate('/chatbot')}
-              className="rounded-lg bg-black px-4 py-2 transition-colors hover:cursor-pointer hover:border hover:bg-white hover:text-black"
-            >
-              Ask AI
-            </button>
-            <button
               onClick={logout}
               className="rounded-lg border px-4 py-2 text-black transition-colors hover:cursor-pointer hover:bg-black hover:text-white"
             >
