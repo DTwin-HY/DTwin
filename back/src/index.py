@@ -18,7 +18,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 bcrypt = Bcrypt(app)
 
-from .main import routes
+from . import routes
 
 def start():
     with app.app_context():

@@ -1,8 +1,8 @@
 from flask import jsonify, request, abort
 from flask_login import login_required
 from sqlalchemy.sql import text
-from ..simulation.chat import answer
-from back.index import app, db
+from src.simulation.chat import answer
+from ..index import app, db
 
 @app.get("/api/ping")
 def ping():
@@ -10,6 +10,7 @@ def ping():
 
 @app.get("/")
 def home():
+    print("lol")
     return (jsonify({"ok": True, "message": "welcome to dtwin!"}))
 
 @app.post("/api/echo")

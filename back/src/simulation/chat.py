@@ -7,7 +7,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
-from ..utils.rate_limiter import RateLimiter
+from src.utils.rate_limiter import RateLimiter
 
 
 """

@@ -1,4 +1,4 @@
-from back.index import db
+from ..index import db
 from flask_login import UserMixin
 
 class Log(db.Model):
