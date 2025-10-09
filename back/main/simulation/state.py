@@ -15,6 +15,7 @@ class GeneralState(TypedDict):
     """
     general state
     """
+<<<<<<< HEAD
 
     conversations: List
     cash_register: float
@@ -62,3 +63,8 @@ def init_conversation_state() -> ConversationState:
     inits the conversation-specific state with empty messages and turn count
     """
     return {"messages": [], "conversation_turn": 0, "conversation_active": True, "max_turns": 10}
+=======
+#TODO: make a state
+
+
+>>>>>>> 6cfe805 (Remove old files and cleanup for project pivot)
