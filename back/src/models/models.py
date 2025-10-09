@@ -3,13 +3,6 @@ from ..index import db
 
 from flask_login import UserMixin
 
-class Log(db.Model):
-    __tablename__ = "logs"
-    id = db.Column(db.Integer, primary_key=True)
-    prompt = db.Column(db.Text, nullable=False)
-    reply = db.Column(db.Text, nullable=False)
-
-
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
