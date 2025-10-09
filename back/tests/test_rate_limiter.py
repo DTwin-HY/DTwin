@@ -1,5 +1,5 @@
 import pytest
-from src.utils.rate_limiter import RateLimiter
+from ..src.utils.rate_limiter import RateLimiter
 
 
 def test_under_limit(monkeypatch):
