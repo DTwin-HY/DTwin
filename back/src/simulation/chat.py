@@ -9,6 +9,7 @@ from langgraph.graph.message import add_messages
 from loguru import logger
 from typing_extensions import TypedDict
 
+# pylint: disable=import-error
 from src.utils.rate_limiter import RateLimiter
 
 """
