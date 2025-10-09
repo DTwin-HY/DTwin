@@ -1,7 +1,9 @@
-import os, json
+import json
+import os
+
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 SELECTED_MODEL = "gpt-5-nano"

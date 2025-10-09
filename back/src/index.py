@@ -1,5 +1,4 @@
 from os import getenv
-
 from dotenv import load_dotenv
 from flask import Flask
 from flask_bcrypt import Bcrypt
@@ -22,6 +21,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 bcrypt = Bcrypt(app)
 
+#pylint: disable=wrong-import-position
 from . import routes
 
 
@@ -30,18 +30,6 @@ def start():
         db.create_all()
     app.run(host="0.0.0.0", port=5000, debug=True)
 
-
-if __name__ == "__main__":
-    start()
-    
-def start():
-    with app.app_context():
-        db.create_all()
-    app.run(host="0.0.0.0", port=5000, debug=True)
-
-if __name__ == "__main__":
-    start()
-    app.run(host="0.0.0.0", port=5000, debug=True)
 
 if __name__ == "__main__":
     start()

@@ -1,7 +1,9 @@
-from flask import jsonify, request, abort
+from flask import abort, jsonify, request
 from flask_login import login_required
 from sqlalchemy.sql import text
+
 from src.simulation.chat import answer
+
 from ..index import app, db
 
 
@@ -12,7 +14,7 @@ def ping():
 
 @app.get("/")
 def home():
-    return (jsonify({"ok": True, "message": "welcome to dtwin!"}))
+    return jsonify({"ok": True, "message": "welcome to dtwin!"})
 
 
 @app.post("/api/echo")
@@ -25,7 +27,7 @@ def echo():
     output = answer(data["message"])
 
     sql = text("INSERT INTO logs (prompt, reply) VALUES (:prompt, :reply);")
-    db.session.execute(sql, {"prompt":data["message"], "reply": output["message"]})
+    db.session.execute(sql, {"prompt": data["message"], "reply": output["message"]})
     db.session.commit()
 
     return jsonify(output)

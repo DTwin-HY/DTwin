@@ -24,7 +24,7 @@ def fetch_weather(lat, lon, date=None):
             params["end_date"] = date_str
         else:
             date_str = datetime.now().strftime("%Y-%m-%d")
-        
+
         url = "https://api.open-meteo.com/v1/forecast"
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
