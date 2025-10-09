@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Running db migrations..."
-flask --app main/index.py db upgrade
+flask --app src/index.py db upgrade
 
 echo "Starting backend server..."
-exec gunicorn --config gunicorn_config.py main.index:app
+exec gunicorn --config gunicorn_config.py src.index:app
