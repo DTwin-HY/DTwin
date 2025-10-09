@@ -6,6 +6,10 @@ A LangGraph digital twin project.
 
 * [Backlog](https://github.com/orgs/DTwin-HY/projects/1)
 
+## Documentation
+
+* [Software architecture](./docs/architecture.md)
+
 ## Setting up the development environment locally
 
 ### Backend
@@ -46,7 +50,6 @@ To start:
 
 The repo contains ```Dockerfiles``` for building Docker images of the backend server and the frontend React app. The Docker Compose file uses an existing Postgres image as database.
 
-TODO: Alembic for DB migrations, move images to Docker Hub, database name stays as 'dtwin'
 
 1. To `.env` add the lines (db has to be called dtwin currently) and change the DB url from the local version
 ```
