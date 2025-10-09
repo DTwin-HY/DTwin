@@ -1,19 +1,14 @@
-import json
-import os
-
+import os, json
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
 
 load_dotenv()
 SELECTED_MODEL = "gpt-5-nano"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 llm = ChatOpenAI(model=SELECTED_MODEL, api_key=OPENAI_API_KEY)
 
-<<<<<<< HEAD:back/main/chatgpt/llm_utils.py
 
-=======
->>>>>>> f31294b (Refactor the backend and removed useless imports):back/main/simulation/llm_utils.py
 def call_llm(prompt: str, expect_json: bool = False, retries: int = 3):
     """
     for calling the llm with retries and optional json parsing
