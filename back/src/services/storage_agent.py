@@ -113,6 +113,12 @@ def restock_product(
     return storage_agent.handle_request(request)
 
 
+@tool
+def list_inventory() -> dict:
+    """List all products and their inventory levels."""
+    request = {"task": "list_inventory"}
+    return storage_agent.handle_request(request)
+
 storage_react_agent = create_react_agent(
     name="storage_agent",
     model="openai:gpt-5-nano",
