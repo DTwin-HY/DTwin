@@ -155,12 +155,18 @@ def remove_product(
 storage_react_agent = create_react_agent(
     name="storage_agent",
     model="openai:gpt-5-nano",
-    tools=[check_inventory, restock_product],
+    tools=[
+        check_inventory,
+        restock_product,
+        list_inventory,
+        low_stock_alert,
+        add_product,
+        remove_product,
+    ],
     prompt=(
-        "You are a storage checker agent.\n\n"
-        "Instructions:\n"
-        "- Your tasks are to either check inventory or to restock products.\n"
-        "- Respond only with the results of your work in json format (e.g. {product_id: amount}), do not include any other text."
+        "You are a warehouse management agent.\n\n"
+        "You can check inventory, restock, add, remove, or list products.\n"
+        "Respond strictly in JSON format for example ({product_id: amount}) with no extra text at all."
     ),
 )
 
