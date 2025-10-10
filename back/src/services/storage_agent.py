@@ -128,6 +128,20 @@ def low_stock_alert(
     request = {"task": "low_stock_alert", "threshold": threshold}
     return storage_agent.handle_request(request)
 
+
+@tool
+def add_product(
+    product_id: Annotated[str, "New product ID"],
+    initial_stock: Annotated[int, "Initial stock amount"],
+) -> dict:
+    """Add a new product to inventory."""
+    request = {
+        "task": "add_product",
+        "product_id": product_id,
+        "initial_stock": initial_stock,
+    }
+    return storage_agent.handle_request(request)
+
 storage_react_agent = create_react_agent(
     name="storage_agent",
     model="openai:gpt-5-nano",
