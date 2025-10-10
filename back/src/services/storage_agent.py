@@ -10,6 +10,7 @@ class StorageAgent:
         self.tool = storage_tool
 
     def handle_request(self, request):
+        """Handle structured requests and route them to the correct tool method."""
         task = request.get("task")
 
         if task == "check_inventory":
@@ -17,6 +18,18 @@ class StorageAgent:
 
         elif task == "restock":
             return self.tool.order_stock(request["product_id"], request["amount"])
+
+        elif task == "list_inventory":
+            return self.tool.list_inventory()
+
+        elif task == "low_stock_alert":
+            return self.tool.low_stock_alert(request["threshold"])
+
+        elif task == "add_product":
+            return self.tool.add_product(request["product_id"], request["initial_stock"])
+
+        elif task == "remove_product":
+            return self.tool.remove_product(request["product_id"])
 
         else:
             return {"status": "error", "message": f"Unknown task: {task}"}
