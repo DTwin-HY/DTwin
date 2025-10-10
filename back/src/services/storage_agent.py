@@ -26,18 +26,48 @@ class HardCodedStorageTool:
     def __init__(self):
         self.inventory = {"A100": 50, "B200": 20, "C300": 0}
 
+
     def query_inventory(self, product_id):
+        """Return the stock level for a given product ID."""
         if product_id in self.inventory:
             return {"status": "ok", "inventory_level": self.inventory[product_id]}
         else:
             return {"status": "error", "message": "Product not found"}
 
+
     def order_stock(self, product_id, amount):
+        """Increase stock of an existing product by the given amount."""
         if product_id in self.inventory:
             self.inventory[product_id] += amount
             return {"status": "ok", "new_inventory_level": self.inventory[product_id]}
         else:
             return {"status": "error", "message": "Product not found"}
+
+
+    def list_inventory(self):
+        """List all products and their inventory levels."""
+        return {"status": "ok", "inventory": self.inventory}
+
+
+    def low_stock_alert(self, threshold):
+        """Return all products with stock below a given threshold."""
+        low = {pid: qty for pid, qty in self.inventory.items() if qty < threshold}
+        return {"status": "ok", "low_stock": low}
+
+    def add_product(self, product_id, initial_stock):
+        """Add a new product to inventory."""
+        if product_id in self.inventory:
+            return {"status": "error", "message": "Product already exists"}
+        self.inventory[product_id] = initial_stock
+        return {"status": "ok", "message": f"Added {product_id} with {initial_stock} units"}
+    
+
+    def remove_product(self, product_id):
+        """Remove a product from inventory."""
+        if product_id not in self.inventory:
+            return {"status": "error", "message": "Product not found"}
+        del self.inventory[product_id]
+        return {"status": "ok", "message": f"Removed {product_id}"}
 
 
 storage_tool = HardCodedStorageTool()
