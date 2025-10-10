@@ -119,6 +119,15 @@ def list_inventory() -> dict:
     request = {"task": "list_inventory"}
     return storage_agent.handle_request(request)
 
+
+@tool
+def low_stock_alert(
+    threshold: Annotated[int, "The minimum stock level to trigger an alert"],
+) -> dict:
+    """List products where stock is below a given threshold."""
+    request = {"task": "low_stock_alert", "threshold": threshold}
+    return storage_agent.handle_request(request)
+
 storage_react_agent = create_react_agent(
     name="storage_agent",
     model="openai:gpt-5-nano",
