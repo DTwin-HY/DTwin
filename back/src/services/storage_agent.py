@@ -142,6 +142,16 @@ def add_product(
     }
     return storage_agent.handle_request(request)
 
+
+@tool
+def remove_product(
+    product_id: Annotated[str, "Product ID to remove"],
+) -> dict:
+    """Remove a product from inventory."""
+    request = {"task": "remove_product", "product_id": product_id}
+    return storage_agent.handle_request(request)
+
+
 storage_react_agent = create_react_agent(
     name="storage_agent",
     model="openai:gpt-5-nano",
