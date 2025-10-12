@@ -1,8 +1,11 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 import os
 from langgraph.prebuilt import create_react_agent
 from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage
+from io import BytesIO
+from PIL import Image
 
 class SalesAgent:
     def __init__(self, sales_tool):
@@ -12,6 +15,13 @@ class SalesAgent:
         task = request.get("task")
         if task == "sales_report":
             return self.tool.generate_sales_report()
+        elif task == "create_graph":
+            month = request.get("month")
+            if not month:
+                raise ValueError("Month parameter is required for creating sales graph.")
+            return self.tool.create_sales_graph(month)
+        else:
+            return f"Unknown task: {task}"
 
 class SalesTool:
     def __init__(self, csv_path: str):
@@ -19,8 +29,10 @@ class SalesTool:
             raise FileNotFoundError(f"Sales data not found at: {csv_path}")
         try:
             self.sales_data = pd.read_csv(csv_path)
+            self.sales_data["date"] = pd.to_datetime(self.sales_data["date"])
+            self.sales_data["month"] = self.sales_data["date"].dt.to_period("M")
         except Exception as e:
-            raise ValueError(f"Failed to read CSV: {e}")   
+            raise ValueError(f"Failed to read CSV: {e}")
 
     def generate_sales_report(self):
         """Return key monthly sales metrics: total revenue, total items sold, best-selling product."""
@@ -43,6 +55,36 @@ class SalesTool:
             })
 
         return report
+
+    def create_sales_graph(self, month: str):
+            """
+            Create a line graph visualizing daily revenue for a specific month.
+            Opens the graph image using the default image viewer.
+            """
+            filtered_data = self.sales_data[self.sales_data['month'].astype(str) == month]
+            if filtered_data.empty:
+                print(f"No sales data for {month}")
+                return
+
+            aggregated_data = filtered_data.groupby("date").agg(total_revenue=("revenue", "sum")).reset_index()
+
+            plt.figure(figsize=(10, 6))
+            plt.plot(aggregated_data['date'], aggregated_data['total_revenue'], marker="o", label="Total Revenue")
+            plt.title(f"Daily Sales Revenue for {month}")
+            plt.xlabel("Date")
+            plt.ylabel("Revenue")
+            plt.xticks(rotation=45)
+            plt.grid(True)
+            plt.legend()
+
+            buffer = BytesIO()
+            plt.savefig(buffer, format="png", bbox_inches="tight")
+            plt.close()
+            buffer.seek(0)
+
+            image = Image.open(buffer)
+            image.show()
+            buffer.close()
 
 csv_path = os.path.join(os.path.dirname(__file__), "../data/mock_month_sales_data.csv")
 
@@ -71,10 +113,12 @@ def generate_sales_report() -> list:
     return sales_agent_instance.handle_request(request)
 
 @tool
-def create_sales_graph():
+def create_sales_graph(month: str) -> str:
     """
+    Returns a line graph that visualizes daily revenue for a specific month.
     """
-    return
+    request = {"task": "create_graph", "month": month}
+    return sales_agent_instance.handle_request(request)
 
 sales_agent = create_react_agent(
     name="sales_agent",
@@ -84,13 +128,14 @@ sales_agent = create_react_agent(
         "You are a sales agent.\n\n"
         "INSTRUCTIONS:\n"
         "- Assist ONLY with sales-related tasks\n"
+        "- When asked to create a graph, use the create_sales_graph tool\n"
         "- After you're done with your tasks, respond to the supervisor directly\n"
         "- Respond ONLY with the results of your work, do NOT include ANY other text."),
 )
 
 if __name__ == "__main__":
     result = sales_agent.invoke(
-        {"messages": [HumanMessage(content="Generate sales report for September")]}
+        {"messages": [HumanMessage(content="Generate sales graph for September")]}
     )
 
     print(result["messages"][-1].content)
