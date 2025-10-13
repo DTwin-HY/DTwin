@@ -5,10 +5,14 @@ from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
 
+
+
 class StorageAgent:
+    """Agent responsible for handling structured warehouse inventory requests."""
     def __init__(self, storage_tool):
         self.tool = storage_tool
 
+    
     def handle_request(self, request):
         """Handle structured requests and route them to the correct tool method."""
         task = request.get("task")
@@ -16,18 +20,24 @@ class StorageAgent:
         if task == "check_inventory":
             return self.tool.query_inventory(request["product_id"])
 
+
         elif task == "list_inventory":
             return self.tool.list_inventory()
 
+
         elif task == "low_stock_alert":
             return self.tool.low_stock_alert(request["threshold"])
+
 
         else:
             return {"status": "error", "message": f"Unknown task: {task}"}
 
 
 
+
+
 class HardCodedStorageTool:
+    """An in-memory mock storage system for product inventory data."""
     def __init__(self):
         self.inventory = {"A100": 50, "B200": 20, "C300": 0}
 
@@ -36,6 +46,7 @@ class HardCodedStorageTool:
         """Return the stock level for a given product ID."""
         if product_id in self.inventory:
             return {"status": "ok", "inventory_level": self.inventory[product_id]}
+            
         else:
             return {"status": "error", "message": "Product not found"}
 
@@ -52,9 +63,10 @@ class HardCodedStorageTool:
     
 
 
-
+# Initialize tool and agent
 storage_tool = HardCodedStorageTool()
 storage_agent = StorageAgent(storage_tool)
+
 
 
 @tool
@@ -101,11 +113,20 @@ storage_react_agent = create_react_agent(
         low_stock_alert,
     ],
     prompt=(
-        "You are a warehouse management agent.\n\n"
-        "You can check inventory, restock, add, remove, or list products.\n"
-        "Respond strictly in JSON format for example ({product_id: amount}) with no extra text at all."
+        "You are a **warehouse inventory management agent**.\n\n"
+        "You can use the following tools to get inventory data:\n"
+        "1. `check_inventory(product_id)` - Get stock level for a product.\n"
+        "2. `list_inventory()` - List all products and quantities.\n"
+        "3. `low_stock_alert(threshold)` - List products below a threshold.\n\n"
+        "**Response rules:**\n"
+        "- Always respond strictly in JSON format.\n"
+        "- No markdown, no natural language text, no explanations.\n"
+        "- Example valid response: `{ \"A100\": 50 }`\n"
+        "- If you cannot find data, respond with `{ \"error\": \"reason here\" }`.\n"
     ),
 )
+
+
 
 
 if __name__ == "__main__":
