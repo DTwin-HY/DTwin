@@ -16,23 +16,15 @@ class StorageAgent:
         if task == "check_inventory":
             return self.tool.query_inventory(request["product_id"])
 
-        elif task == "restock":
-            return self.tool.order_stock(request["product_id"], request["amount"])
-
         elif task == "list_inventory":
             return self.tool.list_inventory()
 
         elif task == "low_stock_alert":
             return self.tool.low_stock_alert(request["threshold"])
 
-        elif task == "add_product":
-            return self.tool.add_product(request["product_id"], request["initial_stock"])
-
-        elif task == "remove_product":
-            return self.tool.remove_product(request["product_id"])
-
         else:
             return {"status": "error", "message": f"Unknown task: {task}"}
+
 
 
 class HardCodedStorageTool:
@@ -48,15 +40,6 @@ class HardCodedStorageTool:
             return {"status": "error", "message": "Product not found"}
 
 
-    def order_stock(self, product_id, amount):
-        """Increase stock of an existing product by the given amount."""
-        if product_id in self.inventory:
-            self.inventory[product_id] += amount
-            return {"status": "ok", "new_inventory_level": self.inventory[product_id]}
-        else:
-            return {"status": "error", "message": "Product not found"}
-
-
     def list_inventory(self):
         """List all products and their inventory levels."""
         return {"status": "ok", "inventory": self.inventory}
@@ -66,21 +49,8 @@ class HardCodedStorageTool:
         """Return all products with stock below a given threshold."""
         low = {pid: qty for pid, qty in self.inventory.items() if qty < threshold}
         return {"status": "ok", "low_stock": low}
-
-    def add_product(self, product_id, initial_stock):
-        """Add a new product to inventory."""
-        if product_id in self.inventory:
-            return {"status": "error", "message": "Product already exists"}
-        self.inventory[product_id] = initial_stock
-        return {"status": "ok", "message": f"Added {product_id} with {initial_stock} units"}
     
 
-    def remove_product(self, product_id):
-        """Remove a product from inventory."""
-        if product_id not in self.inventory:
-            return {"status": "error", "message": "Product not found"}
-        del self.inventory[product_id]
-        return {"status": "ok", "message": f"Removed {product_id}"}
 
 
 storage_tool = HardCodedStorageTool()
@@ -104,16 +74,6 @@ def check_inventory(
 
 
 @tool
-def restock_product(
-    product_id: Annotated[str, "The product ID to restock"],
-    amount: Annotated[int, "The quantity to add to inventory"],
-) -> dict:
-    """Restock a product by adding the specified amount to its inventory."""
-    request = {"task": "restock", "product_id": product_id, "amount": amount}
-    return storage_agent.handle_request(request)
-
-
-@tool
 def list_inventory() -> dict:
     """List all products and their inventory levels."""
     request = {"task": "list_inventory"}
@@ -129,27 +89,7 @@ def low_stock_alert(
     return storage_agent.handle_request(request)
 
 
-@tool
-def add_product(
-    product_id: Annotated[str, "New product ID"],
-    initial_stock: Annotated[int, "Initial stock amount"],
-) -> dict:
-    """Add a new product to inventory."""
-    request = {
-        "task": "add_product",
-        "product_id": product_id,
-        "initial_stock": initial_stock,
-    }
-    return storage_agent.handle_request(request)
 
-
-@tool
-def remove_product(
-    product_id: Annotated[str, "Product ID to remove"],
-) -> dict:
-    """Remove a product from inventory."""
-    request = {"task": "remove_product", "product_id": product_id}
-    return storage_agent.handle_request(request)
 
 
 storage_react_agent = create_react_agent(
@@ -157,11 +97,8 @@ storage_react_agent = create_react_agent(
     model="openai:gpt-5-nano",
     tools=[
         check_inventory,
-        restock_product,
         list_inventory,
         low_stock_alert,
-        add_product,
-        remove_product,
     ],
     prompt=(
         "You are a warehouse management agent.\n\n"
