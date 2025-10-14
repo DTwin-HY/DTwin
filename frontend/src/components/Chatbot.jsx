@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { sendMessage } from '../api/chatgpt';
+import { streamMessage } from '../api/chatgpt'; // HUOM: käytä streamMessage eikä sendMessage
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 
 const Chatbot = () => {
@@ -7,9 +7,9 @@ const Chatbot = () => {
   const [userMessage, setUserMessage] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
-
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
 
@@ -24,16 +24,33 @@ const Chatbot = () => {
     setSuccessMessage('');
     setErrorMessage('');
     setResponse('');
+    setUserMessage(inputValue);
 
     try {
-      const data = await sendMessage(inputValue);
-      setUserMessage(inputValue);
-      setResponse(data.message);
+      await streamMessage(inputValue, (chunk) => {
+        // chunk is now an array of updates
+        if (Array.isArray(chunk)) {
+          // Format each update for display
+          const formatted = chunk.map(update => {
+            let header = '';
+            if (update.subgraph) header += `Subgraph: ${update.subgraph}\n`;
+            header += `Node: ${update.node}\n`;
+            return (
+              header +
+              update.messages.map(msg => msg).join('\n') // msg is already HTML or formatted text
+            );
+          }).join('\n\n');
+          setResponse(prev => prev + formatted);
+        } else if (typeof chunk === 'string') {
+          setResponse(prev => prev + chunk);
+        }
+      });
+
       setSuccessMessage('Prompt and response saved to database!');
       setInputValue('');
     } catch (err) {
       console.error(err);
-      setErrorMessage(`Error in the backend/database${err?.message ? `: ${err.message}` : ''}`);
+      setErrorMessage(`Error in backend/database${err?.message ? `: ${err.message}` : ''}`);
     } finally {
       setLoading(false);
     }
@@ -57,28 +74,28 @@ const Chatbot = () => {
             disabled={loading}
             className="rounded-lg bg-purple-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-purple-600 disabled:bg-gray-400"
           >
-            {loading ? 'Sending...' : 'Send Message'}
+            {loading ? 'Streaming...' : 'Send Message'}
           </button>
         </form>
 
         {userMessage && (
           <div className="mt-6 rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4">
             <p className="mb-1 font-medium text-blue-800">Your message:</p>
-            <p className="text-gray-700">{userMessage}</p>
+            <p className="text-gray-700 whitespace-pre-wrap">{userMessage}</p>
           </div>
         )}
 
         {response && (
           <div className="mt-4 rounded-lg border-l-4 border-green-400 bg-green-50 p-4">
             <p className="mb-1 font-medium text-green-800">AI Response:</p>
-            <p className="text-gray-700">{response}</p>
+            <p className="text-gray-700 whitespace-pre-wrap">{response}</p>
           </div>
         )}
       </div>
 
       {loading && (
         <div className="mt-4 w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
-          <p className="font-medium">Loading answer...</p>
+          <p className="font-medium">Streaming response...</p>
         </div>
       )}
 

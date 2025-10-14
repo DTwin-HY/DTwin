@@ -1,12 +1,15 @@
 import os
+import json
+from dotenv import load_dotenv
 from langgraph_supervisor import create_supervisor
 from langchain.chat_models import init_chat_model
-from langchain_core.messages import HumanMessage
-from loguru import logger
+from sqlalchemy.sql import text
+
+from ..index import db
 from src.services.research_agent import research_agent
 from src.services.math_agent import math_agent
 from src.utils.pretty_print import pretty_print_messages
-from dotenv import load_dotenv
+from src.utils.format import format_chunk
 
 load_dotenv()
 
@@ -28,17 +31,32 @@ supervisor = create_supervisor(
     add_handoff_back_messages=True,
     output_mode="full_history",
 ).compile()
-
-def answer(prompt: str) -> dict[str, str]:
-    try:
-        response = supervisor.invoke({"messages": [HumanMessage(content=prompt)]})
-        response_text = response["messages"][-1].content
-        return {"message": response_text}
-
-    except KeyError:
-        logger.error("Invalid response")
-        return {"message": "Error: Could not generate response"}
     
+def stream_process(prompt):
+    """
+    runs the supervisor with the given prompt and streams the interphases.
+    saves the final prompt and reply to the database.
+    """
+    last_message = None
+    for chunk in supervisor.stream(
+        {"messages": [{"role": "user", "content": prompt}]},
+        subgraphs=True,
+    ):
+        output = format_chunk(chunk)
+
+        # stream the output to the frontend
+        yield f"data: {json.dumps(output)}\n\n"
+        last_message = chunk
+
+    #save to db
+    if last_message and "messages" in last_message:
+        final_reply = last_message["messages"][-1].get("content", "")
+        sql = text("INSERT INTO logs (prompt, reply) VALUES (:prompt, :reply);")
+        db.session.execute(sql, {"prompt": prompt, "reply": final_reply})
+        db.session.commit()
+
+        # notify frontend that the process is done
+        yield f"data: {json.dumps({'done': True, 'reply': final_reply})}\n\n"
 
 if __name__ == "__main__":
     for chunk in supervisor.stream(
