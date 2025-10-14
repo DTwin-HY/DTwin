@@ -1,11 +1,12 @@
 import pytest
+
 from ..src.utils.rate_limiter import RateLimiter
 
 
 def test_under_limit(monkeypatch):
-    '''
+    """
     check if calls under limit are allowed
-    '''
+    """
     limiter = RateLimiter(max_calls=3, interval=10)
 
     fake_time = [1]
@@ -23,9 +24,9 @@ def test_under_limit(monkeypatch):
 
 
 def test_exceed_limit(monkeypatch):
-    '''
+    """
     check if exceeding the limit raises an error
-    '''
+    """
     limiter = RateLimiter(max_calls=2, interval=10)
 
     fake_time = [1]
@@ -43,9 +44,9 @@ def test_exceed_limit(monkeypatch):
 
 
 def test_limit_resets_after_interval(monkeypatch):
-    '''
+    """
     check if limit resets after the interval
-    '''
+    """
     limiter = RateLimiter(max_calls=2, interval=5)
 
     fake_time = [1]
