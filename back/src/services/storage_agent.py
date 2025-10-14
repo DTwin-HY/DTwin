@@ -1,17 +1,19 @@
 from typing import Annotated
 
+from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
+load_dotenv()
 
 
 class StorageAgent:
     """Agent responsible for handling structured warehouse inventory requests."""
+
     def __init__(self, storage_tool):
         self.tool = storage_tool
 
-    
     def handle_request(self, request: dict) -> dict:
         """Route structured requests to the appropriate tool method."""
         task = request.get("task")
@@ -31,9 +33,9 @@ class StorageAgent:
             return {"status": "error", "message": str(e)}
 
 
-
 class HardCodedStorageTool:
     """An in-memory mock storage system for product inventory data."""
+
     def __init__(self):
         self.inventory = {"A100": 50, "B200": 20, "C300": 0}
 
@@ -52,7 +54,7 @@ class HardCodedStorageTool:
         """Return all products with stock below a given threshold."""
         low = {pid: qty for pid, qty in self.inventory.items() if qty < threshold}
         return {"status": "ok", "low_stock": low}
-    
+
 
 # Initialize tool and agent
 storage_tool = HardCodedStorageTool()
@@ -74,11 +76,13 @@ def check_inventory(
     request = {"task": "check_inventory", "product_id": product_id}
     return storage_agent.handle_request(request)
 
+
 @tool
 def list_inventory() -> dict:
     """List all products and their inventory levels."""
     request = {"task": "list_inventory"}
     return storage_agent.handle_request(request)
+
 
 @tool
 def low_stock_alert(
@@ -89,7 +93,6 @@ def low_stock_alert(
     return storage_agent.handle_request(request)
 
 
-
 storage_react_agent = create_react_agent(
     name="storage_agent",
     model="openai:gpt-5-nano",
@@ -98,7 +101,6 @@ storage_react_agent = create_react_agent(
         list_inventory,
         low_stock_alert,
     ],
-
     prompt=(
         "You are a **warehouse inventory management agent**.\n\n"
         "You can use the following tools to get inventory data:\n"
@@ -108,8 +110,8 @@ storage_react_agent = create_react_agent(
         "**Response rules:**\n"
         "- Always respond strictly in JSON format.\n"
         "- No markdown, no natural language text, no explanations.\n"
-        "- Example valid response: `{ \"A100\": 50 }`\n"
-        "- If you cannot find data, respond with `{ \"error\": \"reason here\" }`.\n"
+        '- Example valid response: `{ "A100": 50 }`\n'
+        '- If you cannot find data, respond with `{ "error": "reason here" }`.\n'
     ),
 )
 
