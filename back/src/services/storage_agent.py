@@ -6,33 +6,29 @@ from langgraph.prebuilt import create_react_agent
 
 
 
-
 class StorageAgent:
     """Agent responsible for handling structured warehouse inventory requests."""
     def __init__(self, storage_tool):
         self.tool = storage_tool
 
     
-    def handle_request(self, request):
-        """Handle structured requests and route them to the correct tool method."""
+    def handle_request(self, request: dict) -> dict:
+        """Route structured requests to the appropriate tool method."""
         task = request.get("task")
+        handlers = {
+            "check_inventory": lambda: self.tool.check_inventory(request["product_id"]),
+            "list_inventory": self.tool.list_inventory,
+            "low_stock_alert": lambda: self.tool.low_stock_alert(request["threshold"]),
+        }
 
-        if task == "check_inventory":
-            return self.tool.query_inventory(request["product_id"])
-
-
-        elif task == "list_inventory":
-            return self.tool.list_inventory()
-
-
-        elif task == "low_stock_alert":
-            return self.tool.low_stock_alert(request["threshold"])
-
-
-        else:
+        handler = handlers.get(task)
+        if not handler:
             return {"status": "error", "message": f"Unknown task: {task}"}
 
-
+        try:
+            return handler()
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
 
 
 
@@ -41,32 +37,26 @@ class HardCodedStorageTool:
     def __init__(self):
         self.inventory = {"A100": 50, "B200": 20, "C300": 0}
 
-
-    def query_inventory(self, product_id):
+    def check_inventory(self, product_id: str) -> dict:
         """Return the stock level for a given product ID."""
         if product_id in self.inventory:
             return {"status": "ok", "inventory_level": self.inventory[product_id]}
-            
         else:
             return {"status": "error", "message": "Product not found"}
 
-
-    def list_inventory(self):
+    def list_inventory(self) -> dict:
         """List all products and their inventory levels."""
         return {"status": "ok", "inventory": self.inventory}
 
-
-    def low_stock_alert(self, threshold):
+    def low_stock_alert(self, threshold: int) -> dict:
         """Return all products with stock below a given threshold."""
         low = {pid: qty for pid, qty in self.inventory.items() if qty < threshold}
         return {"status": "ok", "low_stock": low}
     
 
-
 # Initialize tool and agent
 storage_tool = HardCodedStorageTool()
 storage_agent = StorageAgent(storage_tool)
-
 
 
 @tool
@@ -84,13 +74,11 @@ def check_inventory(
     request = {"task": "check_inventory", "product_id": product_id}
     return storage_agent.handle_request(request)
 
-
 @tool
 def list_inventory() -> dict:
     """List all products and their inventory levels."""
     request = {"task": "list_inventory"}
     return storage_agent.handle_request(request)
-
 
 @tool
 def low_stock_alert(
@@ -102,8 +90,6 @@ def low_stock_alert(
 
 
 
-
-
 storage_react_agent = create_react_agent(
     name="storage_agent",
     model="openai:gpt-5-nano",
@@ -112,6 +98,7 @@ storage_react_agent = create_react_agent(
         list_inventory,
         low_stock_alert,
     ],
+
     prompt=(
         "You are a **warehouse inventory management agent**.\n\n"
         "You can use the following tools to get inventory data:\n"
@@ -127,10 +114,8 @@ storage_react_agent = create_react_agent(
 )
 
 
-
-
 if __name__ == "__main__":
     result = storage_react_agent.invoke(
         {"messages": [HumanMessage(content="Check inventory for A100")]}
     )
-    print(result["messages"][-1].content)
+    print("Agent response:", result["messages"][-1].content)
