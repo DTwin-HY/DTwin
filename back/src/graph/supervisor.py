@@ -5,6 +5,7 @@ from langchain_core.messages import HumanMessage
 from loguru import logger
 from src.services.research_agent import research_agent
 from src.services.math_agent import math_agent
+from src.services.storage_agent import storage_react_agent
 from src.utils.pretty_print import pretty_print_messages
 from dotenv import load_dotenv
 
@@ -15,12 +16,13 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 supervisor = create_supervisor(
     model=init_chat_model("openai:gpt-4.1"),
     # TODO vaihda nämä sales ja storage agenteiksi
-    agents=[research_agent, math_agent],
+    agents=[research_agent, math_agent, storage_react_agent],
     # TODO vaihda promptit agenteille sopiviksi
     prompt=(
-        "You are a supervisor managing two agents:\n"
+        "You are a supervisor managing three agents:\n"
         "- a research agent. Assign research-related tasks to this agent\n"
         "- a math agent. Assign math-related tasks to this agent\n"
+        "- a storage agent. Assign storage related tasks to this agent."
         "Assign work to one agent at a time, do not call agents in parallel.\n"
         # "If you find the result DON'T call other agents and return the result immediately\n"
         "Do not do any work yourself."
@@ -46,7 +48,7 @@ if __name__ == "__main__":
             "messages": [
                 {
                     "role": "user",
-                    "content": "find Finlands and Uusimaas GDP in EUROS in 2024. what % of Finlands GDP was Uusimaas?",
+                    "content": "How much products for product id A100 is in the storage?",
                 }
             ]
         },
