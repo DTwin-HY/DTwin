@@ -1,22 +1,18 @@
-from flask import abort, jsonify, request
+from flask import abort, request, Response
 from flask_login import login_required
-from sqlalchemy.sql import text
 
-from src.graph.supervisor import answer
-
-from ..index import app, db
+from ..index import app
+from src.graph.supervisor import stream_process
 
 @app.post("/api/supervisor")
 @login_required
-def echo():
+def supervisor_route():
     if not request.is_json:
         abort(400, description="Body must be JSON")
+
     data = request.get_json()
-    print(data)
-    output = answer(data["message"])
+    prompt = data.get("message", "").strip()
+    if not prompt:
+        abort(400, description="Missing 'message'")
 
-    sql = text("INSERT INTO logs (prompt, reply) VALUES (:prompt, :reply);")
-    db.session.execute(sql, {"prompt": data["message"], "reply": output["message"]})
-    db.session.commit()
-
-    return jsonify(output)
+    return Response(stream_process(prompt), mimetype="text/event-stream")
