@@ -31,18 +31,59 @@ const Chatbot = () => {
         // chunk is now an array of updates
         if (Array.isArray(chunk)) {
           // Format each update for display
-          const formatted = chunk.map(update => {
-            let header = '';
-            if (update.subgraph) header += `Subgraph: ${update.subgraph}\n`;
-            header += `Node: ${update.node}\n`;
-            return (
-              header +
-              update.messages.map(msg => msg).join('\n') // msg is already HTML or formatted text
-            );
-          }).join('\n\n');
-          setResponse(prev => prev + formatted);
+          const formatted = chunk
+            .map((update) => {
+              let output = '';
+
+              // Show subgraph and node info
+              if (update.subgraph) {
+                output += `[${update.subgraph}] `;
+              }
+              output += `${update.node}:\n`;
+
+              // Process messages
+              update.messages.forEach((msg) => {
+                // Check if it's an AI message with tool calls
+                if (msg.includes('Tool Calls:')) {
+                  const nameMatch = msg.match(/Name: (\w+)/);
+                  const toolMatch = msg.match(/Tool Calls:\s*(\w+)/);
+
+                  if (nameMatch && toolMatch) {
+                    output += `  → ${nameMatch[1]} calling ${toolMatch[1]}()\n`;
+                  }
+                }
+                // Check if it's a tool response
+                else if (msg.includes('Tool Message')) {
+                  const nameMatch = msg.match(/Name: (\w+)/);
+                  const jsonMatch = msg.match(/\{[\s\S]*\}/);
+
+                  if (nameMatch) {
+                    output += `  ← ${nameMatch[1]} response:\n`;
+                  }
+                  if (jsonMatch) {
+                    output += `  ${jsonMatch[0]}\n`;
+                  }
+                }
+                // Final response
+                else if (msg.includes('Ai Message')) {
+                  const lines = msg.split('\n');
+                  const contentLines = lines.slice(2); // Skip header lines
+                  const content = contentLines.join('\n').trim();
+
+                  if (content && !content.includes('Tool Calls:')) {
+                    output += `  ${content}\n`;
+                  }
+                }
+              });
+
+              return output + '\n';
+            })
+            .filter((s) => s.trim()) // Remove empty strings
+            .join('\n');
+          console.log(formatted);
+          setResponse((prev) => prev + formatted);
         } else if (typeof chunk === 'string') {
-          setResponse(prev => prev + chunk);
+          setResponse((prev) => prev + chunk);
         }
       });
 
@@ -81,14 +122,14 @@ const Chatbot = () => {
         {userMessage && (
           <div className="mt-6 rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4">
             <p className="mb-1 font-medium text-blue-800">Your message:</p>
-            <p className="text-gray-700 whitespace-pre-wrap">{userMessage}</p>
+            <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
           </div>
         )}
 
         {response && (
           <div className="mt-4 rounded-lg border-l-4 border-green-400 bg-green-50 p-4">
             <p className="mb-1 font-medium text-green-800">AI Response:</p>
-            <p className="text-gray-700 whitespace-pre-wrap">{response}</p>
+            <p className="whitespace-pre-wrap text-gray-700">{response}</p>
           </div>
         )}
       </div>
