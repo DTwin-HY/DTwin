@@ -154,20 +154,22 @@ def create_sales_graph(month: str) -> dict:
     request = {"task": "create_graph", "month": month}
     return sales_agent_instance.handle_request(request)
 
-sales_agent = create_react_agent(
-    name="sales_agent",
-    model="openai:gpt-5-nano",
-    tools=[generate_sales_report, create_sales_graph],
-    prompt=(
-        "You are a sales agent.\n\n"
-        "INSTRUCTIONS:\n"
-        "- Assist ONLY with sales-related tasks\n"
-        "- When asked to create a graph, use the create_sales_graph tool\n"
-        "- After you're done with your tasks, respond to the supervisor directly\n"
-        "- Respond ONLY with the results of your work, do NOT include ANY other text."),
-)
+
 
 if __name__ == "__main__":
+    sales_agent = create_react_agent(
+        name="sales_agent",
+        model="openai:gpt-5-nano",
+        tools=[generate_sales_report, create_sales_graph],
+        prompt=(
+            "You are a sales agent.\n\n"
+            "INSTRUCTIONS:\n"
+            "- Assist ONLY with sales-related tasks\n"
+            "- When asked to create a graph, use the create_sales_graph tool\n"
+            "- After you're done with your tasks, respond to the supervisor directly\n"
+            "- Respond ONLY with the results of your work, do NOT include ANY other text."),
+    )
+
     result = sales_agent.invoke(
         {"messages": [HumanMessage(content="Generate sales graph for September")]}
     )
