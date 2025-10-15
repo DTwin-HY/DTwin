@@ -20,6 +20,7 @@ The backend requires a ```.env``` file in the root of the project to work, it sh
 
 ```
 OPENAI_API_KEY= INSERT YOUR API KEY HERE
+TAVILY_API_KEY= INSERT YOUR API KEY HERE
 SECRET_KEY= INSERT A SECRET KEY HERE
 DATABASE_URL=postgresql://YOUR_USERNAME:PASSWORD@localhost:PORTNUMBER/DB_NAME
 ```
