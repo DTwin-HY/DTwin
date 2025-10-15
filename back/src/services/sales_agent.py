@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import base64
 from io import BytesIO
-from PIL import Image
 from langgraph.prebuilt import create_react_agent
 from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage
