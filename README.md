@@ -8,6 +8,7 @@ A LangGraph digital twin project.
 
 ## Documentation
 
+* [API documentation](./docs/api.md)
 * [Software architecture](./docs/architecture.md)
 
 ## Setting up the development environment locally
