@@ -12,7 +12,6 @@ from src.services.storage_agent import storage_react_agent
 from src.services.sales_agent import sales_agent
 from src.utils.pretty_print import pretty_print_messages
 from src.utils.format import format_chunk
-from langchain_core.messages import convert_to_messages
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
