@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { streamMessage } from '../api/chatgpt'; // HUOM: käytä streamMessage eikä sendMessage
+import { streamMessage } from '../api/chatgpt';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 
 const Chatbot = () => {
@@ -28,62 +28,23 @@ const Chatbot = () => {
 
     try {
       await streamMessage(inputValue, (chunk) => {
-        // chunk is now an array of updates
         if (Array.isArray(chunk)) {
-          // Format each update for display
-          const formatted = chunk
-            .map((update) => {
-              let output = '';
+          chunk.forEach((update) => {
+            let text = `[${update.subgraph}] ${update.node}\n`;
 
-              // Show subgraph and node info
-              if (update.subgraph) {
-                output += `[${update.subgraph}] `;
-              }
-              output += `${update.node}:\n`;
-
-              // Process messages
+            if (update.messages && update.messages.length) {
               update.messages.forEach((msg) => {
-                // Check if it's an AI message with tool calls
-                if (msg.includes('Tool Calls:')) {
-                  const nameMatch = msg.match(/Name: (\w+)/);
-                  const toolMatch = msg.match(/Tool Calls:\s*(\w+)/);
+                const content = msg.content || "";
+                const toolCalls = msg.tool_calls || [];
 
-                  if (nameMatch && toolMatch) {
-                    output += `  → ${nameMatch[1]} calling ${toolMatch[1]}()\n`;
-                  }
-                }
-                // Check if it's a tool response
-                else if (msg.includes('Tool Message')) {
-                  const nameMatch = msg.match(/Name: (\w+)/);
-                  const jsonMatch = msg.match(/\{[\s\S]*\}/);
-
-                  if (nameMatch) {
-                    output += `  ← ${nameMatch[1]} response:\n`;
-                  }
-                  if (jsonMatch) {
-                    output += `  ${jsonMatch[0]}\n`;
-                  }
-                }
-                // Final response
-                else if (msg.includes('Ai Message')) {
-                  const lines = msg.split('\n');
-                  const contentLines = lines.slice(2); // Skip header lines
-                  const content = contentLines.join('\n').trim();
-
-                  if (content && !content.includes('Tool Calls:')) {
-                    output += `  ${content}\n`;
-                  }
-                }
+                if (content) text += `  ${content}\n`;
+                if (toolCalls.length)
+                  toolCalls.forEach((t) => (text += `  → ${t.name}()\n`));
               });
+            }
 
-              return output + '\n';
-            })
-            .filter((s) => s.trim()) // Remove empty strings
-            .join('\n');
-          console.log(formatted);
-          setResponse((prev) => prev + formatted);
-        } else if (typeof chunk === 'string') {
-          setResponse((prev) => prev + chunk);
+            setResponse((prev) => prev + text + "\n");
+          });
         }
       });
 
