@@ -14,13 +14,22 @@ def format_chunk(chunk, last_message=False):
         subgraph = ns[-1].split(":")[0]
 
     for node_name, node_update in chunk.items():
-        print("Currently running", subgraph, node_name)
         messages = convert_to_messages(node_update["messages"])
         if last_message:
             messages = messages[-1:]
+
+        # Determine the tool type  
+        if node_name == "tools":
+            kind = "tools"
+        elif node_name == "agent":
+            kind = "agent"
+        else:
+            kind = "other"
+
         result.append({
             "subgraph": subgraph,
             "node": node_name,
+            "kind": kind,
             "messages": [extract(m) for m in messages]
         })
     return result
@@ -36,3 +45,4 @@ def extract(message):
         "content": content,
         "tool_calls": tool_calls
     }
+
