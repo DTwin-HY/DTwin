@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { streamMessage } from '../api/chatgpt';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
+import MessageCard from './MessageCard';
+import { headerLine } from '../utils/streamFormat';
 
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
   const [userMessage, setUserMessage] = useState('');
-  const [response, setResponse] = useState('');
+  const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -23,28 +25,28 @@ const Chatbot = () => {
     setLoading(true);
     setSuccessMessage('');
     setErrorMessage('');
-    setResponse('');
+    setResponses([]);
     setUserMessage(inputValue);
 
     try {
       await streamMessage(inputValue, (chunk) => {
         if (Array.isArray(chunk)) {
-          chunk.forEach((update) => {
-            let text = `[${update.subgraph}] ${update.node}\n`;
+          // Process the chunk and extract relevant information
+        const cards = chunk.map((update) => {
+          const title = headerLine(update);
+          let body = "";
+          if (update.messages && update.messages.length) {
+            update.messages.forEach((msg) => {
+              const content = msg.content || "";
+              if (content) body += `${content}\n`;
+              (msg.tool_calls || []).forEach(t => (body += `→ ${t.name}()\n`));
+            });
+          }
 
-            if (update.messages && update.messages.length) {
-              update.messages.forEach((msg) => {
-                const content = msg.content || "";
-                const toolCalls = msg.tool_calls || [];
+          return { title, body: body.trim() };
+        });
 
-                if (content) text += `  ${content}\n`;
-                if (toolCalls.length)
-                  toolCalls.forEach((t) => (text += `  → ${t.name}()\n`));
-              });
-            }
-
-            setResponse((prev) => prev + text + "\n");
-          });
+          setResponses((prev) => [...prev, ...cards]);
         }
       });
 
@@ -61,7 +63,7 @@ const Chatbot = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-gray-100 p-4 pt-8">
       <div className="mt-4 w-[700px] rounded-xl bg-white p-6 shadow-md">
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">Chat with AI Assistant</h3>
+        <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the Supervisor</h3>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <textarea
@@ -81,16 +83,17 @@ const Chatbot = () => {
         </form>
 
         {userMessage && (
-          <div className="mt-6 rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4">
-            <p className="mb-1 font-medium text-blue-800">Your message:</p>
+          <div className="mt-6 rounded-lg border-l-4 border-teal-400 bg-teal-50 p-4">
+            <p className="mb-1 text-black-800">Your message:</p>
             <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
           </div>
         )}
-
-        {response && (
-          <div className="mt-4 rounded-lg border-l-4 border-green-400 bg-green-50 p-4">
-            <p className="mb-1 font-medium text-green-800">AI Response:</p>
-            <p className="whitespace-pre-wrap text-gray-700">{response}</p>
+        {/* Render message cards for each response */}
+        {responses.length > 0 && (
+          <div>
+            {responses.map((r, i) => (
+              <MessageCard key={i} title={r.title} content={r.body} />
+            ))}
           </div>
         )}
       </div>
