@@ -43,3 +43,4 @@ jobs:
           files: ./back/coverage.xml
           flags: backend
           fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
