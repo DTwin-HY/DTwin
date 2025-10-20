@@ -1,4 +1,5 @@
 [![codecov](https://codecov.io/gh/DTwin-HY/DTwin/graph/badge.svg)](https://app.codecov.io/github/DTwin-HY/DTwin)
+[![Run backend tests](https://github.com/DTwin-HY/DTwin/actions/workflows/main.yml/badge.svg)](https://github.com/DTwin-HY/DTwin/actions/workflows/main.yml)
 
 # DTwin
 
