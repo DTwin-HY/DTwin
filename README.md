@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/DTwin-HY/DTwin/graph/badge.svg)](https://app.codecov.io/github/DTwin-HY/DTwin)
+
 # DTwin
 
 A LangGraph digital twin project.
