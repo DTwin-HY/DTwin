@@ -8,12 +8,25 @@ const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
   const [userMessage, setUserMessage] = useState('');
   const [responses, setResponses] = useState([]);
+  const [finalMessage, setFinalMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
+
+  const finalizeLastResponse = () => {
+    setResponses((prev) => {
+      if (!prev || prev.length === 0) {
+        setFinalMessage(null);
+        return prev;
+      }
+      const last = prev[prev.length - 1];
+      setFinalMessage(last);
+      return prev.slice(0, -1);
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,6 +39,7 @@ const Chatbot = () => {
     setSuccessMessage('');
     setErrorMessage('');
     setResponses([]);
+    setFinalMessage(null);
     setUserMessage(inputValue);
 
     try {
@@ -57,6 +71,7 @@ const Chatbot = () => {
       setErrorMessage(`Error in backend/database${err?.message ? `: ${err.message}` : ''}`);
     } finally {
       setLoading(false);
+      finalizeLastResponse();
     }
   };
 
@@ -94,6 +109,13 @@ const Chatbot = () => {
             {responses.map((r, i) => (
               <MessageCard key={i} title={r.title} content={r.body} />
             ))}
+          </div>
+        )}
+        {finalMessage && (
+          <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
+            <p>
+              {finalMessage.body}
+            </p>
           </div>
         )}
       </div>
