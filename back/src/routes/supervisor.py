@@ -2,7 +2,7 @@ from flask import abort, request, Response
 from flask_login import login_required
 
 from ..index import app
-from src.graph.supervisor import stream_process
+from ..graph.supervisor import stream_process
 
 @app.post("/api/supervisor")
 @login_required

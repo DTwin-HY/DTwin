@@ -7,12 +7,12 @@ from sqlalchemy.sql import text
 from langgraph.checkpoint.postgres import PostgresSaver
 
 from ..index import db
-from src.services.research_agent import research_agent
-from src.services.math_agent import math_agent
-from src.services.storage_agent import storage_react_agent
-from src.services.sales_agent import sales_agent
-from src.utils.pretty_print import pretty_print_messages
-from src.utils.format import format_chunk
+from ..services.research_agent import research_agent
+from ..services.math_agent import math_agent
+from ..services.storage_agent import storage_react_agent
+from ..services.sales_agent import sales_agent
+from ..utils.pretty_print import pretty_print_messages
+from ..utils.format import format_chunk
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
