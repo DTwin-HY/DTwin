@@ -2,6 +2,9 @@ FROM node:lts-alpine AS build
 
 WORKDIR /app
 
+ARG VITE_BACKEND_URL
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+
 COPY package.json package-lock.json ./
 RUN npm ci
 
