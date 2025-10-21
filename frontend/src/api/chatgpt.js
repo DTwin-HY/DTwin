@@ -6,7 +6,7 @@ export const sendMessage = async (message) => {
 };
 
 export const streamMessage = async (message, onChunk) => {
-  const res = await fetch("http://localhost:5000/api/supervisor", {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/supervisor`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
