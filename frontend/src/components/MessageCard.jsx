@@ -1,4 +1,5 @@
 // Message card functional component with collapsible content
+import { useState } from "react";
 const MessageCard = ({ title, content, defaultOpen = false }) => {
   const [open, setOpen] = useState(defaultOpen);
 
