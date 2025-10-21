@@ -1,12 +1,14 @@
 import axios from './axiosInstance';
 
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export const sendMessage = async (message) => {
   const res = await axios.post('/api/supervisor', { message });
   return res.data;
 };
 
 export const streamMessage = async (message, onChunk) => {
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/supervisor`, {
+  const res = await fetch(`${VITE_BACKEND_URL}/api/supervisor`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
