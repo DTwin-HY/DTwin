@@ -13,3 +13,11 @@ from src.simulation.chat import llm
 
 from ..models.models import Product, Inventory
 from ..index import db as app_db
+
+load_dotenv()
+
+# SQLDatabase and toolkit
+sql_db = SQLDatabase.from_uri(os.getenv("DATABASE_URL"))
+toolkit = SQLDatabaseToolkit(db=sql_db, llm=llm)
+tools = toolkit.get_tools()
+
