@@ -34,6 +34,8 @@ jobs:
         run: poetry install
 
       - name: Run tests with coverage
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         working-directory: ./back
         run: poetry run pytest --cov=. --cov-report=xml
 
