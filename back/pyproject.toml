@@ -28,6 +28,7 @@ gunicorn = "^23.0.0"
 flask-migrate = "^4.1.0"
 langgraph-supervisor = "^0.0.29"
 langchain-tavily = "^0.2.11"
+langchain-community = "<0.4"
 
 [tool.poetry.scripts]
 back = "src.index:start"
