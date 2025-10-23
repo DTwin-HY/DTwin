@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -eu
 
 echo "Running db migrations..."
 flask --app src/index.py db upgrade
