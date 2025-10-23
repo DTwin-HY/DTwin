@@ -24,6 +24,8 @@ services:
     env_file: .env
     build: ./back
     restart: unless-stopped
+    volumes:
+      - ./back:/app
     depends_on:
       db:
         condition: service_healthy
