@@ -64,6 +64,5 @@ POSTGRES_PASSWORD= ...
 POSTGRES_DB=dtwin
 POSTGRES_HOST_AUTH_METHOD=md5
 ```
-2. Make sure the services are down with `docker compose down`
-3. Run `docker compose build frontend` if the frontend has been updated.
-4. Run `docker compose up --detach` to start the services.
+2. Make sure the services are down with `docker compose down` (to delete volumes `docker compose down -v`)
+3. Run `docker compose up --detach` to start the services (to force rebuild images, `docker compose up --detach --build`).
