@@ -1,6 +1,6 @@
 // Message card functional component with collapsible content
 import { useState } from "react";
-const MessageCard = ({ title, content, defaultOpen = false }) => {
+const MessageCard = ({ title, content, imageData, defaultOpen = false }) => {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
@@ -20,9 +20,24 @@ const MessageCard = ({ title, content, defaultOpen = false }) => {
       </button>
 
       <div className={open ? "block" : "hidden"}>
-        <pre className="px-4 pb-4 whitespace-pre-wrap break-words overflow-x-auto text-gray-700">
-          {content}
-        </pre>
+        {imageData ? (
+          <div className="px-4 pb-4">
+            <img
+              src={`data:image/${imageData.format};base64,${imageData.data}`}
+              alt={imageData.caption || "Sales graph"}
+              className="w-full rounded-lg"
+            />
+            {imageData.caption && (
+              <p className="mt-2 text-sm text-gray-600 text-center">
+                {imageData.caption}
+              </p>
+            )}
+          </div>
+        ) : (
+          <pre className="px-4 pb-4 whitespace-pre-wrap break-words overflow-x-auto text-gray-700">
+            {content}
+          </pre>
+        )}
       </div>
     </div>
   );

@@ -45,20 +45,26 @@ const Chatbot = () => {
     try {
       await streamMessage(inputValue, (chunk) => {
         if (Array.isArray(chunk)) {
-          // Process the chunk and extract relevant information
-        const cards = chunk.map((update) => {
-          const title = headerLine(update);
-          let body = "";
-          if (update.messages && update.messages.length) {
-            update.messages.forEach((msg) => {
-              const content = msg.content || "";
-              if (content) body += `${content}\n`;
-              (msg.tool_calls || []).forEach(t => (body += `→ ${t.name}()\n`));
-            });
-          }
+          const cards = chunk.map((update) => {
+            const title = headerLine(update);
+            let body = "";
+            let imageData = null;
 
-          return { title, body: body.trim() };
-        });
+            if (update.messages && update.messages.length) {
+              update.messages.forEach((msg) => {
+                // Check for image data first
+                if (msg.image_data) {
+                  imageData = msg.image_data;
+                }
+                
+                const content = msg.content || "";
+                if (content) body += `${content}\n`;
+                (msg.tool_calls || []).forEach(t => (body += `→ ${t.name}()\n`));
+              });
+            }
+
+            return { title, body: body.trim(), imageData };
+          });
 
           setResponses((prev) => [...prev, ...cards]);
         }
@@ -107,7 +113,12 @@ const Chatbot = () => {
         {responses.length > 0 && (
           <div>
             {responses.map((r, i) => (
-              <MessageCard key={i} title={r.title} content={r.body} />
+              <MessageCard 
+                key={i} 
+                title={r.title} 
+                content={r.body}
+                imageData={r.imageData}
+              />
             ))}
           </div>
         )}

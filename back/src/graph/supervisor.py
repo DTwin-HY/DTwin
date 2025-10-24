@@ -26,17 +26,18 @@ init_supervisor = create_supervisor(
         "You are a supervisor managing four agents:\n"
         "- a research agent. Assign research-related tasks to this agent\n"
         "- a math agent. Assign math-related tasks to this agent\n"
-        "- a storage agent. Assign storage related tasks to this agent."
-        "- a sales agent. Assign sales related tasks to this agent."
+        "- a storage agent. Assign storage related tasks to this agent\n"
+        "- a sales agent. Assign sales related tasks to this agent\n"
         "Assign work to one agent at a time, do not call agents in parallel.\n"
-        "When the sales agent creates a graph, return the graph as a base64-encoded image.\n"
-        # "If you find the result DON'T call other agents and return the result immediately\n"
+        "When an agent returns a result (especially image data), immediately pass that result to the user.\n"
+        "Do NOT call additional agents after receiving a complete result.\n"
+        "Do NOT modify or summarize agent responses - pass them through as-is.\n"
         "Do not do any work yourself."
     ),
     add_handoff_back_messages=True,
     output_mode="full_history",
     )
-    
+
 def stream_process(prompt):
     """
     runs the supervisor with the given prompt and streams the interphases.
@@ -94,4 +95,4 @@ if __name__ == "__main__":
             config,
             subgraphs=True,
         ):
-            pretty_print_messages(chunk, last_message=True)    
+            pretty_print_messages(chunk, last_message=True)
