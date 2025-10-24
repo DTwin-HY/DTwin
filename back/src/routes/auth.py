@@ -3,8 +3,9 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from ..models.models import User
 
-from ..index import app, bcrypt, db, login_manager
+from ..index import app, bcrypt, login_manager
 
+from ..database.auth_db import create_new_user
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -23,10 +24,7 @@ def signup():
     if User.query.filter_by(username=username).first():
         return jsonify({"error": "Username already taken"}), 409
 
-    hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
-    new_user = User(username=username, password=hashed_password)
-    db.session.add(new_user)
-    db.session.commit()
+    new_user = create_new_user(username, password)
 
     login_user(new_user)
     return jsonify({"message": "User created", "user": {"username": new_user.username}})

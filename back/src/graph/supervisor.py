@@ -3,10 +3,8 @@ import json
 from dotenv import load_dotenv
 from langgraph_supervisor import create_supervisor
 from langchain.chat_models import init_chat_model
-from sqlalchemy.sql import text
 from langgraph.checkpoint.postgres import PostgresSaver
 
-from ..index import db
 from ..services.research_agent import research_agent
 from ..services.math_agent import math_agent
 from ..services.storage_agent import storage_react_agent
