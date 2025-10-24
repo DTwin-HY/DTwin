@@ -31,8 +31,8 @@ const MessageCard = ({ title, content, imageData, defaultOpen = false }) => {
             )}
           </div>
         ) : (
-        <pre className="overflow-x-auto px-4 pb-4 break-words whitespace-pre-wrap text-gray-700">
-          {content}
+          <pre className="px-4 pb-4 whitespace-pre-wrap break-words overflow-x-auto text-gray-700">
+            {content}
           </pre>
         )}
       </div>

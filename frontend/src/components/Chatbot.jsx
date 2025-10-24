@@ -58,7 +58,7 @@ const Chatbot = () => {
                 if (msg.image_data) {
                   imageData = msg.image_data;
                 }
-
+                
                 const content = msg.content || "";
                 if (content) body += `${content}\n`;
                 (msg.tool_calls || []).forEach(t => (body += `→ ${t.name}()\n`));
@@ -116,9 +116,9 @@ const Chatbot = () => {
         {responses.length > 0 && (
           <div>
             {responses.map((r, i) => (
-              <MessageCard
-                key={i}
-                title={r.title}
+              <MessageCard 
+                key={i} 
+                title={r.title} 
                 content={r.body}
                 imageData={r.imageData}
               />
