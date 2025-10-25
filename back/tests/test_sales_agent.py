@@ -1,3 +1,45 @@
+import sys
+from unittest.mock import MagicMock
+
+sys.modules['langgraph'] = MagicMock()
+sys.modules['langgraph.prebuilt'] = MagicMock()
+sys.modules['langchain_core'] = MagicMock()
+sys.modules['langchain_core.tools'] = MagicMock()
+sys.modules['langchain_core.messages'] = MagicMock()
+
+import os
+import pytest
+from ..src.services.sales_agent import SalesTool, SalesAgent
+
+csv_path = os.path.join(os.path.dirname(__file__), "../src/data/mock_month_sales_data.csv")
+
+@pytest.fixture
+def sales_tool():
+    tool_instance = SalesTool(csv_path)
+    return tool_instance
+
+def test_generate_sales_report(sales_tool):
+    agent = SalesAgent(sales_tool)
+    request = {"task": "sales_report"}
+    report = agent.handle_request(request)
+
+    assert isinstance(report, list)
+    assert len(report) == 1
+    month_data = report[0]
+    expected_keys = {
+        "month",
+        "total_revenue",
+        "total_items_sold",
+        "best_selling_product",
+        "best_selling_product_units",
+    }
+    assert set(month_data.keys()) == expected_keys
+    assert month_data["month"] == "2025-09"
+    assert month_data["total_revenue"] == 21790.40
+    assert month_data["total_items_sold"] == 2558
+    assert month_data["best_selling_product"] == "G"
+    assert month_data["best_selling_product_units"] == 636
+
 """
 import pytest
 import base64
