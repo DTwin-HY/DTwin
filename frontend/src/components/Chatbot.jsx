@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { streamMessage } from '../api/chatgpt';
+import { streamMessage, fetchChats } from '../api/chatgpt';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 import MessageCard from './MessageCard';
 import { headerLine } from '../utils/streamFormat';
@@ -12,6 +12,7 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [chats, setChats] = useState([]);
 
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
@@ -63,7 +64,8 @@ const Chatbot = () => {
           setResponses((prev) => [...prev, ...cards]);
         }
       });
-
+      const latest = await fetchChats();
+      setChats(latest);
       setSuccessMessage('Prompt and response saved to database!');
       setInputValue('');
     } catch (err) {
@@ -74,6 +76,8 @@ const Chatbot = () => {
       finalizeLastResponse();
     }
   };
+
+  console.log('Chats:', chats);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-gray-100 p-4 pt-8">

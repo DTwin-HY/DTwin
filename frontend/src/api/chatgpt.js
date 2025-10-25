@@ -7,6 +7,11 @@ export const sendMessage = async (message) => {
   return res.data;
 };
 
+export const fetchChats = async () => {
+  const res = await axios.get('/api/fetch_chats');
+  return res.data;
+};
+
 export const streamMessage = async (message, onChunk) => {
   const res = await fetch(`${VITE_BACKEND_URL}/api/supervisor`, {
     method: "POST",
@@ -30,6 +35,7 @@ export const streamMessage = async (message, onChunk) => {
     for (const part of parts) {
       if (part.startsWith("data: ")) {
         const jsonData = part.slice(6);
+        console.log("Received chunk:", jsonData);
         try {
           const chunk = JSON.parse(jsonData);
 
