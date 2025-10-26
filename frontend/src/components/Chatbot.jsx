@@ -106,17 +106,17 @@ const Chatbot = () => {
             <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
           </div>
         )}
+        {finalMessage && (
+          <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
+            <p>{finalMessage.body}</p>
+          </div>
+        )}
         {/* Render message cards for each response */}
         {responses.length > 0 && (
           <div>
             {responses.map((r, i) => (
               <MessageCard key={i} title={r.title} content={r.body} />
             ))}
-          </div>
-        )}
-        {finalMessage && (
-          <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
-            <p>{finalMessage.body}</p>
           </div>
         )}
       </div>
