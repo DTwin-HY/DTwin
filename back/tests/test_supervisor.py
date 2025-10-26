@@ -1,6 +1,10 @@
+import os
 import sys
 import types
 from pathlib import Path
+
+# Aseta testitietokanta ennen app-importia
+os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 
 import pytest
 
