@@ -8,7 +8,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
-from src.simulation.chat import llm
+from ..graph.llm_utils import llm
 
 from ..extensions import db as app_db
 from ..models.models import Inventory, Product
