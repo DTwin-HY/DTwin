@@ -33,6 +33,16 @@ jobs:
         working-directory: ./back
         run: poetry install
 
-      - name: Run tests
+      - name: Run tests with coverage
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         working-directory: ./back
-        run: poetry run pytest
+        run: poetry run pytest --cov=. --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./back/coverage.xml
+          flags: backend
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}

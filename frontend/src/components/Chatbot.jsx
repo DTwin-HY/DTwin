@@ -1,17 +1,32 @@
 import { useState } from 'react';
-import { sendMessage } from '../api/chatgpt';
+import { streamMessage } from '../api/chatgpt';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
+import MessageCard from './MessageCard';
+import { headerLine } from '../utils/streamFormat';
 
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
   const [userMessage, setUserMessage] = useState('');
-  const [response, setResponse] = useState('');
+  const [responses, setResponses] = useState([]);
+  const [finalMessage, setFinalMessage] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
+
+  const finalizeLastResponse = () => {
+    setResponses((prev) => {
+      if (!prev || prev.length === 0) {
+        setFinalMessage(null);
+        return prev;
+      }
+      const last = prev[prev.length - 1];
+      setFinalMessage(last);
+      return prev.slice(0, -1);
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,26 +38,47 @@ const Chatbot = () => {
     setLoading(true);
     setSuccessMessage('');
     setErrorMessage('');
-    setResponse('');
+    setResponses([]);
+    setFinalMessage(null);
+    setUserMessage(inputValue);
 
     try {
-      const data = await sendMessage(inputValue);
-      setUserMessage(inputValue);
-      setResponse(data.message);
+      await streamMessage(inputValue, (chunk) => {
+        if (Array.isArray(chunk)) {
+          // Process the chunk and extract relevant information
+        const cards = chunk.map((update) => {
+          const title = headerLine(update);
+          let body = "";
+          if (update.messages && update.messages.length) {
+            update.messages.forEach((msg) => {
+              const content = msg.content || "";
+              if (content) body += `${content}\n`;
+              (msg.tool_calls || []).forEach(t => (body += `→ ${t.name}()\n`));
+            });
+          }
+
+          return { title, body: body.trim() };
+        });
+
+          setResponses((prev) => [...prev, ...cards]);
+        }
+      });
+
       setSuccessMessage('Prompt and response saved to database!');
       setInputValue('');
     } catch (err) {
       console.error(err);
-      setErrorMessage(`Error in the backend/database${err?.message ? `: ${err.message}` : ''}`);
+      setErrorMessage(`Error in backend/database${err?.message ? `: ${err.message}` : ''}`);
     } finally {
       setLoading(false);
+      finalizeLastResponse();
     }
   };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-gray-100 p-4 pt-8">
       <div className="mt-4 w-[700px] rounded-xl bg-white p-6 shadow-md">
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">Chat with AI Assistant</h3>
+        <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the Supervisor</h3>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <textarea
@@ -57,28 +93,36 @@ const Chatbot = () => {
             disabled={loading}
             className="rounded-lg bg-purple-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-purple-600 disabled:bg-gray-400"
           >
-            {loading ? 'Sending...' : 'Send Message'}
+            {loading ? 'Streaming...' : 'Send Message'}
           </button>
         </form>
 
         {userMessage && (
-          <div className="mt-6 rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4">
-            <p className="mb-1 font-medium text-blue-800">Your message:</p>
-            <p className="text-gray-700">{userMessage}</p>
+          <div className="mt-6 rounded-lg border-l-4 border-teal-400 bg-teal-50 p-4">
+            <p className="mb-1 text-black-800">Your message:</p>
+            <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
           </div>
         )}
-
-        {response && (
-          <div className="mt-4 rounded-lg border-l-4 border-green-400 bg-green-50 p-4">
-            <p className="mb-1 font-medium text-green-800">AI Response:</p>
-            <p className="text-gray-700">{response}</p>
+        {/* Render message cards for each response */}
+        {responses.length > 0 && (
+          <div>
+            {responses.map((r, i) => (
+              <MessageCard key={i} title={r.title} content={r.body} />
+            ))}
+          </div>
+        )}
+        {finalMessage && (
+          <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
+            <p>
+              {finalMessage.body}
+            </p>
           </div>
         )}
       </div>
 
       {loading && (
         <div className="mt-4 w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
-          <p className="font-medium">Loading answer...</p>
+          <p className="font-medium">Streaming response...</p>
         </div>
       )}
 

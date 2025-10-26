@@ -1,3 +1,6 @@
+[![codecov](https://codecov.io/gh/DTwin-HY/DTwin/graph/badge.svg)](https://app.codecov.io/github/DTwin-HY/DTwin)
+[![Run backend tests](https://github.com/DTwin-HY/DTwin/actions/workflows/main.yml/badge.svg)](https://github.com/DTwin-HY/DTwin/actions/workflows/main.yml)
+
 # DTwin
 
 A LangGraph digital twin project.
@@ -5,6 +8,11 @@ A LangGraph digital twin project.
 ## Links
 
 * [Backlog](https://github.com/orgs/DTwin-HY/projects/1)
+
+## Documentation
+
+* [API documentation](./docs/api.md)
+* [Software architecture](./docs/architecture.md)
 
 ## Setting up the development environment locally
 
@@ -16,6 +24,7 @@ The backend requires a ```.env``` file in the root of the project to work, it sh
 
 ```
 OPENAI_API_KEY= INSERT YOUR API KEY HERE
+TAVILY_API_KEY= INSERT YOUR API KEY HERE
 SECRET_KEY= INSERT A SECRET KEY HERE
 DATABASE_URL=postgresql://YOUR_USERNAME:PASSWORD@localhost:PORTNUMBER/DB_NAME
 ```
@@ -46,7 +55,6 @@ To start:
 
 The repo contains ```Dockerfiles``` for building Docker images of the backend server and the frontend React app. The Docker Compose file uses an existing Postgres image as database.
 
-TODO: Alembic for DB migrations, move images to Docker Hub, database name stays as 'dtwin'
 
 1. To `.env` add the lines (db has to be called dtwin currently) and change the DB url from the local version
 ```
@@ -56,6 +64,5 @@ POSTGRES_PASSWORD= ...
 POSTGRES_DB=dtwin
 POSTGRES_HOST_AUTH_METHOD=md5
 ```
-2. Make sure the services are down with `docker compose down`
-3. Run `docker compose build frontend` if the frontend has been updated.
-4. Run `docker compose up --detach` to start the services.
+2. Make sure the services are down with `docker compose down` (to delete volumes `docker compose down -v`)
+3. Run `docker compose up --detach` to start the services (to force rebuild images, `docker compose up --detach --build`).

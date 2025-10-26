@@ -24,12 +24,11 @@ login_manager.init_app(app)
 bcrypt = Bcrypt(app)
 
 #pylint: disable=wrong-import-position
+#pylint: disable=unused-import
 from . import routes
 
 
 def start():
-    with app.app_context():
-        db.create_all()
     app.run(host="0.0.0.0", port=5000, debug=True)
 
 

@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/sh -eu
 
 echo "Running db migrations..."
 flask --app src/index.py db upgrade
 
 echo "Starting backend server..."
-exec gunicorn --config gunicorn_config.py src.index:app
+exec flask run --host 0.0.0.0 --port 5000 --reload
