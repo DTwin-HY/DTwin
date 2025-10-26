@@ -5,6 +5,7 @@ from pathlib import Path
 
 # Aseta testitietokanta ennen app-importia
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+os.environ.setdefault("TAVILY_API_KEY", "test")
 
 import pytest
 
