@@ -1,18 +1,17 @@
 import os
 from typing import Annotated
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
+from langchain_community.agent_toolkits import SQLDatabaseToolkit
+from langchain_community.utilities import SQLDatabase
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
-from langchain_community.utilities import SQLDatabase
-from langchain_community.agent_toolkits import SQLDatabaseToolkit
-
 from src.simulation.chat import llm
 
-from ..models.models import Product, Inventory
-from ..index import db as app_db
+from ..extensions import db as app_db
+from ..models.models import Inventory, Product
 
 load_dotenv()
 
@@ -20,6 +19,7 @@ load_dotenv()
 sql_db = SQLDatabase.from_uri(os.getenv("DATABASE_URL"))
 toolkit = SQLDatabaseToolkit(db=sql_db, llm=llm)
 tools = toolkit.get_tools()
+
 
 class SqlStorageTool:
     """Domain-specific inventory tools using SQLAlchemy ORM."""
@@ -58,23 +58,33 @@ class SqlStorageTool:
             low[prod.name] = inv.amount
         return {"status": "ok", "low_stock": low}
 
+
 sql_storage_tool = SqlStorageTool()
 
+
 @tool
-def check_inventory(
-    product_id: Annotated[str, "The product ID to check (e.g., 'A100')"]
-) -> dict:
+def check_inventory(product_id: Annotated[str, "The product ID to check (e.g., 'A100')"]) -> dict:
+    """
+    Check the inventory for the inventory level of the given product.
+    """
     return sql_storage_tool.check_inventory(product_id)
+
 
 @tool
 def list_inventory() -> dict:
+    """
+    List all items in the inventory.
+    """
     return sql_storage_tool.list_inventory()
 
+
 @tool
-def low_stock_alert(
-    threshold: Annotated[int, "Minimum stock level to trigger alert"]
-) -> dict:
+def low_stock_alert(threshold: Annotated[int, "Minimum stock level to trigger alert"]) -> dict:
+    """
+    List all products with levels below the threshold.
+    """
     return sql_storage_tool.low_stock_alert(threshold)
+
 
 # Add domain tools to toolkit tools
 tools += [check_inventory, list_inventory, low_stock_alert]
@@ -99,5 +109,7 @@ sql_react_agent = create_react_agent(
 )
 
 if __name__ == "__main__":
-    result = sql_react_agent.invoke({"messages": [HumanMessage(content="Check inventory for A100")]})
+    result = sql_react_agent.invoke(
+        {"messages": [HumanMessage(content="Check inventory for A100")]}
+    )
     print("Agent response:", result["messages"][-1].content)
