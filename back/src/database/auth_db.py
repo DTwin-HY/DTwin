@@ -1,5 +1,6 @@
-from ..index import db, bcrypt
+from ..index import bcrypt, db
 from ..models.models import User
+
 
 def create_new_user(username, password):
     """

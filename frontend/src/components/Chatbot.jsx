@@ -12,6 +12,7 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  // eslint-disable-next-line no-unused-vars
   const [chats, setChats] = useState([]);
 
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
@@ -47,19 +48,19 @@ const Chatbot = () => {
       await streamMessage(inputValue, (chunk) => {
         if (Array.isArray(chunk)) {
           // Process the chunk and extract relevant information
-        const cards = chunk.map((update) => {
-          const title = headerLine(update);
-          let body = "";
-          if (update.messages && update.messages.length) {
-            update.messages.forEach((msg) => {
-              const content = msg.content || "";
-              if (content) body += `${content}\n`;
-              (msg.tool_calls || []).forEach(t => (body += `→ ${t.name}()\n`));
-            });
-          }
+          const cards = chunk.map((update) => {
+            const title = headerLine(update);
+            let body = '';
+            if (update.messages && update.messages.length) {
+              update.messages.forEach((msg) => {
+                const content = msg.content || '';
+                if (content) body += `${content}\n`;
+                (msg.tool_calls || []).forEach((t) => (body += `→ ${t.name}()\n`));
+              });
+            }
 
-          return { title, body: body.trim() };
-        });
+            return { title, body: body.trim() };
+          });
 
           setResponses((prev) => [...prev, ...cards]);
         }
@@ -76,8 +77,6 @@ const Chatbot = () => {
       finalizeLastResponse();
     }
   };
-
-  console.log('Chats:', chats);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-gray-100 p-4 pt-8">
@@ -103,7 +102,7 @@ const Chatbot = () => {
 
         {userMessage && (
           <div className="mt-6 rounded-lg border-l-4 border-teal-400 bg-teal-50 p-4">
-            <p className="mb-1 text-black-800">Your message:</p>
+            <p className="text-black-800 mb-1">Your message:</p>
             <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
           </div>
         )}
@@ -117,9 +116,7 @@ const Chatbot = () => {
         )}
         {finalMessage && (
           <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
-            <p>
-              {finalMessage.body}
-            </p>
+            <p>{finalMessage.body}</p>
           </div>
         )}
       </div>

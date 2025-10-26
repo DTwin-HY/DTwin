@@ -14,28 +14,27 @@ export const fetchChats = async () => {
 
 export const streamMessage = async (message, onChunk) => {
   const res = await fetch(`${VITE_BACKEND_URL}/api/supervisor`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message }),
-    credentials: "include",
+    credentials: 'include',
   });
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
 
-  let buffer = "";
+  let buffer = '';
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
 
     buffer += decoder.decode(value, { stream: true });
-    const parts = buffer.split("\n\n");
+    const parts = buffer.split('\n\n');
     buffer = parts.pop();
 
     for (const part of parts) {
-      if (part.startsWith("data: ")) {
+      if (part.startsWith('data: ')) {
         const jsonData = part.slice(6);
-        console.log("Received chunk:", jsonData);
         try {
           const chunk = JSON.parse(jsonData);
 
@@ -46,7 +45,7 @@ export const streamMessage = async (message, onChunk) => {
             onChunk({ done: true, reply: chunk.reply });
           }
         } catch (err) {
-          console.error("JSON parse error:", err);
+          console.error('JSON parse error:', err);
         }
       }
     }

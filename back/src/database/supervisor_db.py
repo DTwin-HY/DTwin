@@ -1,6 +1,7 @@
 from ..index import db
 from ..models.models import Chat
 
+
 def create_new_chat(user_id, messages, thread_id, raw_stream):
     """
     Create a new chat in the database.

@@ -1,9 +1,11 @@
-from flask_login import login_required, current_user
-from flask import jsonify
 from datetime import date, datetime
 
-from ..index import app
+from flask import jsonify
+from flask_login import current_user, login_required
+
 from ..database.supervisor_db import get_chats_by_user
+from ..index import app
+
 
 def _model_to_dict(obj):
     if hasattr(obj, "to_dict"):

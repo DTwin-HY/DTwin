@@ -18,7 +18,7 @@ def format_chunk(chunk, last_message=False):
         if last_message:
             messages = messages[-1:]
 
-        # Determine the tool type  
+        # Determine the tool type
         if node_name == "tools":
             kind = "tools"
         elif node_name == "agent":
@@ -45,4 +45,3 @@ def extract(message):
         "content": content,
         "tool_calls": tool_calls
     }
-

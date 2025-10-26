@@ -1,16 +1,18 @@
-import os
 import json
+import os
+
 from dotenv import load_dotenv
-from langgraph_supervisor import create_supervisor
 from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.postgres import PostgresSaver
+from langgraph_supervisor import create_supervisor
 
-from ..services.research_agent import research_agent
 from ..services.math_agent import math_agent
-from ..services.storage_agent import storage_react_agent
+from ..services.research_agent import research_agent
 from ..services.sales_agent import sales_agent
-from ..utils.pretty_print import pretty_print_messages
+from ..services.storage_agent import storage_react_agent
 from ..utils.format import format_chunk
+from ..utils.pretty_print import pretty_print_messages
+
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -34,14 +36,13 @@ init_supervisor = create_supervisor(
     add_handoff_back_messages=True,
     output_mode="full_history",
     )
-    
+
 def stream_process(prompt: str, thread_id: str = "3"):
     """
     runs the supervisor with the given prompt and streams the interphases.
     saves the final prompt and reply to the database.
     conversations are saved in the database
     """
-    #TODO: Hae esim. username tai user ID ja käytä sitä  thread_id:nä? Tai vaihtoehtoisesti liitä thread_id käyttäjään jotenkin
     config = {"configurable": {"thread_id": thread_id}}
 
     with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer:
@@ -82,11 +83,12 @@ if __name__ == "__main__":
                 "messages": [
                     {
                         "role": "user",
-                        "content": "Which item was there least of in the previous query, also what was my name?",
+                        "content": "Which item was there least of in the previous query" + 
+                        ", also what was my name?",
                     }
                 ]
             },
             config,
             subgraphs=True,
         ):
-            pretty_print_messages(chunk, last_message=True)    
+            pretty_print_messages(chunk, last_message=True)

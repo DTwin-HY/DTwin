@@ -1,10 +1,12 @@
 import uuid
-from flask import abort, request, Response, stream_with_context
-from flask_login import login_required, current_user
 
-from ..index import app
-from ..graph.supervisor import stream_process
+from flask import Response, abort, request, stream_with_context
+from flask_login import current_user, login_required
+
 from ..database.supervisor_db import create_new_chat
+from ..graph.supervisor import stream_process
+from ..index import app
+
 
 @app.post("/api/supervisor")
 @login_required

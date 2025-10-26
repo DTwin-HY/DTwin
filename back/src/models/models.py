@@ -1,3 +1,4 @@
+# pylint: disable=too-few-public-methods
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -39,7 +40,7 @@ class Chat(db.Model):
     # onupdate.db.func.=now() = päivittää updated_at-arvon UPDATE:ssa
     updated_at = db.Column(db.DateTime, server_default=db.func.now(),
                            onupdate=db.func.now())
-    raw_stream = db.Column(db.Text) 
+    raw_stream = db.Column(db.Text)
 
 class Sale(db.Model):
     __tablename__ = "sales"

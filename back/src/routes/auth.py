@@ -1,11 +1,10 @@
 from flask import jsonify, request
 from flask_login import current_user, login_required, login_user, logout_user
 
+from ..database.auth_db import create_new_user
+from ..index import app, bcrypt, login_manager
 from ..models.models import User
 
-from ..index import app, bcrypt, login_manager
-
-from ..database.auth_db import create_new_user
 
 @login_manager.user_loader
 def load_user(user_id):

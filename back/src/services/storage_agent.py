@@ -43,8 +43,7 @@ class HardCodedStorageTool:
         """Return the stock level for a given product ID."""
         if product_id in self.inventory:
             return {"status": "ok", "inventory_level": self.inventory[product_id]}
-        else:
-            return {"status": "error", "message": "Product not found"}
+        return {"status": "error", "message": "Product not found"}
 
     def list_inventory(self) -> dict:
         """List all products and their inventory levels."""
@@ -71,7 +70,8 @@ def check_inventory(
       product_id (str)
 
     Returns:
-      dict: A dictionary with keys "status", "inventory_level" and optionally "message" if a product is not found.
+      dict: A dictionary with keys "status", "inventory_level" and optionally "message" 
+      if a product is not found.
     """
     request = {"task": "check_inventory", "product_id": product_id}
     return storage_agent.handle_request(request)
