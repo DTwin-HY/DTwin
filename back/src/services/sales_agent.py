@@ -1,11 +1,13 @@
+import base64
+import os
+from io import BytesIO
+
 import matplotlib.pyplot as plt
 import pandas as pd
-import os
-import base64
-from io import BytesIO
-from langgraph.prebuilt import create_react_agent
-from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage
+from langchain_core.tools import tool
+from langgraph.prebuilt import create_react_agent
+
 
 class SalesAgent:
     def __init__(self, sales_tool):
@@ -15,13 +17,12 @@ class SalesAgent:
         task = request.get("task")
         if task == "sales_report":
             return self.tool.generate_sales_report()
-        elif task == "create_graph":
+        if task == "create_graph":
             month = request.get("month")
             if not month:
                 raise ValueError("Month parameter is required for creating sales graph.")
             return self.tool.create_sales_graph(month)
-        else:
-            return f"Unknown task: {task}"
+        return f"Unknown task: {task}"
 
 class SalesTool:
     def __init__(self, csv_path: str):
@@ -35,7 +36,8 @@ class SalesTool:
             raise ValueError(f"Failed to read CSV: {e}")
 
     def generate_sales_report(self):
-        """Return key monthly sales metrics: total revenue, total items sold, best-selling product."""
+        """Return key monthly sales metrics: total revenue, total items sold, best-selling product.
+        """
         self.sales_data['date'] = pd.to_datetime(self.sales_data['date'])
         self.sales_data['month'] = self.sales_data['date'].dt.to_period('M')
 
@@ -80,7 +82,8 @@ class SalesTool:
         plt.figure(figsize=(10, 6))
 
         if graph_type == "bar":
-            plt.bar(aggregated_data["date"], aggregated_data["total_revenue"], label="Daily Revenue")
+            plt.bar(aggregated_data["date"], aggregated_data["total_revenue"],
+                    label="Daily Revenue")
         else:
             plt.plot(
                 aggregated_data["date"],

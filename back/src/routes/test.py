@@ -1,5 +1,7 @@
 from flask import jsonify
+
 from ..index import app
+
 
 @app.get("/api/ping")
 def ping():
