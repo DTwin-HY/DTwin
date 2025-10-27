@@ -12,7 +12,7 @@ from back.src.models.models import Inventory, Product
 
 from ..src.services.sql_agent import SqlStorageTool
 
-
+#
 @pytest.fixture
 def test_app():
     app.config.update(
