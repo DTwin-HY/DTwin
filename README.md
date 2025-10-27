@@ -36,6 +36,10 @@ To start using the backend:
 1. Run ```poetry install``` in your terminal to install the project dependencies defined in ```pyproject.toml```
 2. Run ```poetry run back``` in your terminal to start the Flask development server
 
+### Database migrations
+
+* To apply database migrations, run the command `poetry run flask --app src/index.py db upgrade`.
+* To create a new migration after a change to the models, run `poetry run flask --app src/index.py db migrate -m "your message here"`.
 
 ### Frontend
 

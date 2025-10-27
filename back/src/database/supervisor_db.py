@@ -1,4 +1,4 @@
-from ..index import db
+from ..extensions import db
 from ..models.models import Chat
 
 
