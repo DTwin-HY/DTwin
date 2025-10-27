@@ -18,7 +18,13 @@ agent_message = AIMessage(
     name='supervisor',
     id='test123',
     tool_calls=tool_calls_mock,
-    usage_metadata={'input_tokens': 5146, 'output_tokens': 13, 'total_tokens': 5159, 'input_token_details': {'audio': 0, 'cache_read': 0}, 'output_token_details': {'audio': 0, 'reasoning': 0}}
+    usage_metadata={
+        'input_tokens': 5146,
+        'output_tokens': 13,
+        'total_tokens': 5159,
+        'input_token_details': {'audio': 0, 'cache_read': 0},
+        'output_token_details': {'audio': 0, 'reasoning': 0}
+    }
 )
 agent_chunk = (('supervisor:test',), {'agent': {'messages': [agent_message]}})
 
@@ -79,4 +85,4 @@ def test_format_chunk_last_message():
 def test_format_chunk_empty_namespace():
     empty_ns_chunk = ((), {'agent': {'messages': agent_message}})
     res = fmt.format_chunk(empty_ns_chunk)
-    assert res == []
+    assert not res
