@@ -38,7 +38,7 @@ def extract(message):
     """
     return only the content and tool calls from an AI/tool message
     """
-    content = getattr(message, "content", [])
+    content = getattr(message, "content", "")
     tool_calls = getattr(message, "tool_calls", [])
 
     return {
