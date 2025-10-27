@@ -54,12 +54,7 @@ const Chatbot = () => {
 
             if (update.messages && update.messages.length) {
               update.messages.forEach((msg) => {
-                // Check for image data first
-                if (msg.image_data) {
-                  imageData = msg.image_data;
-                }
-                
-                const content = msg.content || "";
+                const content = msg.content;
                 if (content) body += `${content}\n`;
                 (msg.tool_calls || []).forEach(t => (body += `→ ${t.name}()\n`));
               });
