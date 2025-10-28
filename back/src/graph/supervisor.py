@@ -12,7 +12,7 @@ from ..services.sales_agent import sales_agent
 from ..services.storage_agent import storage_react_agent
 from ..utils.format import format_chunk
 from ..utils.pretty_print import pretty_print_messages
-from .supervisor_prompt import supervisor_prompt
+from ..prompts.supervisor_prompt import SUPERVISOR_PROMPT
 
 load_dotenv()
 
@@ -23,7 +23,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 init_supervisor = create_supervisor(
     model=init_chat_model("openai:gpt-4.1"),
     agents=[research_agent, math_agent, storage_react_agent, sales_agent],
-    prompt=supervisor_prompt,
+    prompt=SUPERVISOR_PROMPT,
     add_handoff_back_messages=True,
     output_mode="full_history",
     )
