@@ -1,11 +1,17 @@
 import sys
-import types
 import os
 import pytest
 import base64
+from unittest.mock import MagicMock
 
-mock_langgraph = types.SimpleNamespace(create_react_agent=lambda *a, **kw: None)
-sys.modules["langgraph.prebuilt"] = mock_langgraph
+mock_supervisor = MagicMock()
+sys.modules["langgraph_supervisor"] = mock_supervisor
+sys.modules["langgraph_supervisor.supervisor"] = MagicMock()
+sys.modules["langgraph_supervisor.handoff"] = MagicMock()
+
+mock_prebuilt = MagicMock()
+mock_prebuilt.create_react_agent = MagicMock(return_value=MagicMock())
+sys.modules["langgraph.prebuilt"] = mock_prebuilt
 
 from ..src.services.sales_agent import SalesTool, SalesAgent
 
