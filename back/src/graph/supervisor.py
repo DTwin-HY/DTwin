@@ -12,6 +12,7 @@ from ..services.sales_agent import sales_agent
 from ..services.storage_agent import storage_react_agent
 from ..utils.format import format_chunk
 from ..utils.pretty_print import pretty_print_messages
+from .supervisor_prompt import supervisor_prompt
 
 load_dotenv()
 
@@ -22,18 +23,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 init_supervisor = create_supervisor(
     model=init_chat_model("openai:gpt-4.1"),
     agents=[research_agent, math_agent, storage_react_agent, sales_agent],
-    prompt=(
-        "You are a supervisor managing four agents:\n"
-        "- a research agent. Assign research-related tasks to this agent\n"
-        "- a math agent. Assign math-related tasks to this agent\n"
-        "- a storage agent. Assign storage related tasks to this agent\n"
-        "- a sales agent. Assign sales related tasks to this agent\n"
-        "Assign work to one agent at a time, do not call agents in parallel.\n"
-        "When an agent returns a result (especially image data), immediately pass that result to the user.\n"
-        "Do NOT call additional agents after receiving a complete result.\n"
-        "Do NOT modify or summarize agent responses - pass them through as-is.\n"
-        "Do not do any work yourself."
-    ),
+    prompt=supervisor_prompt,
     add_handoff_back_messages=True,
     output_mode="full_history",
     )
