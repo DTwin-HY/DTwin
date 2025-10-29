@@ -74,7 +74,7 @@ if __name__ == "__main__":
                 "messages": [
                     {
                         "role": "user",
-                        "content": "Which item was there least of in the previous query" + 
+                        "content": "Which item was there least of in the previous query" +
                         ", also what was my name?",
                     }
                 ]
