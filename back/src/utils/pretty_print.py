@@ -1,5 +1,6 @@
 from langchain_core.messages import convert_to_messages
 
+
 def pretty_print_message(message, indent=False):
     pretty_message = message.pretty_repr(html=True)
     if not indent:

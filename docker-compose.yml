@@ -10,7 +10,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_HOST_AUTH_METHOD=${POSTGRES_HOST_AUTH_METHOD}
     volumes:
-      - dtwin-db:/var/lib/postgresql/data
+      - dtwin-db:/var/lib/postgresql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
       interval: 5s
@@ -22,8 +22,11 @@ services:
   
   backend:
     env_file: .env
-    build: ./back
-    restart: unless-stopped
+    build:
+      context: ./back
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./back:/app
     depends_on:
       db:
         condition: service_healthy
@@ -33,13 +36,18 @@ services:
       - dtwin-network
 
   frontend:
-    build: ./frontend
-    restart: unless-stopped
+    image: node:lts-alpine
+    working_dir: /app
+    env_file: ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -lc "npm ci && npm run dev -- --host 0.0.0.0"
     depends_on:
       backend:
         condition: service_started
     ports:
-      - "8080:8080"
+      - "5173:5173"
     networks:
       - dtwin-network
 
