@@ -1,15 +1,14 @@
 import sys
-from unittest.mock import MagicMock
-
-sys.modules['langgraph'] = MagicMock()
-sys.modules['langgraph.prebuilt'] = MagicMock()
-sys.modules['langchain_core'] = MagicMock()
-sys.modules['langchain_core.tools'] = MagicMock()
-sys.modules['langchain_core.messages'] = MagicMock()
-
+import types
 import os
 import pytest
+import base64
+
+mock_langgraph = types.SimpleNamespace(create_react_agent=lambda *a, **kw: None)
+sys.modules["langgraph.prebuilt"] = mock_langgraph
+
 from ..src.services.sales_agent import SalesTool, SalesAgent
+
 
 csv_path = os.path.join(os.path.dirname(__file__), "../src/data/mock_month_sales_data.csv")
 
@@ -40,53 +39,26 @@ def test_generate_sales_report(sales_tool):
     assert month_data["best_selling_product"] == "G"
     assert month_data["best_selling_product_units"] == 636
 
-"""
-import pytest
-import base64
-from unittest.mock import MagicMock
-from ..src.services.sales_agent import SalesAgent
-
-
-@pytest.fixture
-def mock_sales_agent():
-    mock_tool = MagicMock()
-
-    fake_image_b64 = base64.b64encode(b"fake_image_bytes").decode("utf-8")
-    mock_tool.create_sales_graph.return_value = {
-        "status": "success",
-        "type": "image",
-        "format": "png",
-        "data": fake_image_b64,
-        "caption": "Daily Sales Revenue for 2025-09"
-    }
-
-    agent = SalesAgent(mock_tool)
-    return agent, mock_tool
-
-def test_create_sales_graph_success(mock_sales_agent):
-    agent, mock_tool = mock_sales_agent
+def test_create_sales_graph_success(sales_tool):
+    agent = SalesAgent(sales_tool)
     month = "2025-09"
 
     result = agent.handle_request({"task": "create_graph", "month": month})
 
     assert isinstance(result, dict)
-    assert result["status"] == "success"
     assert result["type"] == "image"
-    assert result["format"] == "png"
-    assert month in result["caption"]
+    assert result["source_type"] == "base64"
+    assert result["mime_type"] == "image/jpeg"
+    assert "data" in result
 
-    image_bytes = base64.b64decode(result["data"])
-    assert image_bytes == b"fake_image_bytes"
+    try:
+        image_bytes = base64.b64decode(result["data"])
+        assert len(image_bytes) > 0
+    except Exception as e:
+        pytest.fail(f"Failed to decode base64 image data: {e}")
 
-    mock_tool.create_sales_graph.assert_called_once_with(month)
-
-#def test_create_sales_graph_error():
-    mock_tool = MagicMock()
-    mock_tool.create_sales_graph.return_value = {
-        "status": "error",
-        "message": "No sales data for 3000-01"
-    }
-    agent = SalesAgent(mock_tool)
+def test_create_sales_graph_invalid_month(sales_tool):
+    agent = SalesAgent(sales_tool)
     month = "3000-01"
 
     result = agent.handle_request({"task": "create_graph", "month": month})
@@ -95,5 +67,14 @@ def test_create_sales_graph_success(mock_sales_agent):
     assert result["status"] == "error"
     assert "No sales data" in result["message"]
 
-    mock_tool.create_sales_graph.assert_called_once_with(month)
-"""
+def test_create_sales_graph_missing_month():
+    agent = SalesAgent(SalesTool(csv_path))
+
+    with pytest.raises(ValueError, match="Month parameter is required"):
+        agent.handle_request({"task": "create_graph"})
+
+def test_unknown_task(sales_tool):
+    agent = SalesAgent(sales_tool)
+    result = agent.handle_request({"task": "unknown_task"})
+
+    assert "Unknown task" in result
