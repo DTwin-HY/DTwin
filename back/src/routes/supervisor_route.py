@@ -17,7 +17,9 @@ def supervisor_route():
     data = request.get_json()
     prompt = data.get("message", "").strip()
 
-    thread_id = uuid.uuid4().hex
+    #thread_id = uuid.uuid4().hex
+    thread_id = str(current_user.get_id())
+
     def event_stream():
         messages = [{"role": "user", "content": prompt}]
         # assistant_parts = []

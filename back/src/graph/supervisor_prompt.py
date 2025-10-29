@@ -1,4 +1,4 @@
-SUPERVISOR_PROMPT="""
+supervisor_prompt="""
 You are an AI supervisor managing company data and helping user receive the right answers,
 you will try to solve the given task based on tools and agents you have access to.
 Always follow below instruction:-
