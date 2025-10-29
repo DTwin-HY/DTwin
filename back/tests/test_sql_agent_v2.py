@@ -70,3 +70,45 @@ def test_check_query_sets_response_id(monkeypatch):
     out = sql_agent_v2.check_query(state)
     assert out["messages"][0].id == "orig-id"
     assert out["messages"][0].content == "checked query"
+
+
+def test_generate_query_invokes_llm(monkeypatch):
+    # fake response object the bound LLM will return
+    fake_response = SimpleNamespace(content="generated answer", id="resp-id")
+
+    captured = {}
+    class FakeBound:
+        def invoke(self, msgs):
+            captured['msgs'] = msgs
+            return fake_response
+
+    def fake_bind_tools(tools, tool_choice=None):
+        return FakeBound()
+
+    monkeypatch.setattr(sql_agent_v2, "llm", SimpleNamespace(bind_tools=fake_bind_tools))
+
+    state = {"messages": [{"role": "user", "content": "How many users?"}]}
+    out = sql_agent_v2.generate_query(state)
+
+    assert out["messages"][0].content == "generated answer"
+    assert isinstance(captured.get('msgs'), list)
+    assert captured['msgs'][0]["role"] == "system"
+
+
+def test_call_get_schema_forwards_messages(monkeypatch):
+    # fake bound LLM that echoes back a response
+    fake_response = SimpleNamespace(content="schema result", id="s-id")
+    class FakeBound:
+        def invoke(self, msgs):
+            return fake_response
+
+    def fake_bind_tools(tools, tool_choice=None):
+        return FakeBound()
+
+    monkeypatch.setattr(sql_agent_v2, "llm", SimpleNamespace(bind_tools=fake_bind_tools))
+
+    # call_get_schema should pass through the state's messages
+    state = {"messages": [{"role": "user", "content": "show schema"}]}
+    out = sql_agent_v2.call_get_schema(state)
+
+    assert out["messages"][0].content == "schema result"
