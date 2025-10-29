@@ -22,13 +22,20 @@ def client():
 
 
 def test_supervisor_streams_and_saves(client, monkeypatch):
-    # Importoi reitti-moduuli, jotta voimme monkeypatchata siinä olevat symbolit
+    # Import the route module to monkeypatch symbols
     from back.src.routes import supervisor_route
 
-    # Fake current_user
-    monkeypatch.setattr(supervisor_route, "current_user", types.SimpleNamespace(id=123), raising=False)
+    # Fake current_user with get_id method
+    class FakeUser:
+        def __init__(self, user_id):
+            self.id = user_id
 
-    # Fake stream_process, joka tuottaa pari SSE-riviä
+        def get_id(self):
+            return self.id
+
+    monkeypatch.setattr(supervisor_route, "current_user", FakeUser(123), raising=False)
+
+    # Fake stream_process that produces a couple of SSE lines
     def fake_stream(prompt, thread_id):
         assert prompt == "hello"
         assert isinstance(thread_id, str)
@@ -55,7 +62,7 @@ def test_supervisor_streams_and_saves(client, monkeypatch):
     assert 'data: {"step":"one"}' in body
     assert 'data: {"step":"two"}' in body
 
-    # Tallennus kutsuttu ja striimi talletettu sellaisenaan
+    # Check that save was called and stream was saved as expected
     assert saved["user_id"] == 123
     assert isinstance(saved["thread_id"], str) and saved["thread_id"]
     assert saved["messages"][0]["role"] == "user"
