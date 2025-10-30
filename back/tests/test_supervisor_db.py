@@ -1,19 +1,27 @@
+# esimerkki tests/test_supervisor_db.py
+import os
+import importlib
 import pytest
-from ..src.database.supervisor_db import create_new_chat, get_chats_by_user
-from ..src.models.models import User, Chat
 from ..src.extensions import db
+from ..src.models.models import User
+from ..src.database.supervisor_db import create_new_chat, get_chats_by_user
 
 @pytest.fixture
 def app():
-    """Create a Flask application for testing."""
-    from ..src.index import app
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['TESTING'] = True
-    
+    # tuo vasta nyt, kun conftest on jo asettanut envin
+    from ..src import index as index_mod
+    importlib.reload(index_mod)  # varmistaa että lukee environmentin
+    app = index_mod.app
+
+    app.config["TESTING"] = True
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
+
     with app.app_context():
         db.create_all()
         yield app
+        db.session.remove()  # tärkeä ennen drop_all()
         db.drop_all()
+
 
 @pytest.fixture
 def test_user(app):

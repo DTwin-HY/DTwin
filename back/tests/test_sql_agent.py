@@ -1,9 +1,7 @@
 from types import SimpleNamespace
-import importlib
 import os
-import pytest
 
-os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+# Aseta tarvittavat envit testejä varten
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
 import back.src.services.sql_agent as sql_agent
@@ -27,88 +25,170 @@ def test_should_continue_with_tool_calls():
     assert res == "check_query"
 
 
-def test_run_sql_agent_invokes_sql_agent(monkeypatch):
-    # patch sql_agent.invoke to return a predictable messages list
-    fake_invoke = lambda s: {"messages": [make_msg("first"), make_msg("final answer")]}
-    monkeypatch.setattr(sql_agent, "sql_agent", SimpleNamespace(invoke=fake_invoke))
+def test_run_sql_agent_invokes_graph(monkeypatch):
+    # Korvaa get_sql_agent_graph keinotekoisella graafilla
+    class DummyGraph:
+        def invoke(self, _):
+            return {"messages": [make_msg("first"), make_msg("final answer")]}
 
+    monkeypatch.setattr(sql_agent, "get_sql_agent_graph", lambda: DummyGraph())
     out = sql_agent.run_sql_agent("SELECT 1")
     assert out == "final answer"
 
 
 def test_list_tables_uses_correct_tool(monkeypatch):
-    # Create a fake tool with name and invoke
+    # Luo feikki työkalu, jolla on name ja invoke
     def fake_invoke(call):
-        # The original code expects an object with .content attribute
+        # Palautetaan olio, jolla on .content kuten oikeassa työkalussa
         return SimpleNamespace(content="users,orders")
 
     fake_tool = SimpleNamespace(name="sql_db_list_tables", invoke=fake_invoke)
-    monkeypatch.setattr(sql_agent, "tools", [fake_tool])
+
+    class FakeToolkit:
+        def get_tools(self):
+            return [fake_tool]
+
+    # Patchaa _make_toolkit palauttamaan meidän FakeToolkit
+    monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
 
     res = sql_agent.list_tables({"messages": []})
     assert isinstance(res, dict) and "messages" in res
     msgs = res["messages"]
     assert len(msgs) == 3
-    # The last message should include the available tables text
     assert "Available tables" in msgs[-1].content
 
 
-def test_check_query_sets_response_id(monkeypatch):
-    # Create a fake llm.bind_tools that returns an object with invoke
-    fake_response = SimpleNamespace(content="checked query", id=None)
+def _patch_llm_and_toolkit(monkeypatch, response_text="ok"):
+    """Yleispatch: LLM.bind_tools().invoke() palauttaa halutun vastauksen,
+    toolkit tarjoaa db.dialect sekä run/list/schema -työkalut niminä."""
+    fake_response = SimpleNamespace(content=response_text, id=None)
+
     class FakeBound:
         def invoke(self, msgs):
             return fake_response
 
-    def fake_bind_tools(tools, tool_choice=None):
-        return FakeBound()
+    class FakeLLM:
+        def bind_tools(self, tools, tool_choice=None):
+            return FakeBound()
 
-    monkeypatch.setattr(sql_agent, "llm", SimpleNamespace(bind_tools=fake_bind_tools))
-    # State where last message has tool_calls and an id
-    last_msg = make_msg(content="", tool_calls=[{"args": {"query": "SELECT 1"}}], id="orig-id")
+    # Feikki run/list/schema -työkalut (vain name + invoke stub)
+    class FakeTool:
+        def __init__(self, name):
+            self.name = name
+
+        def invoke(self, call):
+            # Palauta sama muoto kuin oikea työkalu: .content-attribuutti
+            return SimpleNamespace(content="stub")
+
+    class FakeToolkit:
+        def __init__(self):
+            self.db = SimpleNamespace(dialect="sqlite")
+
+        def get_tools(self):
+            return [
+                FakeTool("sql_db_query"),
+                FakeTool("sql_db_schema"),
+                FakeTool("sql_db_list_tables"),
+            ]
+
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+    monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
+    return fake_response  # jos testissä halutaan tarkistaa sama olio
+
+
+def test_check_query_sets_response_id(monkeypatch):
+    # Patchaa LLM ja toolkit
+    fake_resp = _patch_llm_and_toolkit(monkeypatch, response_text="checked query")
+
+    # State, jossa viimeisessä viestissä on tool_call ja id
+    last_msg = make_msg(
+        content="",
+        tool_calls=[{"args": {"query": "SELECT 1"}}],
+        id="orig-id",
+    )
     state = {"messages": [last_msg]}
+
     out = sql_agent.check_query(state)
-    assert out["messages"][0].id == "orig-id"
-    assert out["messages"][0].content == "checked query"
+    msg = out["messages"][0]
+    # Koodi asettaa response.id = state["messages"][-1].id
+    assert msg.id == "orig-id"
+    assert msg.content == "checked query"
 
 
 def test_generate_query_invokes_llm(monkeypatch):
-    # fake response object the bound LLM will return
-    fake_response = SimpleNamespace(content="generated answer", id="resp-id")
-
+    # Patchaa LLM ja toolkit sekä kaappaa invokeen syötetyt viestit
     captured = {}
+
+    class FakeResponse(SimpleNamespace):
+        pass
+
+    fake_response = FakeResponse(content="generated answer", id="resp-id")
+
     class FakeBound:
         def invoke(self, msgs):
-            captured['msgs'] = msgs
+            captured["msgs"] = msgs
             return fake_response
 
-    def fake_bind_tools(tools, tool_choice=None):
-        return FakeBound()
+    class FakeLLM:
+        def bind_tools(self, tools, tool_choice=None):
+            return FakeBound()
 
-    monkeypatch.setattr(sql_agent, "llm", SimpleNamespace(bind_tools=fake_bind_tools))
+    class FakeTool:
+        def __init__(self, name):
+            self.name = name
+
+        def invoke(self, call):
+            return SimpleNamespace(content="stub")
+
+    class FakeToolkit:
+        def __init__(self):
+            self.db = SimpleNamespace(dialect="sqlite")
+
+        def get_tools(self):
+            return [FakeTool("sql_db_query")]
+
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+    monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
 
     state = {"messages": [{"role": "user", "content": "How many users?"}]}
     out = sql_agent.generate_query(state)
 
     assert out["messages"][0].content == "generated answer"
-    assert isinstance(captured.get('msgs'), list)
-    assert captured['msgs'][0]["role"] == "system"
+    assert isinstance(captured.get("msgs"), list)
+    # Ensimmäinen viesti on system-ohje (buildattu funktiossa)
+    assert captured["msgs"][0]["role"] == "system"
 
 
 def test_call_get_schema_forwards_messages(monkeypatch):
-    # fake bound LLM that echoes back a response
     fake_response = SimpleNamespace(content="schema result", id="s-id")
+
     class FakeBound:
         def invoke(self, msgs):
+            # varmista että state["messages"] välittyy (ei pakollinen ehto)
+            assert msgs[-1]["content"] == "show schema"
             return fake_response
 
-    def fake_bind_tools(tools, tool_choice=None):
-        return FakeBound()
+    class FakeLLM:
+        def bind_tools(self, tools, tool_choice=None):
+            return FakeBound()
 
-    monkeypatch.setattr(sql_agent, "llm", SimpleNamespace(bind_tools=fake_bind_tools))
+    class FakeTool:
+        def __init__(self, name):
+            self.name = name
 
-    # call_get_schema should pass through the state's messages
+        def invoke(self, call):
+            return SimpleNamespace(content="stub")
+
+    class FakeToolkit:
+        def __init__(self):
+            self.db = SimpleNamespace(dialect="sqlite")
+
+        def get_tools(self):
+            return [FakeTool("sql_db_schema")]
+
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+    monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
+
     state = {"messages": [{"role": "user", "content": "show schema"}]}
     out = sql_agent.call_get_schema(state)
-
     assert out["messages"][0].content == "schema result"
