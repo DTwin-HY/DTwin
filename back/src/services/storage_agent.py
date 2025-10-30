@@ -24,7 +24,7 @@ storage_react_agent = create_react_agent(
 )
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     for step in storage_react_agent.stream(
         {"messages": [HumanMessage(content="Sum up all the prices in the inventory")]},
         stream_mode="values",
