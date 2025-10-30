@@ -48,9 +48,6 @@ def extract(message):
         if content.get("type") == "image":
             image_data = content
             content = []
-        elif content.get("_from_tool") and content.get("type") == "image":
-            image_data = content
-            content = []
     elif isinstance(content, str):
         try:
             parsed = json.loads(content)
