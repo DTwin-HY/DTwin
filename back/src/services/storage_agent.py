@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 from langgraph.prebuilt import create_react_agent
 
-from .sql_agent_v2 import sql_agent_tool
+from .sql_agent import sql_agent_tool
 
 load_dotenv()
 
