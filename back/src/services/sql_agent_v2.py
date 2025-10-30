@@ -15,11 +15,13 @@ load_dotenv()
 
 SELECTED_MODEL = "gpt-4o-mini"
 
+
 def _get_env_or_raise(name: str) -> str:
     val = os.getenv(name)
     if not val:
         raise EnvironmentError(f"Environment variable '{name}' is required but not set")
     return val
+
 
 OPENAI_API_KEY = _get_env_or_raise("OPENAI_API_KEY")
 DATABASE_URL = _get_env_or_raise("DATABASE_URL")
@@ -36,7 +38,7 @@ def _get_tool(name: str):
     try:
         return next(tool for tool in tools if tool.name == name)
     except StopIteration as exc:
-        #chain the original StopIteration for better exception context
+        # chain the original StopIteration for better exception context
         raise ValueError(f"Tool with name '{name}' not found in SQL toolkit") from exc
 
 
@@ -172,7 +174,8 @@ sql_agent_tool = StructuredTool.from_function(
 if __name__ == "__main__":
     question = "What's the most expensive product in the inventory?"
 
-    #stream the graph execution to stdout for debugging/demonstration
-    for step in sql_agent.stream({"messages": [{"role": "user", "content": question}]},
-        stream_mode="values"):
+    # stream the graph execution to stdout for debugging/demonstration
+    for step in sql_agent.stream(
+        {"messages": [{"role": "user", "content": question}]}, stream_mode="values"
+    ):
         step["messages"][-1].pretty_print()
