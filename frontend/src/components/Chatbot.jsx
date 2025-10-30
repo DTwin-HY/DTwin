@@ -117,14 +117,18 @@ const Chatbot = () => {
             <p>{finalMessage.body}</p>
           </div>
         )}
-        {/* Render message cards for each response */}
-        {responses.length > 0 && (
-          <div>
-            {responses.map((r, i) => (
-              <MessageCard key={i} title={r.title} content={r.body} imageData={r.imageData} />
-            ))}
-          </div>
-        )}
+        {/* Render message card for the latest response */}
+        {loading && responses.length > 0 && (() => {
+          const last = responses[responses.length - 1];
+          return last ? (
+            <MessageCard
+              key={responses.length - 1}
+              title={last.title}
+              content={last.body}
+              imageData={last.imageData}
+            />
+          ) : null;
+        })()}
       </div>
 
       {loading && (
