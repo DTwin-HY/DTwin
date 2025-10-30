@@ -1,4 +1,5 @@
 import pytest
+import json
 from langchain_core.messages import AIMessage, ToolMessage
 from ..src.utils import format as fmt
 
@@ -86,3 +87,84 @@ def test_format_chunk_empty_namespace():
     empty_ns_chunk = ((), {'agent': {'messages': agent_message}})
     res = fmt.format_chunk(empty_ns_chunk)
     assert not res
+
+def test_extract_with_dict_image_content():
+    image_dict = {
+        "type": "image",
+        "source_type": "base64",
+        "data": "encoded_data_here",
+        "mime_type": "image/jpeg"
+    }
+    message = AIMessage(content=[image_dict])
+    result = fmt.extract(message)
+
+    assert result["content"] == [image_dict]
+    assert result["tool_calls"] == []
+
+def test_extract_with_json_string_image_content():
+    image_dict = {
+        "type": "image",
+        "source_type": "base64",
+        "data": "string_encoded_data"
+    }
+    json_string = json.dumps(image_dict)
+    message = AIMessage(content=json_string)
+    result = fmt.extract(message)
+
+    assert result["content"] == []
+    assert result["image_data"] == image_dict
+    assert result["tool_calls"] == []
+
+def test_extract_with_invalid_json_string():
+    invalid_json = '{"type": "image", but this is not valid json'
+    message = AIMessage(content=invalid_json)
+    result = fmt.extract(message)
+
+    assert result["content"] == invalid_json
+    assert "image_data" not in result
+    assert result["tool_calls"] == []
+
+def test_extract_with_non_image_json():
+    non_image_dict = {"type": "text", "data": "some text"}
+    json_string = json.dumps(non_image_dict)
+    message = AIMessage(content=json_string)
+    result = fmt.extract(message)
+
+    assert result["content"] == json_string
+    assert "image_data" not in result
+    assert result["tool_calls"] == []
+
+def test_extract_with_regular_string_content():
+    content = "This is a regular message"
+    message = AIMessage(content=content)
+    result = fmt.extract(message)
+
+    assert result["content"] == content
+    assert "image_data" not in result
+    assert result["tool_calls"] == []
+
+def test_extract_with_json_string_containing_image():
+    image_dict = {
+        "_from_tool": True,
+        "type": "image",
+        "data": "tool_image_data",
+        "format": "png"
+    }
+    json_string = json.dumps(image_dict)
+    message = ToolMessage(content=json_string, tool_call_id="test123")
+    result = fmt.extract(message)
+
+    assert result["content"] == []
+    assert result["image_data"] == image_dict
+    assert result["tool_calls"] == []
+
+def test_extract_message_with_no_content_attribute():
+    """Test message without content attribute"""
+    class MinimalMessage:
+        pass
+
+    message = MinimalMessage()
+    result = fmt.extract(message)
+
+    assert result["content"] == ""
+    assert result["tool_calls"] == []
