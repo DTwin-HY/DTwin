@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { streamMessage, fetchChats } from '../api/chatgpt';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 import MessageCard from './MessageCard';
+import FinalMessageCard from './FinalMessageCard';
 import { headerLine } from '../utils/streamFormat';
 
 const Chatbot = () => {
@@ -112,12 +113,15 @@ const Chatbot = () => {
             <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
           </div>
         )}
+
         {finalMessage && (
-          <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
-            <p>{finalMessage.body}</p>
-          </div>
+          <FinalMessageCard
+            body={finalMessage.body}
+            messages={responses}
+          />
         )}
-        {/* Render message card for the latest response */}
+
+        {/* Render message card for the latest response if loading=true*/}
         {loading && responses.length > 0 && (() => {
           const last = responses[responses.length - 1];
           return last ? (
