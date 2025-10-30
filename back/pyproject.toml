@@ -65,5 +65,9 @@ disable = [
     "missing-module-docstring",
     "missing-class-docstring",
     "missing-function-docstring",
-    "unused-import"
+    "unused-import",
+    "invalid-name",
+    "redefined-outer-name",
+    "broad-exception-caught",
+    "too-few-public-methods"
 ]
