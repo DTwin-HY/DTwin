@@ -61,7 +61,7 @@ def test_create_sales_graph_success(sales_tool):
         image_bytes = base64.b64decode(result["data"])
         assert len(image_bytes) > 0
     except Exception as e:
-        pytest.fail(f"Failed to decode base64 image data: {e}")
+        pytest.fail(f"Failed to decode base64 image data: {e}") # pragma: no cover
 
 def test_create_sales_graph_invalid_month(sales_tool):
     agent = SalesAgent(sales_tool)
@@ -112,7 +112,7 @@ def test_create_sales_graph_bar_chart(sales_tool):
         image_bytes = base64.b64decode(result["data"])
         assert len(image_bytes) > 0
     except Exception as e:
-        pytest.fail(f"Failed to decode base64 image data: {e}")
+        pytest.fail(f"Failed to decode base64 image data: {e}") # pragma: no cover
 
 def test_sales_tool_generate_report_calculations(sales_tool):
     """Test that generate_sales_report calculates correct aggregations"""

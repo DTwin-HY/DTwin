@@ -168,3 +168,19 @@ def test_extract_message_with_no_content_attribute():
 
     assert result["content"] == ""
     assert result["tool_calls"] == []
+
+def test_extract_with_direct_dict_image_content():
+    image_dict = {"type": "image", "source_type": "base64", "data": "encoded_data"}
+    message = AIMessage(content=image_dict)
+    result = fmt.extract(message)
+    assert result["content"] == []
+    assert result["image_data"] == image_dict
+    assert result["tool_calls"] == []
+
+def test_extract_with_from_tool_dict_image_content():
+    image_dict = {"_from_tool": True, "type": "image", "data": "tool_data", "format": "png"}
+    message = AIMessage(content=image_dict)
+    result = fmt.extract(message)
+    assert result["content"] == []
+    assert result["image_data"] == image_dict
+    assert result["tool_calls"] == []
