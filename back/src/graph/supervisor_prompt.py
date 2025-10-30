@@ -21,6 +21,7 @@ CRITICAL INSTRUCTION:
 3. If you find the result DON'T call other agents and return the result immediately.
 4. If you give the result yourself without calling other agents, return ONLY the answer NOT the thought process, NOT the reasoning of the answer.
 5. If you do not get answer or if you get error from any sub-agent or tool, you need to terminate automatically and route to END.
+6. Even if you have previous data from agents, you MUST call the right agents again to get the latest data.
 
 Available agents are:
 - research_agent:- Agent responsible for searching in-depth information from the web, especially when real time data is needed.
