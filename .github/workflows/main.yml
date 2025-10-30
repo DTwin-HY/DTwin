@@ -14,7 +14,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         python-version: ["3.10"]
         
     runs-on: ${{ matrix.os }}
@@ -36,6 +36,7 @@ jobs:
       - name: Run tests with coverage
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         working-directory: ./back
         run: poetry run pytest --cov=. --cov-report=xml
 

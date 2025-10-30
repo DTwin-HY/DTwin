@@ -53,7 +53,7 @@ const Chatbot = () => {
             let body = '';
             if (update.messages && update.messages.length) {
               update.messages.forEach((msg) => {
-                const content = msg.content || '';
+                const content = msg.content;
                 if (content) body += `${content}\n`;
                 (msg.tool_calls || []).forEach((t) => (body += `→ ${t.name}()\n`));
               });
