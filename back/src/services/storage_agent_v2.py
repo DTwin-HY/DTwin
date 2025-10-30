@@ -11,7 +11,7 @@ load_dotenv()
 
 storage_react_agent = create_react_agent(
     name="storage_agent",
-    model="openai:gpt-4o-mini", #preferably 4o-mini or 5-mini, otherwise queries take too long
+    model="openai:gpt-4o-mini",  # preferably 4o-mini or 5-mini, otherwise queries take too long
     tools=[sql_agent_tool],
     prompt=(
         "You are an **inventory management agent**.\n\n"
