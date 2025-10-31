@@ -1,124 +1,197 @@
+from types import SimpleNamespace
 import os
 
-os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+# Aseta tarvittavat envit testejä varten
+os.environ.setdefault("OPENAI_API_KEY", "test")
 
-import pytest
-import sqlalchemy
-from flask_migrate import Migrate
+import back.src.services.sql_agent as sql_agent
 
-from back.src.extensions import db
-from back.src.index import app
-from back.src.models.models import Inventory, Product
+def test_get_env_or_raise_ok(monkeypatch):
+    monkeypatch.setenv("FOO", "bar")
+    assert sql_agent._get_env_or_raise("FOO") == "bar"
 
-from ..src.services.sql_agent import SqlStorageTool
+def make_msg(content="", tool_calls=None, id="mid"):
+    if tool_calls is None:
+        tool_calls = []
+    return SimpleNamespace(content=content, tool_calls=tool_calls, id=id)
 
 
-@pytest.fixture
-def test_app():
-    app.config.update(
-        {
-            "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": os.environ["DATABASE_URL"],
-        }
+def test_should_continue_no_tool_calls():
+    state = {"messages": [make_msg(content="hi", tool_calls=[])]}
+    res = sql_agent.should_continue(state)
+    assert res == sql_agent.END
+
+
+def test_should_continue_with_tool_calls():
+    state = {"messages": [make_msg(content="hi", tool_calls=[{"foo": "bar"}])]}
+    res = sql_agent.should_continue(state)
+    assert res == "check_query"
+
+
+def test_run_sql_agent_invokes_graph(monkeypatch):
+    # Korvaa get_sql_agent_graph keinotekoisella graafilla
+    class DummyGraph:
+        def invoke(self, _):
+            return {"messages": [make_msg("first"), make_msg("final answer")]}
+
+    monkeypatch.setattr(sql_agent, "get_sql_agent_graph", lambda: DummyGraph())
+    out = sql_agent.run_sql_agent("SELECT 1")
+    assert out == "final answer"
+
+
+def test_list_tables_uses_correct_tool(monkeypatch):
+    # Luo feikki työkalu, jolla on name ja invoke
+    def fake_invoke(call):
+        # Palautetaan olio, jolla on .content kuten oikeassa työkalussa
+        return SimpleNamespace(content="users,orders")
+
+    fake_tool = SimpleNamespace(name="sql_db_list_tables", invoke=fake_invoke)
+
+    class FakeToolkit:
+        def get_tools(self):
+            return [fake_tool]
+
+    # Patchaa _make_toolkit palauttamaan meidän FakeToolkit
+    monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
+
+    res = sql_agent.list_tables({"messages": []})
+    assert isinstance(res, dict) and "messages" in res
+    msgs = res["messages"]
+    assert len(msgs) == 3
+    assert "Available tables" in msgs[-1].content
+
+
+def _patch_llm_and_toolkit(monkeypatch, response_text="ok"):
+    """Yleispatch: LLM.bind_tools().invoke() palauttaa halutun vastauksen,
+    toolkit tarjoaa db.dialect sekä run/list/schema -työkalut niminä."""
+    fake_response = SimpleNamespace(content=response_text, id=None)
+
+    class FakeBound:
+        def invoke(self, msgs):
+            return fake_response
+
+    class FakeLLM:
+        def bind_tools(self, tools, tool_choice=None):
+            return FakeBound()
+
+    # Feikki run/list/schema -työkalut (vain name + invoke stub)
+    class FakeTool:
+        def __init__(self, name):
+            self.name = name
+
+        def invoke(self, call):
+            # Palauta sama muoto kuin oikea työkalu: .content-attribuutti
+            return SimpleNamespace(content="stub")
+
+    class FakeToolkit:
+        def __init__(self):
+            self.db = SimpleNamespace(dialect="sqlite")
+
+        def get_tools(self):
+            return [
+                FakeTool("sql_db_query"),
+                FakeTool("sql_db_schema"),
+                FakeTool("sql_db_list_tables"),
+            ]
+
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+    monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
+    return fake_response  # jos testissä halutaan tarkistaa sama olio
+
+
+def test_check_query_sets_response_id(monkeypatch):
+    # Patchaa LLM ja toolkit
+    fake_resp = _patch_llm_and_toolkit(monkeypatch, response_text="checked query")
+
+    # State, jossa viimeisessä viestissä on tool_call ja id
+    last_msg = make_msg(
+        content="",
+        tool_calls=[{"args": {"query": "SELECT 1"}}],
+        id="orig-id",
     )
+    state = {"messages": [last_msg]}
 
-    if "sqlalchemy" not in app.extensions:
-        db.init_app(app)
-    Migrate(app, db)
+    out = sql_agent.check_query(state)
+    msg = out["messages"][0]
+    # Koodi asettaa response.id = state["messages"][-1].id
+    assert msg.id == "orig-id"
+    assert msg.content == "checked query"
 
-    try:
-        from sqlalchemy.dialects.sqlite.base import SQLiteTypeCompiler
 
-        if not hasattr(SQLiteTypeCompiler, "visit_JSONB"):
+def test_generate_query_invokes_llm(monkeypatch):
+    # Patchaa LLM ja toolkit sekä kaappaa invokeen syötetyt viestit
+    captured = {}
 
-            def _visit_JSONB(self, type_, **kw):
-                return self.visit_JSON(type_, **kw)
-
-            SQLiteTypeCompiler.visit_JSONB = _visit_JSONB
-    except Exception:
+    class FakeResponse(SimpleNamespace):
         pass
 
-    ctx = app.app_context()
-    ctx.push()
-    db.create_all()
+    fake_response = FakeResponse(content="generated answer", id="resp-id")
 
-    yield app
+    class FakeBound:
+        def invoke(self, msgs):
+            captured["msgs"] = msgs
+            return fake_response
 
-    db.session.remove()
-    db.drop_all()
-    ctx.pop()
+    class FakeLLM:
+        def bind_tools(self, tools, tool_choice=None):
+            return FakeBound()
 
+    class FakeTool:
+        def __init__(self, name):
+            self.name = name
 
-@pytest.fixture
-def sql_storage_tool():
-    return SqlStorageTool()
+        def invoke(self, call):
+            return SimpleNamespace(content="stub")
 
+    class FakeToolkit:
+        def __init__(self):
+            self.db = SimpleNamespace(dialect="sqlite")
 
-def test_check_inventory_not_found(test_app, sql_storage_tool):
-    resp = sql_storage_tool.check_inventory("NON_EXISTENT")
-    assert isinstance(resp, dict)
-    assert resp.get("status") == "error"
+        def get_tools(self):
+            return [FakeTool("sql_db_query")]
 
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+    monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
 
-def test_check_inventory_found(test_app, sql_storage_tool):
-    p = Product(name="A100", price=0.0)
-    db.session.add(p)
-    db.session.commit()
+    state = {"messages": [{"role": "user", "content": "How many users?"}]}
+    out = sql_agent.generate_query(state)
 
-    inv = Inventory(product_id=p.id, amount=10)
-    db.session.add(inv)
-    db.session.commit()
-
-    resp = sql_storage_tool.check_inventory("A100")
-    assert isinstance(resp, dict)
-    assert resp.get("status") == "ok"
-    assert resp.get("inventory_level") == 10
-
-
-def test_list_inventory_with_and_without_stock(test_app, sql_storage_tool):
-    from back.src.models.models import Inventory, Product
-
-    p1 = Product(name="B200", price=0.0)
-    db.session.add(p1)
-    db.session.commit()
-    inv1 = Inventory(product_id=p1.id, amount=5)
-    db.session.add(inv1)
-
-    p2 = Product(name="C300", price=0.0)
-    db.session.add(p2)
-
-    db.session.commit()
-
-    resp = sql_storage_tool.list_inventory()
-    assert isinstance(resp, dict)
-    assert resp.get("status") == "ok"
-    inventory = resp.get("inventory")
-    assert isinstance(inventory, dict)
-    assert inventory.get("B200") == 5
-    assert inventory.get("C300") == 0
+    assert out["messages"][0].content == "generated answer"
+    assert isinstance(captured.get("msgs"), list)
+    # Ensimmäinen viesti on system-ohje (buildattu funktiossa)
+    assert captured["msgs"][0]["role"] == "system"
 
 
-def test_low_stock_alert_returns_only_below_threshold(test_app, sql_storage_tool):
-    from back.src.models.models import Inventory, Product
+def test_call_get_schema_forwards_messages(monkeypatch):
+    fake_response = SimpleNamespace(content="schema result", id="s-id")
 
-    p_low = Product(name="D400", price=0.0)
-    db.session.add(p_low)
-    db.session.commit()
-    inv_low = Inventory(product_id=p_low.id, amount=2)
-    db.session.add(inv_low)
+    class FakeBound:
+        def invoke(self, msgs):
+            # varmista että state["messages"] välittyy (ei pakollinen ehto)
+            assert msgs[-1]["content"] == "show schema"
+            return fake_response
 
-    p_ok = Product(name="E500", price=0.0)
-    db.session.add(p_ok)
-    db.session.commit()
-    inv_ok = Inventory(product_id=p_ok.id, amount=20)
-    db.session.add(inv_ok)
+    class FakeLLM:
+        def bind_tools(self, tools, tool_choice=None):
+            return FakeBound()
 
-    db.session.commit()
+    class FakeTool:
+        def __init__(self, name):
+            self.name = name
 
-    resp = sql_storage_tool.low_stock_alert(10)
-    assert isinstance(resp, dict)
-    assert resp.get("status") == "ok"
-    low = resp.get("low_stock")
-    assert isinstance(low, dict)
-    assert "D400" in low and low["D400"] == 2
-    assert "E500" not in low
+        def invoke(self, call):
+            return SimpleNamespace(content="stub")
+
+    class FakeToolkit:
+        def __init__(self):
+            self.db = SimpleNamespace(dialect="sqlite")
+
+        def get_tools(self):
+            return [FakeTool("sql_db_schema")]
+
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+    monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
+
+    state = {"messages": [{"role": "user", "content": "show schema"}]}
+    out = sql_agent.call_get_schema(state)
+    assert out["messages"][0].content == "schema result"

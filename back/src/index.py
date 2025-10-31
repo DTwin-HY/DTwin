@@ -6,7 +6,6 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_login import LoginManager
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 
 from .extensions import db
 
@@ -24,8 +23,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 bcrypt = Bcrypt(app)
 
-#pylint: disable=wrong-import-position
-#pylint: disable=unused-import
+# pylint: disable=wrong-import-position
+# pylint: disable=unused-import
 from . import routes
 
 

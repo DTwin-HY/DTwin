@@ -14,11 +14,7 @@ class User(UserMixin, db.Model):
     # cascade="all, delete-orphan" -> ketjuttaa operaatiot; poistaa orvot
     # passive_deletes=True -> anna DB:n ON DELETE CASCADE hoitaa poistot
     chats = db.relationship(
-        "Chat",
-        backref="user",
-        lazy="dynamic",
-        cascade="all, delete-orphan",
-        passive_deletes=True
+        "Chat", backref="user", lazy="dynamic", cascade="all, delete-orphan", passive_deletes=True
     )
 
 
@@ -26,10 +22,7 @@ class Chat(db.Model):
     __tablename__ = "chat"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     # JSONB = Postgresin natiivi JSON-tyyppi (haku/indeksointi mahdollista)
     # default=list = luo uuden tyhjän listan per rivi (ei jaettua []-objektia)
@@ -38,9 +31,9 @@ class Chat(db.Model):
     # server_default=now() = DB täyttää arvon INSERTissä
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     # onupdate.db.func.=now() = päivittää updated_at-arvon UPDATE:ssa
-    updated_at = db.Column(db.DateTime, server_default=db.func.now(),
-                           onupdate=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
     raw_stream = db.Column(db.Text)
+
 
 class Sale(db.Model):
     __tablename__ = "sales"

@@ -24,6 +24,7 @@ class SalesAgent:
             return self.tool.create_sales_graph(month)
         return f"Unknown task: {task}"
 
+
 class SalesTool:
     def __init__(self, csv_path: str):
         if not os.path.exists(csv_path):
@@ -36,37 +37,39 @@ class SalesTool:
             raise ValueError(f"Failed to read CSV: {e}")
 
     def generate_sales_report(self):
-        """Return key monthly sales metrics: total revenue, total items sold, best-selling product.
         """
-        self.sales_data['date'] = pd.to_datetime(self.sales_data['date'])
-        self.sales_data['month'] = self.sales_data['date'].dt.to_period('M')
+        Return key monthly sales metrics: total revenue, total items sold,
+        best-selling product.
+        """
+        self.sales_data["date"] = pd.to_datetime(self.sales_data["date"])
+        self.sales_data["month"] = self.sales_data["date"].dt.to_period("M")
 
         report = []
-        for month, group in self.sales_data.groupby('month'):
-            total_revenue = group['revenue'].sum()
-            total_items = group['items_sold'].sum()
-            best_product_row = group.groupby('product')['items_sold'].sum().idxmax()
-            best_product_sold = group.groupby('product')['items_sold'].sum()[best_product_row]
+        for month, group in self.sales_data.groupby("month"):
+            total_revenue = group["revenue"].sum()
+            total_items = group["items_sold"].sum()
+            best_product_row = group.groupby("product")["items_sold"].sum().idxmax()
+            best_product_sold = group.groupby("product")["items_sold"].sum()[best_product_row]
 
-            report.append({
-                "month": str(month),
-                "total_revenue": float(total_revenue),
-                "total_items_sold": int(total_items),
-                "best_selling_product": best_product_row,
-                "best_selling_product_units": int(best_product_sold)
-            })
+            report.append(
+                {
+                    "month": str(month),
+                    "total_revenue": float(total_revenue),
+                    "total_items_sold": int(total_items),
+                    "best_selling_product": best_product_row,
+                    "best_selling_product_units": int(best_product_sold),
+                }
+            )
 
         return report
 
     def create_sales_graph(self, month: str, graph_type: str = "line"):
-        filtered_data = self.sales_data[self.sales_data['month'].astype(str) == month]
+        filtered_data = self.sales_data[self.sales_data["month"].astype(str) == month]
         if filtered_data.empty:
             return {"status": "error", "message": f"No sales data for {month}"}
 
         aggregated_data = (
-            filtered_data.groupby("date")
-            .agg(total_revenue=("revenue", "sum"))
-            .reset_index()
+            filtered_data.groupby("date").agg(total_revenue=("revenue", "sum")).reset_index()
         )
         aggregated_data["7_day_avg"] = aggregated_data["total_revenue"].rolling(7).mean()
 
@@ -102,6 +105,7 @@ csv_path = os.path.join(os.path.dirname(__file__), "../data/mock_month_sales_dat
 sales_tool = SalesTool(csv_path)
 sales_agent_instance = SalesAgent(sales_tool)
 
+
 @tool
 def generate_sales_report() -> list:
     """
@@ -123,6 +127,7 @@ def generate_sales_report() -> list:
     request = {"task": "sales_report"}
     return sales_agent_instance.handle_request(request)
 
+
 @tool
 def create_sales_graph(month: str) -> dict:
     """
@@ -143,7 +148,7 @@ sales_agent = create_react_agent(
         "INSTRUCTIONS:\n"
         "- When asked to create a graph, use the create_sales_graph tool\n"
         "- When asked to create a report, use the generate_sales_report tool\n"
-        )
+    ),
 )
 
 if __name__ == "__main__":

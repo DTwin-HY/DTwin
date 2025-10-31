@@ -1,5 +1,6 @@
-from langchain_core.messages import convert_to_messages
 import json
+
+from langchain_core.messages import convert_to_messages
 
 
 def format_chunk(chunk, last_message=False):
@@ -27,13 +28,16 @@ def format_chunk(chunk, last_message=False):
         else:
             kind = "other"
 
-        result.append({
-            "subgraph": subgraph,
-            "node": node_name,
-            "kind": kind,
-            "messages": [extract(m) for m in messages]
-        })
+        result.append(
+            {
+                "subgraph": subgraph,
+                "node": node_name,
+                "kind": kind,
+                "messages": [extract(m) for m in messages],
+            }
+        )
     return result
+
 
 def extract(message):
     """
@@ -42,22 +46,4 @@ def extract(message):
     content = getattr(message, "content", "")
     tool_calls = getattr(message, "tool_calls", [])
 
-    image_data = None
-
-    if isinstance(content, dict):
-        if content.get("type") == "image":
-            image_data = content
-            content = []
-    elif isinstance(content, str):
-        try:
-            parsed = json.loads(content)
-            if isinstance(parsed, dict) and parsed.get("type") == "image":
-                image_data = parsed
-                content = []
-        except (json.JSONDecodeError, ValueError):
-            pass
-
-    result = {"content": content, "tool_calls": tool_calls}
-    if image_data:
-        result["image_data"] = image_data
-    return result
+    return {"content": content, "tool_calls": tool_calls}
