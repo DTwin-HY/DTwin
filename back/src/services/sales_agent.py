@@ -38,8 +38,8 @@ class SalesTool:
 
     def generate_sales_report(self):
         """
-            Return key monthly sales metrics: total revenue, total items sold, 
-            best-selling product.
+        Return key monthly sales metrics: total revenue, total items sold,
+        best-selling product.
         """
         self.sales_data["date"] = pd.to_datetime(self.sales_data["date"])
         self.sales_data["month"] = self.sales_data["date"].dt.to_period("M")

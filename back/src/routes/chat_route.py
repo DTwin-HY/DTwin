@@ -7,7 +7,6 @@ from ..database.supervisor_db import get_chats_by_user
 from ..index import app
 
 
-
 # Muuttaa SQLAlchemy-mallin dictiksi, mukaan lukien päivämäärät ISO-muotoon
 def _model_to_dict(obj):
     if hasattr(obj, "to_dict"):
