@@ -6,6 +6,9 @@ os.environ.setdefault("OPENAI_API_KEY", "test")
 
 import back.src.services.sql_agent as sql_agent
 
+def test_get_env_or_raise_ok(monkeypatch):
+    monkeypatch.setenv("FOO", "bar")
+    assert sql_agent._get_env_or_raise("FOO") == "bar"
 
 def make_msg(content="", tool_calls=None, id="mid"):
     if tool_calls is None:
