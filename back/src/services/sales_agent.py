@@ -59,68 +59,43 @@ class SalesTool:
         return report
 
     def create_sales_graph(self, month: str, graph_type: str = "line"):
-        """
-        Create a line or bar graph visualizing daily revenue for a specific month.
-        Return the graph as a base64-encoded image for the supervisor.
-        """
         filtered_data = self.sales_data[self.sales_data['month'].astype(str) == month]
         if filtered_data.empty:
-            return {
-                "status": "error",
-                "message": f"No sales data for {month}"
-            }
-
+            return {"status": "error", "message": f"No sales data for {month}"}
 
         aggregated_data = (
             filtered_data.groupby("date")
             .agg(total_revenue=("revenue", "sum"))
             .reset_index()
         )
-
         aggregated_data["7_day_avg"] = aggregated_data["total_revenue"].rolling(7).mean()
 
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(8, 6), dpi=100)
 
         if graph_type == "bar":
-            plt.bar(aggregated_data["date"], aggregated_data["total_revenue"],
-                    label="Daily Revenue")
+            plt.bar(aggregated_data["date"], aggregated_data["total_revenue"])
         else:
-            plt.plot(
-                aggregated_data["date"],
-                aggregated_data["total_revenue"],
-                marker="o",
-                label="Daily revenue",
-            )
+            plt.plot(aggregated_data["date"], aggregated_data["total_revenue"])
 
-        plt.plot(
-            aggregated_data["date"],
-            aggregated_data["7_day_avg"],
-            linestyle="--",
-            label="7-Day Avg"
-        )
-
-        plt.title(f"Daily Sales Revenue for {month}")
+        plt.plot(aggregated_data["date"], aggregated_data["7_day_avg"], linestyle="--")
         plt.xlabel("Date")
         plt.ylabel("Revenue")
         plt.xticks(rotation=45)
-        plt.grid(True)
-        plt.legend()
 
         buffer = BytesIO()
-        plt.savefig(buffer, format="png", bbox_inches="tight")
+        plt.savefig(buffer, format="jpeg", bbox_inches="tight", dpi=100)
         plt.close()
         buffer.seek(0)
-
-        img_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        image_base64 = base64.b64encode(buffer.read()).decode("utf-8")
         buffer.close()
 
         return {
-            "status": "success",
             "type": "image",
-            "format": "png",
-            "data": img_b64,
-            "caption": f"Daily Sales Revenue for {month}"
+            "source_type": "base64",
+            "data": image_base64,
+            "mime_type": "image/jpeg",
         }
+
 
 csv_path = os.path.join(os.path.dirname(__file__), "../data/mock_month_sales_data.csv")
 
@@ -151,10 +126,12 @@ def generate_sales_report() -> list:
 @tool
 def create_sales_graph(month: str) -> dict:
     """
-    Returns a base64-encoded image of a graph that visualizes daily revenue for a specific month.
+    Returns base64-encoded image data of a graph that visualizes daily revenue for a specific month.
+    The return value should be formatted as a message content block for image display.
     """
     request = {"task": "create_graph", "month": month}
-    return sales_agent_instance.handle_request(request)
+    result = sales_agent_instance.handle_request(request)
+    return result
 
 
 sales_agent = create_react_agent(
@@ -164,10 +141,9 @@ sales_agent = create_react_agent(
     prompt=(
         "You are a sales agent.\n\n"
         "INSTRUCTIONS:\n"
-        "- Assist ONLY with sales-related tasks\n"
         "- When asked to create a graph, use the create_sales_graph tool\n"
-        "- After you're done with your tasks, respond to the supervisor directly\n"
-        "- Respond ONLY with the results of your work, do NOT include ANY other text."),
+        "- When asked to create a report, use the generate_sales_report tool\n"
+        )
 )
 
 if __name__ == "__main__":
