@@ -1,4 +1,4 @@
-# back/src/services/sql_agent.py
+# pylint: disable=E1101
 import os
 from functools import lru_cache
 from typing import Any, Dict, Literal
@@ -35,7 +35,7 @@ def _make_toolkit() -> SQLDatabaseToolkit:
 
 def _get_tool(tools, name: str):
     try:
-        return next(t for t in tools if t.name == name)
+        return next(tool for tool in tools if tool.name == name)
     except StopIteration as exc:
         raise ValueError(f"Tool with name '{name}' not found in SQL toolkit") from exc
 
@@ -112,7 +112,9 @@ def check_query(state: MessagesState) -> Dict[str, Any]:
     tool_call = state["messages"][-1].tool_calls[0]
     user_message = {"role": "user", "content": tool_call["args"]["query"]}
     llm_with_tools = _make_llm().bind_tools([run_query_tool], tool_choice="any")
-    response = llm_with_tools.invoke([{"role": "system", "content": check_query_system_prompt}, user_message])
+    response = llm_with_tools.invoke(
+        [{"role": "system", "content": check_query_system_prompt}, user_message]
+    )
 
     # varmista, että tool-call id linjassa
     response.id = state["messages"][-1].id
@@ -124,6 +126,9 @@ def should_continue(state: MessagesState) -> Literal[END, "check_query"]:
     return END if not getattr(last_message, "tool_calls", None) else "check_query"
 
 
+# Rakenna SQL-agentin graafi funktiossa
+# Graafi rakennetaan vain kerran per prosessi: @lru_cache(maxsize=1) palauttaa saman
+# instanssin myöhemmissä kutsuissa, kunnes cache tyhjennetään (cache_clear).
 @lru_cache(maxsize=1)
 def build_sql_agent_graph():
     """Rakenna ja käännä graafi täsmälleen kerran per prosessi."""
@@ -171,5 +176,7 @@ sql_agent_tool = StructuredTool.from_function(
 if __name__ == "__main__":
     graph = get_sql_agent_graph()
     question = "What's the most expensive product in the inventory?"
-    for step in graph.stream({"messages": [{"role": "user", "content": question}]}, stream_mode="values"):
+    for step in graph.stream(
+        {"messages": [{"role": "user", "content": question}]}, stream_mode="values"
+    ):
         step["messages"][-1].pretty_print()

@@ -1,5 +1,6 @@
-from langchain_core.messages import convert_to_messages
 import json
+
+from langchain_core.messages import convert_to_messages
 
 
 def format_chunk(chunk, last_message=False):
@@ -27,13 +28,16 @@ def format_chunk(chunk, last_message=False):
         else:
             kind = "other"
 
-        result.append({
-            "subgraph": subgraph,
-            "node": node_name,
-            "kind": kind,
-            "messages": [extract(m) for m in messages]
-        })
+        result.append(
+            {
+                "subgraph": subgraph,
+                "node": node_name,
+                "kind": kind,
+                "messages": [extract(m) for m in messages],
+            }
+        )
     return result
+
 
 def extract(message):
     """

@@ -7,6 +7,7 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+
 def add(a: float, b: float):
     """Add two numbers."""
     return a + b

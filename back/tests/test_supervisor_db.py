@@ -1,4 +1,3 @@
-# esimerkki tests/test_supervisor_db.py
 import os
 import importlib
 import pytest
@@ -6,9 +5,10 @@ from ..src.extensions import db
 from ..src.models.models import User
 from ..src.database.supervisor_db import create_new_chat, get_chats_by_user
 
+
 @pytest.fixture
 def app():
-    # tuo vasta nyt, kun conftest on jo asettanut envin
+    # conftest juostaan ensin ja vasta sen jälkeen importataan index
     from ..src import index as index_mod
     importlib.reload(index_mod)  # varmistaa että lukee environmentin
     app = index_mod.app
@@ -18,6 +18,7 @@ def app():
 
     with app.app_context():
         db.create_all()
+        # kun testit on tehty, pudotetaan taulut
         yield app
         db.session.remove()  # tärkeä ennen drop_all()
         db.drop_all()

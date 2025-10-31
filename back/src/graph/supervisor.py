@@ -26,7 +26,8 @@ init_supervisor = create_supervisor(
     prompt=supervisor_prompt,
     add_handoff_back_messages=True,
     output_mode="full_history",
-    )
+)
+
 
 def stream_process(prompt: str, thread_id: str = "3"):
     """
@@ -45,8 +46,9 @@ def stream_process(prompt: str, thread_id: str = "3"):
             config,
             subgraphs=True,
         ):
-            output = format_chunk(chunk) # stream the output to the frontend
+            output = format_chunk(chunk)  # stream the output to the frontend
             yield f"data: {json.dumps(output)}\n\n"
+
 
 if __name__ == "__main__":
     with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer:
@@ -54,7 +56,7 @@ if __name__ == "__main__":
 
         supervisor = init_supervisor.compile(checkpointer=checkpointer)
 
-        config = {"configurable": {"thread_id":"1"}}
+        config = {"configurable": {"thread_id": "1"}}
         for chunk in supervisor.stream(
             {
                 "messages": [
@@ -74,8 +76,8 @@ if __name__ == "__main__":
                 "messages": [
                     {
                         "role": "user",
-                        "content": "Which item was there least of in the previous query" +
-                        ", also what was my name?",
+                        "content": "Which item was there least of in the previous query"
+                        + ", also what was my name?",
                     }
                 ]
             },

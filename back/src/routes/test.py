@@ -7,6 +7,7 @@ from ..index import app
 def ping():
     return jsonify({"ok": True, "message": "pong"})
 
+
 @app.get("/")
 def home():
     return jsonify({"ok": True, "message": "welcome to dtwin!"})

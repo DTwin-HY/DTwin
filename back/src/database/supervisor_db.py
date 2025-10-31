@@ -26,6 +26,7 @@ def create_new_chat(user_id, messages, thread_id, raw_stream):
 
     return new_chat
 
+
 def get_chats_by_user(user_id):
     """
     Retrieve all chats for a given user.

@@ -49,14 +49,19 @@ const Chatbot = () => {
         if (Array.isArray(chunk)) {
           const cards = chunk.map((update) => {
             const title = headerLine(update);
-            let body = "";
+            let body = '';
             let imageData = null;
 
             if (update.messages && update.messages.length) {
               update.messages.forEach((msg) => {
-                const content = msg.content;
+                // Check for image data first
+                if (msg.image_data) {
+                  imageData = msg.image_data;
+                }
+
+                const content = msg.content || '';
                 if (content) body += `${content}\n`;
-                (msg.tool_calls || []).forEach(t => (body += `→ ${t.name}()\n`));
+                (msg.tool_calls || []).forEach((t) => (body += `→ ${t.name}()\n`));
               });
             }
 
@@ -111,12 +116,7 @@ const Chatbot = () => {
         {responses.length > 0 && (
           <div>
             {responses.map((r, i) => (
-              <MessageCard 
-                key={i} 
-                title={r.title} 
-                content={r.body}
-                imageData={r.imageData}
-              />
+              <MessageCard key={i} title={r.title} content={r.body} imageData={r.imageData} />
             ))}
           </div>
         )}
