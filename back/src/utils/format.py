@@ -46,7 +46,4 @@ def extract(message):
     content = getattr(message, "content", "")
     tool_calls = getattr(message, "tool_calls", [])
 
-    return {
-        "content": content,
-        "tool_calls": tool_calls
-    }
+    return {"content": content, "tool_calls": tool_calls}

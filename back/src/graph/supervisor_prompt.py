@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-supervisor_prompt="""
-=======
 supervisor_prompt = """
->>>>>>> 8be797d (Add comments, remove useless imports and fixed)
 You are an AI supervisor managing company data and helping user receive the right answers,
 you will try to solve the given task based on tools and agents you have access to.
 Always follow below instruction:-
