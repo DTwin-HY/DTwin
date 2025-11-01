@@ -4,14 +4,14 @@ import Login from './components/SignIn';
 import PrivateRoute from './components/PrivateRoute';
 import GuestRoute from './components/GuestRoute';
 import Layout from './components/Layout';
-import Chatbot from './components/Chatbot';
+import Home from './components/Home';
 
 const App = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route element={<PrivateRoute />}>
-          <Route index element={<Chatbot />} />
+          <Route index element={<Home />} />
         </Route>
         <Route element={<GuestRoute />}>
           <Route path="/signin" element={<Login />} />
