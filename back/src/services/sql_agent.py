@@ -94,6 +94,7 @@ def check_query(state: MessagesState) -> Dict[str, Any]:
     check_query_system_prompt = f"""
     You are a SQL expert with a strong attention to detail.
     Double check the {sql_db.dialect} query for common mistakes, including:
+    - Output ONLY a SQL code block and nothing else
     - Using NOT IN with NULL values
     - Using UNION when UNION ALL should have been used
     - Using BETWEEN for exclusive ranges
