@@ -106,7 +106,6 @@ const Chatbot = () => {
       finalizeLastResponse();
     }
   };
-  console.log(chats);
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-gray-100 p-4 pt-8">
       <div className="mt-4 w-[700px] rounded-xl bg-white p-6 shadow-md">
