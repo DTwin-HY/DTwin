@@ -34,7 +34,7 @@ class SalesTool:
             self.sales_data["date"] = pd.to_datetime(self.sales_data["date"])
             self.sales_data["month"] = self.sales_data["date"].dt.to_period("M")
         except Exception as e:
-            raise ValueError(f"Failed to read CSV: {e}")
+            raise ValueError(f"Failed to read CSV: {e}") from e
 
     def generate_sales_report(self):
         """
