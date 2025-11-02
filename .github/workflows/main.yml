@@ -1,26 +1,28 @@
-name: Run backend tests
+name: Run backend & frontend checks
 
 on:
   push:
     paths:
       - back/**
+      - frontend/**
     branches: [ main ]
   pull_request:
     paths:
       - back/**
+      - frontend/**
     branches: [ main ]
 
 jobs:
-  test:
+  backend:
     strategy:
       matrix:
         os: [ubuntu-latest]
         python-version: ["3.10"]
-        
     runs-on: ${{ matrix.os }}
-    
+
     steps:
       - uses: actions/checkout@v5
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -32,6 +34,13 @@ jobs:
       - name: Install dependencies
         working-directory: ./back
         run: poetry install
+
+      - name: Lint & format (backend)
+        working-directory: ./back
+        run: |
+          poetry run isort src/
+          poetry run black src/
+          poetry run pylint src/ --fail-under=9.0
 
       - name: Run tests with coverage
         env:
@@ -47,3 +56,28 @@ jobs:
           flags: backend
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
+
+      - name: Install deps (frontend)
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Format (frontend)
+        working-directory: ./frontend
+        run: npm run format
+
+      - name: Lint (frontend)
+        working-directory: ./frontend
+        run: npm run lint
