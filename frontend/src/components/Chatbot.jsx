@@ -55,7 +55,6 @@ const Chatbot = () => {
 
             if (update.messages && update.messages.length) {
               update.messages.forEach((msg) => {
-                // Check for image data first
                 if (msg.image_data) {
                   imageData = msg.image_data;
                 }

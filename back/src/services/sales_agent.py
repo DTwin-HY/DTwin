@@ -86,7 +86,7 @@ class SalesTool:
         plt.xticks(rotation=45)
 
         buffer = BytesIO()
-        plt.savefig(buffer, format="jpeg", bbox_inches="tight", dpi=100)
+        plt.savefig(buffer, format="png", bbox_inches="tight", dpi=100)
         plt.close()
         buffer.seek(0)
         image_base64 = base64.b64encode(buffer.read()).decode("utf-8")
@@ -94,9 +94,7 @@ class SalesTool:
 
         return {
             "type": "image",
-            "source_type": "base64",
             "data": image_base64,
-            "mime_type": "image/jpeg",
         }
 
 
@@ -141,13 +139,21 @@ def create_sales_graph(month: str) -> dict:
 
 sales_agent = create_react_agent(
     name="sales_agent",
-    model="openai:gpt-5-nano",
+    model="openai:gpt-4o-mini",
     tools=[generate_sales_report, create_sales_graph],
     prompt=(
-        "You are a sales agent.\n\n"
-        "INSTRUCTIONS:\n"
-        "- When asked to create a graph, use the create_sales_graph tool\n"
-        "- When asked to create a report, use the generate_sales_report tool\n"
+        "You ONLY call tools and return their output. No thinking, no explanation.\n\n"
+        "PROCESS:\n"
+        "1. Receive request\n"
+        "2. Call appropriate tool\n"
+        "3. Return ONLY the tool's return value\n"
+        "4. STOP\n\n"
+        "FORBIDDEN:\n"
+        "- Adding text like 'Here is...', 'I created...'\n"
+        "- Explaining what you did\n"
+        "- Formatting the output\n"
+        "- Any text before/after the tool output\n\n"
+        "RETURN ONLY THE TOOL OUTPUT AS-IS."
     ),
 )
 

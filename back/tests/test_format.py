@@ -80,3 +80,54 @@ def test_format_chunk_empty_namespace():
     empty_ns_chunk = ((), {'agent': {'messages': agent_message}})
     res = fmt.format_chunk(empty_ns_chunk)
     assert res == []
+
+def test_extract_with_image_dict():
+    msg = AIMessage(
+        content=[{"type": "image", "data": "fake_base64"}],
+        tool_calls=[]
+    )
+    out = fmt.extract(msg)
+    assert "image_data" not in out
+    assert isinstance(out["content"], list)
+    assert out["content"][0]["type"] == "image"
+
+def test_extract_with_image_json():
+    content = '{"type": "image", "data": "fake_base64"}'
+    msg = AIMessage(content=content, tool_calls=[])
+    out = fmt.extract(msg)
+    assert "image_data" in out
+    assert out["image_data"]["data"] == "fake_base64"
+    assert out["content"] == ""
+
+def test_extract_with_invalid_json():
+    content = '{"type": "image", "data": "missing_end_brace"'
+    msg = AIMessage(content=content, tool_calls=[])
+    out = fmt.extract(msg)
+    assert "image_data" not in out
+    assert out["content"] == content
+
+def test_extract_with_whitespace_string():
+    msg = AIMessage(content="   ", tool_calls=[])
+    out = fmt.extract(msg)
+    assert out["content"].strip() == ""
+    assert out["tool_calls"] == []
+
+def test_format_chunk_non_tuple_input():
+    chunk = {"agent": {"messages": [AIMessage(content="ok", tool_calls=[])]}}
+    res = fmt.format_chunk(chunk)
+    assert isinstance(res, list)
+    assert res[0]["subgraph"] is None
+    assert res[0]["messages"][0]["content"] == "ok"
+
+def test_extract_with_image_dict_direct():
+    class MockMessage:
+        def __init__(self):
+            self.content = {"type": "image", "data": "xyz123"}
+            self.tool_calls = []
+
+    msg = MockMessage()
+    out = fmt.extract(msg)
+    assert out["content"] == ""
+    assert "image_data" in out
+    assert out["image_data"]["data"] == "xyz123"
+    assert out["tool_calls"] == []
