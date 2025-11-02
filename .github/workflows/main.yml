@@ -68,16 +68,16 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: './front/package-lock.json'
+          cache-dependency-path: './frontend/package-lock.json'
 
       - name: Install deps (frontend)
-        working-directory: ./front
+        working-directory: ./frontend
         run: npm ci
 
       - name: Format (frontend)
-        working-directory: ./front
+        working-directory: ./frontend
         run: npm run format
 
       - name: Lint (frontend)
-        working-directory: ./front
+        working-directory: ./frontend
         run: npm run lint
