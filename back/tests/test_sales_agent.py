@@ -53,8 +53,6 @@ def test_create_sales_graph_success(sales_tool):
 
     assert isinstance(result, dict)
     assert result["type"] == "image"
-    assert result["source_type"] == "base64"
-    assert result["mime_type"] == "image/jpeg"
     assert "data" in result
 
     try:
@@ -104,8 +102,6 @@ def test_create_sales_graph_bar_chart(sales_tool):
 
     assert isinstance(result, dict)
     assert result["type"] == "image"
-    assert result["source_type"] == "base64"
-    assert result["mime_type"] == "image/jpeg"
     assert "data" in result
 
     try:

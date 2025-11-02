@@ -54,7 +54,6 @@ const Chatbot = () => {
 
             if (update.messages && update.messages.length) {
               update.messages.forEach((msg) => {
-                // Check for image data first
                 if (msg.image_data) {
                   imageData = msg.image_data;
                 }
@@ -122,7 +121,18 @@ const Chatbot = () => {
         )}
         {finalMessage && (
           <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
-            <p>{finalMessage.body}</p>
+            {finalMessage.imageData ? (
+              <div className="flex flex-col gap-2">
+                {finalMessage.body && <p className="mb-2">{finalMessage.body}</p>}
+                <img
+                  src={`data:image/png;base64,${finalMessage.imageData.data}`}
+                  alt="Sales Graph"
+                  className="rounded-lg shadow-md max-w-full h-auto"
+                />
+              </div>
+            ) : (
+              <p>{finalMessage.body}</p>
+            )}
           </div>
         )}
       </div>
