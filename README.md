@@ -12,6 +12,8 @@ A LangGraph digital twin project.
 ## Documentation
 
 * [API documentation](./docs/api.md)
+* [Project workflow & branching strategy](./docs/branching.md)
+* [Definition of Done](./docs/dod.md)
 * [Software architecture](./docs/architecture.md)
 
 ## Setting up the development environment locally
@@ -62,7 +64,7 @@ The repo contains ```Dockerfiles``` for building Docker images of the backend se
 
 1. To `.env` add the lines (db has to be called dtwin currently) and change the DB url from the local version
 ```
-DATABASE_URL= postgresql://dtwin:USERNAME@db:5432/dtwin
+DATABASE_URL= postgresql://dtwin:PASSWORD@db:5432/dtwin
 POSTGRES_USER= ...
 POSTGRES_PASSWORD= ...
 POSTGRES_DB=dtwin
