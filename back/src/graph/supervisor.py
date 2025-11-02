@@ -28,6 +28,7 @@ init_supervisor = create_supervisor(
     output_mode="full_history",
 )
 
+
 # pylint: disable=contextmanager-generator-missing-cleanup
 def stream_process(prompt: str, thread_id: str = "3"):
     """

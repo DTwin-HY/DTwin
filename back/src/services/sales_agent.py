@@ -36,7 +36,6 @@ class SalesTool:
         except Exception as e:
             raise ValueError(f"Failed to read CSV: {e}") from e
 
-
     def generate_sales_report(self):
         """
         Return key monthly sales metrics: total revenue, total items sold,
