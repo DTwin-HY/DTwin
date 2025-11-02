@@ -4,12 +4,12 @@ on:
   push:
     paths:
       - back/**
-      - front/**
+      - frontend/**
     branches: [ main ]
   pull_request:
     paths:
       - back/**
-      - front/**
+      - frontend/**
     branches: [ main ]
 
 jobs:
