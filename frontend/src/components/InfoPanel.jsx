@@ -5,7 +5,7 @@ const InfoPanel = () => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div className="p-5">
+    <div className="p-5 px-10">
       <div
         className={`bg-white shadow-md transition-all duration-300 ${
           isExpanded ? 'rounded-t-xl' : 'rounded-xl'
