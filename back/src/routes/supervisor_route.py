@@ -17,15 +17,17 @@ def supervisor_route():
     data = request.get_json()
     prompt = data.get("message", "").strip()
 
-    thread_id = uuid.uuid4().hex
+    # thread_id = uuid.uuid4().hex
+    thread_id = str(current_user.get_id())
+
     def event_stream():
         messages = [{"role": "user", "content": prompt}]
         # assistant_parts = []
         raw = []
         try:
             for sse in stream_process(prompt, thread_id):
-                raw.append(sse)      # koko rivi talteen
-                yield sse            # striimaa heti
+                raw.append(sse)  # koko rivi talteen
+                yield sse  # striimaa heti
         finally:
             # tässä et yritä parsia — tallennat koko datan
             create_new_chat(
@@ -34,4 +36,5 @@ def supervisor_route():
                 thread_id,
                 raw_stream="".join(raw),
             )
+
     return Response(stream_with_context(event_stream()), mimetype="text/event-stream")

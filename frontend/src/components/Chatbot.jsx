@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { streamMessage, fetchChats } from '../api/chatgpt';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 import MessageCard from './MessageCard';
+import FinalMessageCard from './FinalMessageCard';
 import { headerLine } from '../utils/streamFormat';
 
 const Chatbot = () => {
@@ -47,19 +48,25 @@ const Chatbot = () => {
     try {
       await streamMessage(inputValue, (chunk) => {
         if (Array.isArray(chunk)) {
-          // Process the chunk and extract relevant information
           const cards = chunk.map((update) => {
             const title = headerLine(update);
             let body = '';
+            let imageData = null;
+
             if (update.messages && update.messages.length) {
               update.messages.forEach((msg) => {
+                // Check for image data first
+                if (msg.image_data) {
+                  imageData = msg.image_data;
+                }
+
                 const content = msg.content || '';
                 if (content) body += `${content}\n`;
                 (msg.tool_calls || []).forEach((t) => (body += `→ ${t.name}()\n`));
               });
             }
 
-            return { title, body: body.trim() };
+            return { title, body: body.trim(), imageData };
           });
 
           setResponses((prev) => [...prev, ...cards]);
@@ -106,19 +113,26 @@ const Chatbot = () => {
             <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
           </div>
         )}
+
         {finalMessage && (
-          <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
-            <p>{finalMessage.body}</p>
-          </div>
+          <FinalMessageCard
+            body={finalMessage.body}
+            messages={responses}
+          />
         )}
-        {/* Render message cards for each response */}
-        {responses.length > 0 && (
-          <div>
-            {responses.map((r, i) => (
-              <MessageCard key={i} title={r.title} content={r.body} />
-            ))}
-          </div>
-        )}
+
+        {/* Render message card for the latest response if loading=true*/}
+        {loading && responses.length > 0 && (() => {
+          const last = responses[responses.length - 1];
+          return last ? (
+            <MessageCard
+              key={responses.length - 1}
+              title={last.title}
+              content={last.body}
+              imageData={last.imageData}
+            />
+          ) : null;
+        })()}
       </div>
 
       {loading && (

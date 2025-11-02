@@ -12,6 +12,7 @@ from ..services.sales_agent import sales_agent
 from ..services.storage_agent import storage_react_agent
 from ..utils.format import format_chunk
 from ..utils.pretty_print import pretty_print_messages
+from .supervisor_prompt import supervisor_prompt
 
 load_dotenv()
 
@@ -22,20 +23,11 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 init_supervisor = create_supervisor(
     model=init_chat_model("openai:gpt-4.1"),
     agents=[research_agent, math_agent, storage_react_agent, sales_agent],
-    prompt=(
-        "You are a supervisor managing four agents:\n"
-        "- a research agent. Assign research-related tasks to this agent\n"
-        "- a math agent. Assign math-related tasks to this agent\n"
-        "- a storage agent. Assign storage related tasks to this agent."
-        "- a sales agent. Assign sales related tasks to this agent."
-        "Assign work to one agent at a time, do not call agents in parallel.\n"
-        "When the sales agent creates a graph, return the graph as a base64-encoded image.\n"
-        # "If you find the result DON'T call other agents and return the result immediately\n"
-        "Do not do any work yourself."
-    ),
+    prompt=supervisor_prompt,
     add_handoff_back_messages=True,
     output_mode="full_history",
-    )
+)
+
 
 def stream_process(prompt: str, thread_id: str = "3"):
     """
@@ -54,8 +46,9 @@ def stream_process(prompt: str, thread_id: str = "3"):
             config,
             subgraphs=True,
         ):
-            output = format_chunk(chunk) # stream the output to the frontend
+            output = format_chunk(chunk)  # stream the output to the frontend
             yield f"data: {json.dumps(output)}\n\n"
+
 
 if __name__ == "__main__":
     with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer:
@@ -63,7 +56,7 @@ if __name__ == "__main__":
 
         supervisor = init_supervisor.compile(checkpointer=checkpointer)
 
-        config = {"configurable": {"thread_id":"1"}}
+        config = {"configurable": {"thread_id": "1"}}
         for chunk in supervisor.stream(
             {
                 "messages": [
@@ -83,8 +76,8 @@ if __name__ == "__main__":
                 "messages": [
                     {
                         "role": "user",
-                        "content": "Which item was there least of in the previous query" + 
-                        ", also what was my name?",
+                        "content": "Which item was there least of in the previous query"
+                        + ", also what was my name?",
                     }
                 ]
             },

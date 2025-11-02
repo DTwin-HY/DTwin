@@ -6,7 +6,8 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_login import LoginManager
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
+
+from .extensions import db
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
@@ -16,14 +17,14 @@ load_dotenv()
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
 app.config["SECRET_KEY"] = getenv("SECRET_KEY")
 
-db = SQLAlchemy(app)
+db.init_app(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 bcrypt = Bcrypt(app)
 
-#pylint: disable=wrong-import-position
-#pylint: disable=unused-import
+# pylint: disable=wrong-import-position
+# pylint: disable=unused-import
 from . import routes
 
 
