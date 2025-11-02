@@ -28,7 +28,7 @@ const InfoPanel = () => {
       </div>
 
       <div
-        className={`overflow-hidden transition-all duration-300 ${
+        className={`overflow-hidden bg-white transition-all duration-300 ${
           isExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
@@ -63,31 +63,6 @@ const InfoPanel = () => {
               <div className="mt-2 text-sm text-gray-700">
                 Sales and warehouse tiles update in real time (SSE). Chat history is saved.
               </div>
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
-            <div className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
-              Quick prompts
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {[
-                'Show me revenue and orders for today',
-                'Which products are low in stock?',
-                'Create a short sales summary for the last 24h',
-                'Find top return reasons in the last 30 days',
-              ].map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() =>
-                    window.dispatchEvent(new CustomEvent('example-prompt', { detail: p }))
-                  }
-                  className="rounded-full bg-white px-4 py-2 text-sm text-gray-700 shadow-sm transition-all hover:scale-105 hover:bg-indigo-50 hover:text-indigo-700 hover:shadow-md"
-                >
-                  {p}
-                </button>
-              ))}
             </div>
           </div>
         </div>
