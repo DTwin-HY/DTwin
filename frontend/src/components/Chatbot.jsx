@@ -114,25 +114,22 @@ const Chatbot = () => {
           </div>
         )}
 
-        {finalMessage && (
-          <FinalMessageCard
-            body={finalMessage.body}
-            messages={responses}
-          />
-        )}
+        {finalMessage && <FinalMessageCard body={finalMessage.body} messages={responses} />}
 
         {/* Render message card for the latest response if loading=true*/}
-        {loading && responses.length > 0 && (() => {
-          const last = responses[responses.length - 1];
-          return last ? (
-            <MessageCard
-              key={responses.length - 1}
-              title={last.title}
-              content={last.body}
-              imageData={last.imageData}
-            />
-          ) : null;
-        })()}
+        {loading &&
+          responses.length > 0 &&
+          (() => {
+            const last = responses[responses.length - 1];
+            return last ? (
+              <MessageCard
+                key={responses.length - 1}
+                title={last.title}
+                content={last.body}
+                imageData={last.imageData}
+              />
+            ) : null;
+          })()}
       </div>
 
       {loading && (

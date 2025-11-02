@@ -4,11 +4,11 @@ const MessageCard = ({ title, content, imageData, defaultOpen = false }) => {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="mt-3 rounded-lg border-l-4 border-violet-400 bg-violet-50 shadow-sm">
+    <div className="mt-3 rounded-lg border-l-4 border-violet-400 bg-violet-50 shadow-sm transition-shadow hover:shadow-md">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between px-4 py-3"
+        className="flex w-full cursor-pointer items-center justify-between px-4 py-3"
       >
         <span className="font-medium text-gray-800">{title}</span>
         <span className={`transition-transform ${open ? 'rotate-90' : ''}`} aria-hidden>
