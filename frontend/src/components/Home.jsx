@@ -5,12 +5,12 @@ import SalesCard from './SalesCard';
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gray-100">
       <div className="w-full">
         <InfoPanel />
       </div>
 
-      <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="space-y-6 lg:col-span-1">
             <SalesCard className="h-full w-full" />

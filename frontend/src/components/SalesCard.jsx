@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, Users, Euro } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+
 const SalesCard = () => {
   const [period, setPeriod] = useState('daily');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [salesData, setSalesData] = useState({ revenue: 0, sales: 0, customers: 0 });
 
   // Helper to format Date to yyyy-mm-dd
   const formatDate = (date) => date.toISOString().split('T')[0];
@@ -33,17 +36,26 @@ const SalesCard = () => {
     }
   }, [period]);
 
-  const getSalesData = () => {
-    // TODO: muokkaa oikeeks api kutsuks
-    const random = () => Math.floor(Math.random() * 1000);
-    return {
-      sales: random(),
-      revenue: random() * 15,
-      customers: random() / 2,
-    };
+  const getSalesData = async () => {
+    try {
+      const params = new URLSearchParams({
+        start_date: startDate,
+        end_date: endDate,
+      });
+      const res = await fetch(`${API_URL}/api/sales-data?${params.toString()}`);
+      const json = await res.json();
+      setSalesData(json);
+    } catch (err) {
+      console.error('Fetch failed:', err);
+    }
   };
 
-  const data = getSalesData();
+  // Poll every 10 seconds
+  useEffect(() => {
+    getSalesData();
+    const id = setInterval(getSalesData, 10000);
+    return () => clearInterval(id);
+  }, [period, startDate, endDate]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-start p-6">
@@ -94,7 +106,7 @@ const SalesCard = () => {
               <Euro className="text-green-600" size={22} />
               <p className="font-medium text-gray-700">Revenue (€)</p>
             </div>
-            <p className="text-lg font-semibold text-gray-900">{data.revenue}</p>
+            <p className="text-lg font-semibold text-gray-900">{salesData.revenue}</p>
           </div>
 
           <div className="flex items-center justify-between rounded-xl bg-blue-50 p-4">
@@ -102,7 +114,7 @@ const SalesCard = () => {
               <TrendingUp className="text-blue-600" size={22} />
               <p className="font-medium text-gray-700">Sales (Units)</p>
             </div>
-            <p className="text-lg font-semibold text-gray-900">{data.sales}</p>
+            <p className="text-lg font-semibold text-gray-900">{salesData.sales}</p>
           </div>
 
           <div className="flex items-center justify-between rounded-xl bg-purple-50 p-4">
@@ -110,7 +122,7 @@ const SalesCard = () => {
               <Users className="text-purple-600" size={22} />
               <p className="font-medium text-gray-700">Customers</p>
             </div>
-            <p className="text-lg font-semibold text-gray-900">{Math.floor(data.customers)}</p>
+            <p className="text-lg font-semibold text-gray-900">{Math.floor(salesData.customers)}</p>
           </div>
         </div>
       </div>
