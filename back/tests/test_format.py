@@ -118,3 +118,16 @@ def test_format_chunk_non_tuple_input():
     assert isinstance(res, list)
     assert res[0]["subgraph"] is None
     assert res[0]["messages"][0]["content"] == "ok"
+
+def test_extract_with_image_dict_direct():
+    class MockMessage:
+        def __init__(self):
+            self.content = {"type": "image", "data": "xyz123"}
+            self.tool_calls = []
+
+    msg = MockMessage()
+    out = fmt.extract(msg)
+    assert out["content"] == ""
+    assert "image_data" in out
+    assert out["image_data"]["data"] == "xyz123"
+    assert out["tool_calls"] == []
