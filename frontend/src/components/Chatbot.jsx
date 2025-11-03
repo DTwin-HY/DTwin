@@ -25,16 +25,9 @@ const Chatbot = () => {
       if (finalizedRef.current) return; // Already finalized this turn
       finalizedRef.current = true;
 
-      if (!prev || prev.length === 0) {
-        setFinalMessage(null);
-        return prev;
-      }
       const last = prev[prev.length - 1];
       const steps = prev.slice(0, -1);
       console.log('Last message and steps:', last, steps);
-
-      // keep current UI behavior
-      setFinalMessage(last);
 
       // append a compact chat object for history usage
       setChats(prevChats => [
@@ -59,8 +52,6 @@ const Chatbot = () => {
     setSuccessMessage('');
     setErrorMessage('');
     setResponses([]);
-    setFinalMessage(null);
-    setUserMessage(inputValue);
     setChats(prevChats => [
       ...(prevChats || []),
       { role: 'user', message: inputValue }
