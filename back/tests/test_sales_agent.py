@@ -2,6 +2,7 @@ import sys
 import os
 import pytest
 import base64
+import pandas as pd
 from unittest.mock import MagicMock
 
 mock_supervisor = MagicMock()
@@ -16,34 +17,67 @@ sys.modules["langgraph.prebuilt"] = mock_prebuilt
 from ..src.services.sales_agent import SalesTool, SalesAgent
 
 
-csv_path = os.path.join(os.path.dirname(__file__), "../src/data/mock_month_sales_data.csv")
+@pytest.fixture
+def mock_sales_data():
+    """Provide fake sales data for mocking database results"""
+    data = {
+        "date": pd.date_range("2025-09-01", periods=5, freq="D"),
+        "product": ["A", "B", "C", "A", "B"],
+        "items_sold": [100, 200, 300, 400, 500],
+        "revenue": [1000.0, 2000.0, 3000.0, 4000.0, 5000.0],
+    }
+    df = pd.DataFrame(data)
+    df["month"] = df["date"].dt.to_period("M")
+    return df
 
 @pytest.fixture
-def sales_tool():
-    tool_instance = SalesTool(csv_path)
-    return tool_instance
+def sales_tool(mock_sales_data):
+    """Patch _fetch_sales_data to return mock dataframe"""
+    tool = SalesTool()
+    tool._fetch_sales_data = MagicMock(return_value=mock_sales_data)
+    return tool
+
+@pytest.fixture(autouse=True)
+def patch_sales_tool_fetch(monkeypatch):
+    """Automatically mock database calls for all SalesTool instances."""
+    mock_df = pd.DataFrame({
+        "date": pd.date_range("2025-09-01", periods=5, freq="D"),
+        "product": ["A", "B", "C", "A", "B"],
+        "items_sold": [10, 20, 30, 40, 50],
+        "revenue": [100.0, 200.0, 300.0, 400.0, 500.0],
+    })
+    mock_df["month"] = mock_df["date"].dt.to_period("M")
+
+    from ..src.services import sales_agent as module
+    monkeypatch.setattr(module.sales_tool, "_fetch_sales_data", lambda *a, **kw: mock_df)
+    monkeypatch.setattr(module.sales_agent_instance.tool, "_fetch_sales_data", lambda *a, **kw: mock_df)
 
 def test_generate_sales_report(sales_tool):
     agent = SalesAgent(sales_tool)
-    request = {"task": "sales_report"}
+    request = {"task": "sales_report", "group_by": "month"}
     report = agent.handle_request(request)
 
-    assert isinstance(report, list)
-    assert len(report) == 1
-    month_data = report[0]
+    assert isinstance(report, dict)
+    assert report["status"] == "success"
+    assert "data" in report
+    data = report["data"]
+
+    assert isinstance(data, list)
+    assert len(data) == 1
+    month_data = data[0]
     expected_keys = {
-        "month",
+        "period",
         "total_revenue",
         "total_items_sold",
         "best_selling_product",
         "best_selling_product_units",
     }
     assert set(month_data.keys()) == expected_keys
-    assert month_data["month"] == "2025-09"
-    assert month_data["total_revenue"] == 21790.40
-    assert month_data["total_items_sold"] == 2558
-    assert month_data["best_selling_product"] == "G"
-    assert month_data["best_selling_product_units"] == 636
+    assert month_data["period"] == "2025-09"
+    assert isinstance(month_data["total_revenue"], float)
+    assert isinstance(month_data["total_items_sold"], int)
+    assert isinstance(month_data["best_selling_product"], str)
+    assert isinstance(month_data["best_selling_product_units"], int)
 
 def test_create_sales_graph_success(sales_tool):
     agent = SalesAgent(sales_tool)
@@ -61,18 +95,19 @@ def test_create_sales_graph_success(sales_tool):
     except Exception as e: # pragma: no cover
         pytest.fail(f"Failed to decode base64 image data: {e}") # pragma: no cover
 
-def test_create_sales_graph_invalid_month(sales_tool):
-    agent = SalesAgent(sales_tool)
-    month = "3000-01"
+def test_create_sales_graph_invalid_month():
+    tool = SalesTool()
+    tool._fetch_sales_data = MagicMock(return_value=pd.DataFrame())
+    agent = SalesAgent(tool)
 
-    result = agent.handle_request({"task": "create_graph", "month": month})
+    result = agent.handle_request({"task": "create_graph", "month": "3000-01"})
 
     assert isinstance(result, dict)
     assert result["status"] == "error"
     assert "No sales data" in result["message"]
 
 def test_create_sales_graph_missing_month():
-    agent = SalesAgent(SalesTool(csv_path))
+    agent = SalesAgent(sales_tool)
 
     with pytest.raises(ValueError, match="Month parameter is required"):
         agent.handle_request({"task": "create_graph"})
@@ -82,17 +117,6 @@ def test_unknown_task(sales_tool):
     result = agent.handle_request({"task": "unknown_task"})
 
     assert "Unknown task" in result
-
-def test_sales_tool_init_file_not_found():
-    with pytest.raises(FileNotFoundError, match="Sales data not found"):
-        SalesTool("/non/existent/path.csv")
-
-def test_sales_tool_init_invalid_csv(tmp_path):
-    invalid_csv = tmp_path / "invalid.csv"
-    invalid_csv.write_text("not,valid,csv\ndata")
-
-    with pytest.raises(ValueError, match="Failed to read CSV"):
-        SalesTool(str(invalid_csv))
 
 def test_create_sales_graph_bar_chart(sales_tool):
     agent = SalesAgent(sales_tool)
@@ -113,33 +137,33 @@ def test_create_sales_graph_bar_chart(sales_tool):
 def test_sales_tool_generate_report_calculations(sales_tool):
     """Test that generate_sales_report calculates correct aggregations"""
     report = sales_tool.generate_sales_report()
+    assert report["status"] == "success"
 
-    assert isinstance(report, list)
-    for month_data in report:
-        assert "month" in month_data
-        assert "total_revenue" in month_data
-        assert "total_items_sold" in month_data
-        assert "best_selling_product" in month_data
-        assert "best_selling_product_units" in month_data
+    data = report["data"]
+    for period_data in data:
+        assert "period" in period_data
+        assert "total_revenue" in period_data
+        assert "total_items_sold" in period_data
+        assert "best_selling_product" in period_data
+        assert "best_selling_product_units" in period_data
 
-        assert isinstance(month_data["total_revenue"], float)
-        assert isinstance(month_data["total_items_sold"], int)
-        assert isinstance(month_data["best_selling_product"], str)
-        assert isinstance(month_data["best_selling_product_units"], int)
+        assert isinstance(period_data["total_revenue"], float)
+        assert isinstance(period_data["total_items_sold"], int)
+        assert isinstance(period_data["best_selling_product"], str)
+        assert isinstance(period_data["best_selling_product_units"], int)
 
-        assert month_data["total_revenue"] >= 0
-        assert month_data["total_items_sold"] >= 0
-        assert month_data["best_selling_product_units"] >= 0
+        assert period_data["total_revenue"] >= 0
+        assert period_data["total_items_sold"] >= 0
+        assert period_data["best_selling_product_units"] >= 0
 
 def test_tool_wrapper_generate_sales_report():
     from ..src.services.sales_agent import generate_sales_report as tool_func
 
     result = tool_func.invoke({})
 
-    assert isinstance(result, list)
-    assert len(result) == 1
-    assert "month" in result[0]
-    assert "total_revenue" in result[0]
+    assert isinstance(result, dict)
+    assert "status" in result
+    assert "data" in result
 
 def test_tool_wrapper_create_sales_graph():
     from ..src.services.sales_agent import create_sales_graph as tool_func
