@@ -13,6 +13,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
 print("Generating SQL query via LangGraph agent...")
+
 try:
     _SQL_QUERY = run_sql_agent(
         """
@@ -27,6 +28,7 @@ try:
     if "```sql" in _SQL_QUERY:
         _SQL_QUERY = _SQL_QUERY.split("```sql")[1].split("```")[0].strip()
     print("✅ SQL ready:\n", _SQL_QUERY)
+
 except Exception as e:
     print("SQL generation failed, using fallback:", e)
     _SQL_QUERY = """
