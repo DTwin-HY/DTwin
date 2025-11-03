@@ -1,35 +1,44 @@
-// Message card functional component with collapsible content
 import { useState } from 'react';
-const MessageCard = ({ title, content, imageData, defaultOpen = false }) => {
+import StepCard from './StepCard';
+
+const MessageCard = ({ finalMessage, steps, defaultOpen = false }) => {
   const [open, setOpen] = useState(defaultOpen);
 
+  // Jos käyttäjä valitsee tekstiä, älä avaa korttia.
+  const handleClick = () => {
+    const sel = window.getSelection?.();
+    if (sel && sel.toString().length > 0) return;
+    setOpen((o) => !o);
+  };
+
   return (
-    <div className="mt-3 rounded-lg border-l-4 border-violet-400 bg-violet-50 shadow-sm transition-shadow hover:shadow-md">
+    <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full cursor-pointer items-center justify-between px-4 py-3"
+        onClick={handleClick}
+        className="group flex w-full cursor-pointer items-start justify-between px-0 py-3 text-left"
       >
-        <span className="font-medium text-gray-800">{title}</span>
-        <span className={`transition-transform ${open ? 'rotate-90' : ''}`} aria-hidden>
+        <div>
+          <p className="mb-1 text-gray-800">Supervisor:</p>
+          <p className="cursor-text whitespace-pre-wrap text-gray-700 select-text">
+            {finalMessage}
+          </p>
+        </div>
+        <span className={`mt-1 transition-transform ${open ? 'rotate-90' : ''}`} aria-hidden>
           ›
         </span>
       </button>
 
       <div className={open ? 'block' : 'hidden'}>
-        {imageData ? (
-          <div className="px-4 pb-4">
-            <img
-              src={`data:image/png;base64,${imageData.data}`}
-              alt="Sales Graph"
-              className="w-full rounded-lg"
-            />
-          </div>
-        ) : (
-          <pre className="overflow-x-auto px-4 pb-4 break-words whitespace-pre-wrap text-gray-700">
-            {content}
-          </pre>
-        )}
+        {steps.map((msg, i) => (
+          <StepCard
+            key={i}
+            title={msg.title}
+            content={msg.body}
+            imageData={msg.imageData}
+            defaultOpen={msg.defaultOpen || false}
+          />
+        ))}
       </div>
     </div>
   );

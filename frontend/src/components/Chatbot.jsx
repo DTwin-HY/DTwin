@@ -1,52 +1,61 @@
-import { useState } from 'react';
-import { streamMessage, fetchChats } from '../api/chatgpt';
+import { useState, useRef } from 'react';
+import { streamMessage } from '../api/chatgpt';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
-import MessageCard from './MessageCard';
-import FinalMessageCard from './FinalMessageCard';
+import StepCard from './StepCard';
+import ListMessages from './ListMessages';
 import { headerLine } from '../utils/streamFormat';
 
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
-  const [userMessage, setUserMessage] = useState('');
   const [responses, setResponses] = useState([]);
-  const [finalMessage, setFinalMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  // eslint-disable-next-line no-unused-vars
   const [chats, setChats] = useState([]);
+
+  const finalizedRef = useRef(false); // Prevent double-finalize
 
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
 
   const finalizeLastResponse = () => {
+    console.log('Finalizing last response...', responses);
     setResponses((prev) => {
-      if (!prev || prev.length === 0) {
-        setFinalMessage(null);
-        return prev;
-      }
+      if (finalizedRef.current) return; // Already finalized this turn
+      finalizedRef.current = true;
+
       const last = prev[prev.length - 1];
-      setFinalMessage(last);
-      return prev.slice(0, -1);
+      const steps = prev.slice(0, -1);
+      console.log('Last message and steps:', last, steps);
+
+      // append a compact chat object for history usage
+      setChats((prevChats) => [
+        ...(prevChats || []),
+        { role: 'supervisor', finalMessage: last.body, steps: steps },
+      ]);
+      console.log('Updated chats:', chats);
+      // keep steps in responses (you can clear if you prefer: return [])
+      return steps;
     });
   };
 
   const handleSubmit = async (e) => {
+    console.log('Submitting message:', inputValue);
     e.preventDefault();
     if (!inputValue.trim()) {
       setErrorMessage('Input cannot be empty');
       return;
     }
-
+    finalizedRef.current = false; // Reset for new turn
     setLoading(true);
     setSuccessMessage('');
     setErrorMessage('');
     setResponses([]);
-    setFinalMessage(null);
-    setUserMessage(inputValue);
+    setChats((prevChats) => [...(prevChats || []), { role: 'user', message: inputValue }]);
 
     try {
       await streamMessage(inputValue, (chunk) => {
+        console.log('Received chunk:', chunk);
         if (Array.isArray(chunk)) {
           const cards = chunk.map((update) => {
             const title = headerLine(update);
@@ -71,19 +80,19 @@ const Chatbot = () => {
           setResponses((prev) => [...prev, ...cards]);
         }
       });
-      const latest = await fetchChats();
-      setChats(latest);
+      //const latest = await fetchChats();
+      //setChats(latest);
       setSuccessMessage('Prompt and response saved to database!');
       setInputValue('');
     } catch (err) {
       console.error(err);
       setErrorMessage(`Error in backend/database${err?.message ? `: ${err.message}` : ''}`);
     } finally {
+      console.log('reached finally block');
       setLoading(false);
       finalizeLastResponse();
     }
   };
-
   return (
     <div className="flex min-h-screen flex-col items-center justify-start bg-gray-100 p-4 pt-8">
       <div className="mt-4 w-[700px] rounded-xl bg-white p-6 shadow-md">
@@ -106,14 +115,13 @@ const Chatbot = () => {
           </button>
         </form>
 
-        {userMessage && (
-          <div className="mt-6 rounded-lg border-l-4 border-teal-400 bg-teal-50 p-4">
-            <p className="text-black-800 mb-1">Your message:</p>
-            <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
+        {loading && (
+          <div className="mt-4 flex justify-center">
+            <div className="w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
+              <p className="font-medium">Streaming response...</p>
+            </div>
           </div>
         )}
-
-        {finalMessage && <FinalMessageCard body={finalMessage.body} messages={responses} />}
 
         {/* Render message card for the latest response if loading=true*/}
         {loading &&
@@ -121,7 +129,7 @@ const Chatbot = () => {
           (() => {
             const last = responses[responses.length - 1];
             return last ? (
-              <MessageCard
+              <StepCard
                 key={responses.length - 1}
                 title={last.title}
                 content={last.body}
@@ -129,33 +137,33 @@ const Chatbot = () => {
               />
             ) : null;
           })()}
+
+        {successMessage && !loading && !errorMessage && (
+          <div className="mt-4 flex justify-center">
+            <div
+              className={`w-full max-w-md rounded-lg border border-green-300 bg-green-100 p-4 text-green-800 shadow transition-opacity duration-1000 ${
+                showSuccess ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <p className="font-medium">{successMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {errorMessage && !loading && (
+          <div className="mt-4 flex justify-center">
+            <div
+              className={`w-full max-w-md rounded-lg border border-red-300 bg-red-100 p-4 text-red-800 shadow transition-opacity duration-1000 ${
+                showError ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <p className="font-medium">{errorMessage}</p>
+            </div>
+          </div>
+        )}
+
+        <ListMessages messages={chats} />
       </div>
-
-      {loading && (
-        <div className="mt-4 w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
-          <p className="font-medium">Streaming response...</p>
-        </div>
-      )}
-
-      {successMessage && !loading && !errorMessage && (
-        <div
-          className={`mt-4 w-full max-w-md rounded-lg border border-green-300 bg-green-100 p-4 text-green-800 shadow transition-opacity duration-1000 ${
-            showSuccess ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <p className="font-medium">{successMessage}</p>
-        </div>
-      )}
-
-      {errorMessage && !loading && (
-        <div
-          className={`mt-4 w-full max-w-md rounded-lg border border-red-300 bg-red-100 p-4 text-red-800 shadow transition-opacity duration-1000 ${
-            showError ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <p className="font-medium">{errorMessage}</p>
-        </div>
-      )}
     </div>
   );
 };
