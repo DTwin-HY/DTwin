@@ -138,9 +138,9 @@ const SalesCard = () => {
           <div className="flex items-center justify-between rounded-xl bg-green-50 p-4">
             <div className="flex items-center gap-3">
               <Euro className="text-green-600" size={22} />
-              <p className="font-medium text-gray-700">Revenue (€)</p>
+              <p className="font-medium text-gray-700">Revenue</p>
             </div>
-            <p className="text-lg font-semibold text-gray-900">{salesData.revenue}</p>
+            <p className="text-lg font-semibold text-gray-900">{salesData.revenue} €</p>
           </div>
 
           <div className="flex items-center justify-between rounded-xl bg-blue-50 p-4">
