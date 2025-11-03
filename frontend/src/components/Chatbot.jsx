@@ -7,9 +7,7 @@ import { headerLine } from '../utils/streamFormat';
 
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
-  const [userMessage, setUserMessage] = useState('');
   const [responses, setResponses] = useState([]);
-  const [finalMessage, setFinalMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -33,7 +31,7 @@ const Chatbot = () => {
       }
       const last = prev[prev.length - 1];
       const steps = prev.slice(0, -1);
-      console.log('Last ja steps:', last, steps);
+      console.log('Last message and steps:', last, steps);
 
       // keep current UI behavior
       setFinalMessage(last);
