@@ -1,8 +1,9 @@
+#pylint: disable=too-many-locals
 import os
 import random
 import uuid
-from pathlib import Path
 from decimal import Decimal
+from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -16,13 +17,29 @@ load_dotenv()
 CONNECTION_STRING = os.getenv("DATABASE_URL")
 
 
+def inventory_data_exists():
+    engine = create_engine(CONNECTION_STRING)
+    with engine.connect() as conn:
+        result = conn.execute(text("SELECT COUNT(*) FROM inventory"))
+        count = result.scalar()
+    return count > 0
+
+
+def product_data_exists():
+    engine = create_engine(CONNECTION_STRING)
+    with engine.connect() as conn:
+        result = conn.execute(text("SELECT COUNT(*) FROM products"))
+        count = result.scalar()
+    return count > 0
+
+
 def generate_data(data_rows: int, output_path: Path):
     names = [str(uuid.uuid4()) for _ in range(data_rows)]
     prices = [round(random.uniform(0, 100), 2) for _ in range(data_rows)]
     amounts = [random.randint(0, 1 << 12) for _ in range(data_rows)]
 
     engine = create_engine(CONNECTION_STRING)
-    
+
     product_table = models.Product.__table__
     inventory_table = models.Inventory.__table__
     product_table.create(engine, checkfirst=True)
@@ -58,13 +75,18 @@ def generate_data(data_rows: int, output_path: Path):
     finally:
         engine.dispose()
 
-    products_df = pd.DataFrame({"id": [name_to_id[name] for name in names], "name": names, "price": prices})
-    inventory_df = pd.DataFrame({"amount": amounts, "product_id": [name_to_id[name] for name in names]})
+    products_df = pd.DataFrame(
+        {"id": [name_to_id[name] for name in names], "name": names, "price": prices}
+    )
+    inventory_df = pd.DataFrame(
+        {"amount": amounts, "product_id": [name_to_id[name] for name in names]}
+    )
 
-    products_csv = output_path.with_name(output_path.stem + "_products.csv")
-    inventory_csv = output_path.with_name(output_path.stem + "_inventory.csv")
-    products_df.to_csv(products_csv, index=False)
-    inventory_df.to_csv(inventory_csv, index=False)
+    if config.get("write_to_csv", False):
+        products_csv = output_path.with_name(output_path.stem + "_products.csv")
+        inventory_csv = output_path.with_name(output_path.stem + "_inventory.csv")
+        products_df.to_csv(products_csv, index=False)
+        inventory_df.to_csv(inventory_csv, index=False)
 
     print(f"Generated {len(products_df)} products and {len(inventory_df)} inventory rows")
     print(products_df.head())
@@ -73,6 +95,12 @@ def generate_data(data_rows: int, output_path: Path):
 
 
 def main():
+    if inventory_data_exists() or product_data_exists():
+        if inventory_data_exists():
+            print("Database already contains inventory data, skipping population...")
+        if product_data_exists():
+            print("Database already contains product data, skipping population...")
+        return
     output_filename = config.get("data.filename", "data.csv")
     output_path = Path(__file__).resolve().parent / output_filename  # parent_dir/filename.csv
 

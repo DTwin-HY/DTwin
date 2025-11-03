@@ -1,9 +1,10 @@
+# pylint: disable=too-many-branches, too-many-locals
 import os
 import random
-from datetime import datetime, timedelta
-from pathlib import Path
-from decimal import Decimal
 import uuid
+from datetime import datetime, timedelta
+from decimal import Decimal
+from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -15,6 +16,14 @@ from ..models import models
 load_dotenv()
 
 CONNECTION_STRING = os.getenv("DATABASE_URL")
+
+
+def sales_data_exists():
+    engine = create_engine(CONNECTION_STRING)
+    with engine.connect() as conn:
+        result = conn.execute(text("SELECT COUNT(*) FROM sales"))
+        count = result.scalar()
+    return count > 0
 
 
 def generate_sales_data(num_days: int, output_path: Path):
@@ -55,13 +64,15 @@ def generate_sales_data(num_days: int, output_path: Path):
 
             revenue = Decimal(str(round(items_sold * float(price), 2)))
 
-            sales_records.append({
-                "transaction_id": str(uuid.uuid4()),
-                "item_id": product_name,
-                "quantity": items_sold,
-                "timestamp": datetime.combine(date, datetime.min.time()),
-                "amount": revenue
-            })
+            sales_records.append(
+                {
+                    "transaction_id": str(uuid.uuid4()),
+                    "item_id": product_name,
+                    "quantity": items_sold,
+                    "timestamp": datetime.combine(date, datetime.min.time()),
+                    "amount": revenue,
+                }
+            )
 
     engine = create_engine(CONNECTION_STRING)
 
@@ -71,9 +82,7 @@ def generate_sales_data(num_days: int, output_path: Path):
     try:
         with engine.begin() as conn:
             try:
-                conn.execute(
-                    text("TRUNCATE TABLE sales RESTART IDENTITY CASCADE;")
-                )
+                conn.execute(text("TRUNCATE TABLE sales RESTART IDENTITY CASCADE;"))
             except Exception:
                 conn.execute(sales_table.delete())
 
@@ -81,19 +90,21 @@ def generate_sales_data(num_days: int, output_path: Path):
     finally:
         engine.dispose()
 
+    sales_df = pd.DataFrame(
+        [
+            {
+                "date": record["timestamp"].date(),
+                "product": record["item_id"],
+                "items_sold": record["quantity"],
+                "unit_price": float(prices[record["item_id"]]),
+                "revenue": float(record["amount"]),
+            }
+            for record in sales_records
+        ]
+    )
 
-    sales_df = pd.DataFrame([
-        {
-            "date": record["timestamp"].date(),
-            "product": record["item_id"],
-            "items_sold": record["quantity"],
-            "unit_price": float(prices[record["item_id"]]),
-            "revenue": float(record["amount"])
-        }
-        for record in sales_records
-    ])
-
-    sales_df.to_csv(output_path, index=False)
+    if config.get("write_to_csv", False):
+        sales_df.to_csv(output_path, index=False)
 
     print(f"Generated {len(sales_df)} sales records for {num_days} days")
     print(f"Total revenue: ${sales_df['revenue'].sum():.2f}")
@@ -103,6 +114,9 @@ def generate_sales_data(num_days: int, output_path: Path):
 
 
 def main():
+    if sales_data_exists():
+        print("Database already contains sales data, skipping population...")
+        return
     output_filename = config.get("data.sales_filename", "sales_data.csv")
     output_path = Path(__file__).resolve().parent / output_filename
 
