@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { streamMessage, fetchChats } from '../api/chatgpt';
+import { streamMessage } from '../api/chatgpt';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 import StepCard from './StepCard';
 import ListMessages from './ListMessages';
@@ -11,7 +11,6 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  // eslint-disable-next-line no-unused-vars
   const [chats, setChats] = useState([]);
 
   const finalizedRef = useRef(false); // Prevent double-finalize
@@ -30,9 +29,9 @@ const Chatbot = () => {
       console.log('Last message and steps:', last, steps);
 
       // append a compact chat object for history usage
-      setChats(prevChats => [
+      setChats((prevChats) => [
         ...(prevChats || []),
-        { role: 'supervisor', finalMessage: last.body, steps: steps }
+        { role: 'supervisor', finalMessage: last.body, steps: steps },
       ]);
       console.log('Updated chats:', chats);
       // keep steps in responses (you can clear if you prefer: return [])
@@ -52,10 +51,7 @@ const Chatbot = () => {
     setSuccessMessage('');
     setErrorMessage('');
     setResponses([]);
-    setChats(prevChats => [
-      ...(prevChats || []),
-      { role: 'user', message: inputValue }
-    ]);
+    setChats((prevChats) => [...(prevChats || []), { role: 'user', message: inputValue }]);
 
     try {
       await streamMessage(inputValue, (chunk) => {
@@ -119,13 +115,13 @@ const Chatbot = () => {
           </button>
         </form>
 
-      {loading && (
-        <div className="mt-4 flex justify-center">
-          <div className="w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
-            <p className="font-medium">Streaming response...</p>
+        {loading && (
+          <div className="mt-4 flex justify-center">
+            <div className="w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
+              <p className="font-medium">Streaming response...</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
         {/* Render message card for the latest response if loading=true*/}
         {loading &&

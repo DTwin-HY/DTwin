@@ -20,7 +20,9 @@ const MessageCard = ({ finalMessage, steps, defaultOpen = false }) => {
       >
         <div>
           <p className="mb-1 text-gray-800">Supervisor:</p>
-          <p className="cursor-text whitespace-pre-wrap text-gray-700 select-text">{finalMessage}</p>
+          <p className="cursor-text whitespace-pre-wrap text-gray-700 select-text">
+            {finalMessage}
+          </p>
         </div>
         <span className={`mt-1 transition-transform ${open ? 'rotate-90' : ''}`} aria-hidden>
           ›

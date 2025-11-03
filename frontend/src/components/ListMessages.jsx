@@ -1,4 +1,4 @@
-import MessageCard from "./MessageCard";
+import MessageCard from './MessageCard';
 
 const ListMessages = ({ messages }) => {
   console.log('ListMessages received messages:', messages);
@@ -6,36 +6,33 @@ const ListMessages = ({ messages }) => {
 
   return (
     <div className="space-y-4">
-      {messages.slice().reverse().map((message, idx) => {
-        const role = String(message.role ?? message.user ?? '').toLowerCase();
+      {messages
+        .slice()
+        .reverse()
+        .map((message, idx) => {
+          const role = String(message.role ?? message.user ?? '').toLowerCase();
 
-        if (role === 'supervisor') {
-          const finalResponse = message.finalMessage;
-          const steps = message.steps ?? [];
-          return (
-            <MessageCard
-              key={`msg-${idx}`}
-              finalMessage={finalResponse}
-              steps={steps}
-            />
-          );
-        }
+          if (role === 'supervisor') {
+            const finalResponse = message.finalMessage;
+            const steps = message.steps ?? [];
+            return <MessageCard key={`msg-${idx}`} finalMessage={finalResponse} steps={steps} />;
+          }
 
-        if (role === 'user') {
-          const userMessage = message.message;
-          return (
-            <div
-              key={`msg-${idx}`}
-              className="mt-6 rounded-lg border-l-4 border-teal-400 bg-teal-50 p-4"
-            >
-              <p className="text-black-800 mb-1">Your message:</p>
-              <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
-            </div>
-          );
-        }
+          if (role === 'user') {
+            const userMessage = message.message;
+            return (
+              <div
+                key={`msg-${idx}`}
+                className="mt-6 rounded-lg border-l-4 border-teal-400 bg-teal-50 p-4"
+              >
+                <p className="text-black-800 mb-1">Your message:</p>
+                <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
+              </div>
+            );
+          }
 
-        return null;
-      })}
+          return null;
+        })}
     </div>
   );
 };
