@@ -1,10 +1,11 @@
-import tomllib
 from pathlib import Path
 from typing import Any
 
+import tomli
+
 CONFIG_PATH = Path(__file__).parent.resolve() / "config.toml"
 with open(CONFIG_PATH, "rb") as f:
-    _config = tomllib.load(f)
+    _config = tomli.load(f)
 
 
 def get(key: str | None = None, default: Any = None) -> Any:
