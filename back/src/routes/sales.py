@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, timedelta
-from functools import lru_cache
 
 from flask import Flask, jsonify, request
 from sqlalchemy import create_engine, text
@@ -8,6 +7,7 @@ from sqlalchemy import create_engine, text
 from ..extensions import db
 from ..index import app
 from ..services.sql_agent import run_sql_agent
+from ..models.models import Sale
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
@@ -56,20 +56,15 @@ def get_sales_data():
         # If same day, extend the end by +1 day
         if start == end:
             end += timedelta(days=1)
+            
+        result = db.session.execute(
+            db.text(_SQL_QUERY),
+            {"start_date": start, "end_date": end},
+        ).mappings().first()
 
-        with engine.connect() as conn:
-            result = conn.execute(
-                text(_SQL_QUERY),
-                {"start_date": start, "end_date": end},
-            )
-            row = result.mappings().first()
-
-        if not row:
-            return jsonify({"revenue": 0, "sales": 0, "transactions": 0})
-
-        revenue = float(row.get("revenue") or 0)
-        sales = int(row.get("sales") or 0)
-        transactions = int(row.get("transactions") or 0)
+        revenue = float(result.get("revenue") or 0)
+        sales = int(result.get("sales") or 0)
+        transactions = int(result.get("transactions") or 0)
 
         return jsonify(
             {
@@ -80,4 +75,5 @@ def get_sales_data():
         )
 
     except Exception as e:
+        db.session.rollback()
         return jsonify({"error": str(e), "revenue": 0, "sales": 0, "transactions": 0}), 500
