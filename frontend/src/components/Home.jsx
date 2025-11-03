@@ -9,7 +9,7 @@ const Home = () => {
         <InfoPanel />
       </div>
 
-      <div className="mx-auto grid grid-cols-1 px-4 sm:px-6 lg:grid-cols-2 lg:gap-6 lg:px-8 lg:py-6">
+      <div className="mx-auto grid grid-cols-1 px-4 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-6">
         <div className="lg:col-span-1">
           <SalesCard className="h-full w-full" />
         </div>

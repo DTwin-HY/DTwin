@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Info, ChevronUp, Sparkles } from 'lucide-react';
 
 const InfoPanel = () => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className="p-5 px-10">
@@ -38,33 +38,6 @@ const InfoPanel = () => {
             (sales, warehouse, research) to answer questions, run reports, and act as a real-time
             dashboard for your company.
           </p>
-
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-4 transition-all hover:shadow-md">
-              <div className="text-xs font-semibold tracking-wide text-indigo-600 uppercase">
-                What it does
-              </div>
-              <div className="mt-2 text-sm text-gray-700">
-                Answer questions, generate reports, and surface live key metrics.
-              </div>
-            </div>
-            <div className="rounded-xl border border-purple-100 bg-gradient-to-br from-purple-50 to-white p-4 transition-all hover:shadow-md">
-              <div className="text-xs font-semibold tracking-wide text-purple-600 uppercase">
-                How to use
-              </div>
-              <div className="mt-2 text-sm text-gray-700">
-                Type a question to the supervisor, or use the sample prompts below.
-              </div>
-            </div>
-            <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-4 transition-all hover:shadow-md">
-              <div className="text-xs font-semibold tracking-wide text-blue-600 uppercase">
-                Data freshness
-              </div>
-              <div className="mt-2 text-sm text-gray-700">
-                Sales and warehouse tiles update in real time (SSE). Chat history is saved.
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
