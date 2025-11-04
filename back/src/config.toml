@@ -1,0 +1,4 @@
+[data]
+rows_to_generate=100000
+filename="data.csv"
+write_to_csv=false
