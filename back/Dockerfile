@@ -8,8 +8,7 @@ RUN apk add --no-cache \
     libpq-dev \
     postgresql
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="/root/.local/bin:$PATH"
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3 -
 
 WORKDIR /app
 
@@ -19,6 +18,8 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-root --only main --no-interaction --no-ansi
 
 COPY . .
+
+ENV MPLCONFIGDIR=/tmp/matplotlib_cache
 
 EXPOSE 5000
 
