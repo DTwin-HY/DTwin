@@ -94,8 +94,8 @@ const Chatbot = () => {
     }
   };
   return (
-    <div className="flex min-h-screen flex-col items-center justify-start bg-gray-100 p-4 pt-8">
-      <div className="mt-4 w-[700px] rounded-xl bg-white p-6 shadow-md">
+    <div className="w-full max-w-full p-6">
+      <div className="rounded-xl bg-white p-6 shadow-md">
         <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the Supervisor</h3>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
