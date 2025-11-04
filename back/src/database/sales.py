@@ -14,7 +14,7 @@ def fetch_sales_data(start, end):
             COALESCE(SUM(quantity), 0) AS sales,
             COUNT(DISTINCT transaction_id) AS transactions
         FROM sales
-        WHERE timestamp BETWEEN :start_date AND :end_date;
+        WHERE timestamp::date BETWEEN CAST(:start_date AS DATE) AND CAST(:end_date AS DATE);
     """
     )
     try:
@@ -22,7 +22,6 @@ def fetch_sales_data(start, end):
             db.session.execute(sql_query, {"start_date": start, "end_date": end}).mappings().first()
         )
 
-        print("result")
 
         revenue = float(result.get("revenue") or 0)
         sales = int(result.get("sales") or 0)
