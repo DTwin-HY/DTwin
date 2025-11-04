@@ -2,23 +2,24 @@ from sqlalchemy import text
 
 from ..extensions import db
 
+
 def fetch_sales_data(start, end):
     """
     Execute the sales summary query between start and end datetimes.
     """
-    sql_query = text("""
+    sql_query = text(
+        """
         SELECT
             COALESCE(SUM(amount), 0) AS revenue,
             COALESCE(SUM(quantity), 0) AS sales,
             COUNT(DISTINCT transaction_id) AS transactions
         FROM sales
         WHERE timestamp BETWEEN :start_date AND :end_date;
-    """)
+    """
+    )
     try:
         result = (
-            db.session.execute(sql_query, {"start_date": start, "end_date": end})
-            .mappings()
-            .first()
+            db.session.execute(sql_query, {"start_date": start, "end_date": end}).mappings().first()
         )
 
         print("result")
