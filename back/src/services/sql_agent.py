@@ -170,7 +170,9 @@ def run_sql_agent(query: str) -> str:
 sql_agent_tool = StructuredTool.from_function(
     func=run_sql_agent,
     name="sql_agent_tool",
-    description="Executes SQL queries on the storage database and returns structured results.",
+    description=(
+        "Executes SQL queries on the storage and sales databases " "and returns structured results."
+    ),
 )
 
 

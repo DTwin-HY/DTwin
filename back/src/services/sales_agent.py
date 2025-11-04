@@ -1,5 +1,5 @@
 import base64
-import os
+from datetime import datetime, timedelta
 from io import BytesIO
 
 import matplotlib.pyplot as plt
@@ -8,6 +8,10 @@ from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
+from ..extensions import db
+from ..models.models import Sale
+from .sql_agent import sql_agent_tool
+
 
 class SalesAgent:
     def __init__(self, sales_tool):
@@ -15,8 +19,14 @@ class SalesAgent:
 
     def handle_request(self, request: dict):
         task = request.get("task")
+
         if task == "sales_report":
-            return self.tool.generate_sales_report()
+            return self.tool.generate_sales_report(
+                start_date=request.get("start_date"),
+                end_date=request.get("end_date"),
+                group_by=request.get("group_by"),
+            )
+
         if task == "create_graph":
             month = request.get("month")
             if not month:
@@ -26,50 +36,109 @@ class SalesAgent:
 
 
 class SalesTool:
-    def __init__(self, csv_path: str):
-        if not os.path.exists(csv_path):
-            raise FileNotFoundError(f"Sales data not found at: {csv_path}")
-        try:
-            self.sales_data = pd.read_csv(csv_path)
-            self.sales_data["date"] = pd.to_datetime(self.sales_data["date"])
-            self.sales_data["month"] = self.sales_data["date"].dt.to_period("M")
-        except Exception as e:
-            raise ValueError(f"Failed to read CSV: {e}") from e
+    def _fetch_sales_data(
+        self,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        product: str | None = None,
+    ):
+        """
+        Fetch only the required subset of sales data from the database.
+        """
+        query = db.session.query(
+            Sale.timestamp.label("date"),
+            Sale.item_id.label("product"),
+            Sale.quantity.label("items_sold"),
+            Sale.amount.label("revenue"),
+        )
 
-    def generate_sales_report(self):
-        """
-        Return key monthly sales metrics: total revenue, total items sold,
-        best-selling product.
-        """
-        self.sales_data["date"] = pd.to_datetime(self.sales_data["date"])
-        self.sales_data["month"] = self.sales_data["date"].dt.to_period("M")
+        if start_date:
+            start_date = pd.to_datetime(start_date)
+            query = query.filter(Sale.timestamp >= start_date)
+
+        if end_date:
+            end_date = pd.to_datetime(end_date) + timedelta(days=1) - timedelta(seconds=1)
+            query = query.filter(Sale.timestamp <= end_date)
+
+        if product:
+            query = query.filter(Sale.item_id == product)
+
+        rows = query.all()
+
+        if not rows:
+            return pd.DataFrame(columns=["date", "product", "items_sold", "revenue"])
+
+        df = pd.DataFrame([r._asdict() for r in rows])
+        df["date"] = pd.to_datetime(df["date"])
+        df["month"] = df["date"].dt.to_period("M")
+        return df
+
+    def generate_sales_report(
+        self,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        group_by: str = "month",
+    ):
+        """Return key sales metrics: total revenue, total items sold, best-selling product."""
+        if start_date and not end_date:
+            end_date = start_date
+
+        sales_data = self._fetch_sales_data(start_date, end_date)
+        if sales_data.empty:
+            return {"status": "error", "message": "No sales data for requested range"}
+
+        # Ensure datetimes
+        sales_data["date"] = pd.to_datetime(sales_data["date"], errors="coerce")
+
+        # Determine grouping
+        if group_by == "year":
+            sales_data["period"] = sales_data["date"].dt.to_period("Y")
+        elif group_by == "month":
+            sales_data["period"] = sales_data["date"].dt.to_period("M")
+        elif group_by == "week":
+            sales_data["period"] = sales_data["date"].dt.to_period("W")
+        elif group_by == "day":
+            sales_data["period"] = sales_data["date"].dt.date
+        else:
+            raise ValueError("Invalid group_by value (must be 'year', 'month', 'week', or 'day')")
 
         report = []
-        for month, group in self.sales_data.groupby("month"):
+
+        for period, group in sales_data.groupby("period"):
             total_revenue = group["revenue"].sum()
             total_items = group["items_sold"].sum()
-            best_product_row = group.groupby("product")["items_sold"].sum().idxmax()
-            best_product_sold = group.groupby("product")["items_sold"].sum()[best_product_row]
+
+            best_product_series = group.groupby("product")["items_sold"].sum()
+            best_product = best_product_series.idxmax()
+            best_units = best_product_series.max()
 
             report.append(
                 {
-                    "month": str(month),
+                    "period": str(period),
                     "total_revenue": float(total_revenue),
                     "total_items_sold": int(total_items),
-                    "best_selling_product": best_product_row,
-                    "best_selling_product_units": int(best_product_sold),
+                    "best_selling_product": best_product,
+                    "best_selling_product_units": int(best_units),
                 }
             )
 
-        return report
+        return {
+            "status": "success",
+            "data": report,
+            "group_by": group_by,
+            "date_range": {
+                "start_date": str(start_date) if start_date else None,
+                "end_date": str(end_date) if end_date else None,
+            },
+        }
 
     def create_sales_graph(self, month: str, graph_type: str = "line"):
-        filtered_data = self.sales_data[self.sales_data["month"].astype(str) == month]
-        if filtered_data.empty:
+        sales_data = self._fetch_sales_data(month)
+        if sales_data.empty:
             return {"status": "error", "message": f"No sales data for {month}"}
 
         aggregated_data = (
-            filtered_data.groupby("date").agg(total_revenue=("revenue", "sum")).reset_index()
+            sales_data.groupby("date").agg(total_revenue=("revenue", "sum")).reset_index()
         )
         aggregated_data["7_day_avg"] = aggregated_data["total_revenue"].rolling(7).mean()
 
@@ -98,31 +167,56 @@ class SalesTool:
         }
 
 
-csv_path = os.path.join(os.path.dirname(__file__), "../data/mock_month_sales_data.csv")
-
-sales_tool = SalesTool(csv_path)
+sales_tool = SalesTool()
 sales_agent_instance = SalesAgent(sales_tool)
 
 
 @tool
-def generate_sales_report() -> list:
+def generate_sales_report(
+    start_date: str | None = None,
+    end_date: str | None = None,
+    group_by: str = "month",
+) -> dict:
     """
-    Return key monthly sales metrics, including:
-      - total revenue per month
-      - total items sold per month
-      - best-selling product per month and number of items sold
+    Generate a report of key sales metrics over a given date range and grouping.
+
+    Parameters:
+      - start_date (optional)
+      - end_date (optional)
+      - group_by (optional): "year", "month", "week", or "day"
+
+    Returns:
+      A structured JSON report containing:
+        - total revenue
+        - total items sold
+        - best-selling product and number of units
+        grouped by the requested period.
+
     Example output:
-    [
-      {
-        "month": "2025-09",
-        "total_revenue": 1370.84,
-        "total_items_sold": 179,
-        "best_selling_product": "G",
-        "best_selling_product_units": 46
+    {
+      "status": "success",
+      "group_by": "month",
+      "data": [
+        {
+          "period": "2025-09",
+          "total_revenue": 12345.67,
+          "total_items_sold": 421,
+          "best_selling_product": "A",
+          "best_selling_product_units": 92
+        }
+      ],
+      "date_range": {
+        "start_date": "2025-09-01",
+        "end_date": "2025-09-30"
       }
-    ]
+    }
     """
-    request = {"task": "sales_report"}
+    request = {
+        "task": "sales_report",
+        "start_date": start_date,
+        "end_date": end_date,
+        "group_by": group_by,
+    }
     return sales_agent_instance.handle_request(request)
 
 
@@ -140,14 +234,21 @@ def create_sales_graph(month: str) -> dict:
 sales_agent = create_react_agent(
     name="sales_agent",
     model="openai:gpt-4o-mini",
-    tools=[generate_sales_report, create_sales_graph],
+    tools=[generate_sales_report, create_sales_graph, sql_agent_tool],
     prompt=(
-        "You ONLY call tools and return their output. No thinking, no explanation.\n\n"
-        "PROCESS:\n"
-        "1. Receive request\n"
-        "2. Call appropriate tool\n"
-        "3. Return ONLY the tool's return value\n"
-        "4. STOP\n\n"
+        "You are a smart sales analytics assistant."
+        " Before starting, read these instructions carefully.\n"
+        "You have access to structured tools and a SQL agent.\n\n"
+        "Decision rules:\n"
+        "1. If the user asks for a **report**, call ONLY the generate_sales_report tool."
+        "Do not call create_sales_graph or sql_agent_tool."
+        "- However, if the request is unclear, incomplete, or the timeframe (e.g., daily, weekly,"
+        "  monthly, yearly) cannot be confidently identified, call the `sql_agent_tool` instead."
+        "2. If the user asks for a **graph**, call the create_sales_graph tool."
+        "3. If the user asks an **analytical**, **custom**, or **unstructured** question "
+        "(e.g., comparisons, date ranges, averages, correlations), use the `sql_agent_tool`.\n"
+        "4. Always return **only the tool output**. No explanations, no preamble, "
+        "no markdown formatting.\n\n"
         "FORBIDDEN:\n"
         "- Adding text like 'Here is...', 'I created...'\n"
         "- Explaining what you did\n"
