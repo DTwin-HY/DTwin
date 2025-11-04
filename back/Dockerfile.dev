@@ -8,8 +8,7 @@ RUN apk add --no-cache \
     libpq-dev \
     postgresql
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="/root/.local/bin:$PATH"
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local python3 -
 
 WORKDIR /app
 
@@ -18,10 +17,13 @@ COPY pyproject.toml poetry.lock* ./
 RUN poetry config virtualenvs.create false \
     && poetry install --no-root --only main --no-interaction --no-ansi
 
+COPY . .
+
+ENV MPLCONFIGDIR=/tmp/matplotlib_cache
+
 EXPOSE 5000
 
-COPY entrypoint.dev.sh /entrypoint.dev.sh
-RUN chmod +x /entrypoint.dev.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-ENV FLASK_APP=src/index.py
-ENTRYPOINT ["/entrypoint.dev.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
