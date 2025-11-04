@@ -53,6 +53,9 @@ const SalesCard = () => {
       try {
         const res = await fetch(
           `${API_URL}/api/sales-data?start_date=${startDate}&end_date=${endDate}`,
+          {
+            credentials: 'include',
+          },
         );
         const data = await res.json();
         setSalesData(data);
