@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
+import { fetchSalesData } from '../api/salesapi';
 import { TrendingUp, Users, Euro, ChevronLeft, ChevronRight } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 const SalesCard = () => {
   const [period, setPeriod] = useState('daily');
@@ -47,24 +46,16 @@ const SalesCard = () => {
   }, [period, offset]);
 
   useEffect(() => {
-    if (!startDate || !endDate || !API_URL) return;
+    if (!startDate || !endDate) return;
 
-    const fetchData = async () => {
+    (async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/api/sales-data?start_date=${startDate}&end_date=${endDate}`,
-          {
-            credentials: 'include',
-          },
-        );
-        const data = await res.json();
+        const data = await fetchSalesData(startDate, endDate);
         setSalesData(data);
       } catch (err) {
-        console.error('Error fetching sales data:', err);
+        console.error(err);
       }
-    };
-
-    fetchData();
+    })();
   }, [startDate, endDate, period]);
 
   return (
