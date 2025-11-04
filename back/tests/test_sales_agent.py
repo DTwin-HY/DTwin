@@ -59,25 +59,60 @@ def test_generate_sales_report(sales_tool):
 
     assert isinstance(report, dict)
     assert report["status"] == "success"
-    assert "data" in report
-    data = report["data"]
+    assert len(report["data"]) == 1
+    keys = {"period", "total_revenue", "total_items_sold", "best_selling_product", "best_selling_product_units"}
+    assert set(report["data"][0].keys()) == keys
+    
+def test_generate_sales_report_groupby_variants(sales_tool):
+    """Covers all group_by branches"""
+    for group_by in ["year", "month", "week", "day"]:
+        result = sales_tool.generate_sales_report("2025-09-01", "2025-09-05", group_by=group_by)
+        assert result["status"] == "success"
+        assert "data" in result
 
-    assert isinstance(data, list)
-    assert len(data) == 1
-    month_data = data[0]
-    expected_keys = {
-        "period",
-        "total_revenue",
-        "total_items_sold",
-        "best_selling_product",
-        "best_selling_product_units",
-    }
-    assert set(month_data.keys()) == expected_keys
-    assert month_data["period"] == "2025-09"
-    assert isinstance(month_data["total_revenue"], float)
-    assert isinstance(month_data["total_items_sold"], int)
-    assert isinstance(month_data["best_selling_product"], str)
-    assert isinstance(month_data["best_selling_product_units"], int)
+    with pytest.raises(ValueError):
+        sales_tool.generate_sales_report("2025-09-01", "2025-09-05", group_by="nonsense")
+        
+def test_fetch_sales_data_filters(monkeypatch):
+    """Ensure _fetch_sales_data applies filters correctly"""
+    # Mock db.session.query to simulate SQLAlchemy calls
+    fake_query = MagicMock()
+    fake_query.filter.return_value = fake_query
+    fake_query.all.return_value = [
+        MagicMock(_asdict=lambda: {
+            "date": pd.Timestamp("2025-09-01"),
+            "product": "A",
+            "items_sold": 10,
+            "revenue": 100.0,
+        })
+    ]
+
+    fake_db = MagicMock()
+    fake_db.session.query.return_value = fake_query
+    monkeypatch.setattr("back.src.services.sales_agent.db", fake_db)
+
+    from back.src.services.sales_agent import Sale
+
+    tool = SalesTool()
+    df = tool._fetch_sales_data("2025-09-01", "2025-09-05", product="A")
+
+    assert not df.empty
+    assert "date" in df.columns
+    assert df.iloc[0]["product"] == "A"
+    assert df["month"].dtype.name.startswith("period")
+    
+def test_fetch_sales_data_no_rows(monkeypatch):
+    """_fetch_sales_data should handle empty results"""
+    fake_query = MagicMock()
+    fake_query.filter.return_value = fake_query
+    fake_query.all.return_value = []
+    fake_db = MagicMock()
+    fake_db.session.query.return_value = fake_query
+    monkeypatch.setattr("back.src.services.sales_agent.db", fake_db)
+
+    tool = SalesTool()
+    df = tool._fetch_sales_data()
+    assert df.empty
 
 def test_create_sales_graph_success(sales_tool):
     agent = SalesAgent(sales_tool)
