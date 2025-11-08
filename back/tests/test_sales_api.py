@@ -42,8 +42,8 @@ def test_sales_valid_dates_returns_summary(client, monkeypatch):
     assert data == {"revenue": 1000, "sales": 20, "transactions": 10}
 
 
-def test_sales_same_day_extends_end_date(client, monkeypatch):
-    """Should extend end_date by +1 day when same as start_date"""
+def test_sales_daily_data(client, monkeypatch):
+    """Should query a single day when start_date equals end_date"""
     from back.src.routes import sales
     captured = {}
 
@@ -56,8 +56,11 @@ def test_sales_same_day_extends_end_date(client, monkeypatch):
 
     resp = client.get("/api/sales-data?start_date=2024-01-01&end_date=2024-01-01")
     assert resp.status_code == 200
-    assert captured["end"] - captured["start"] == timedelta(days=1)
-
+    assert captured["start"] == datetime(2024, 1, 1, 0, 0, 0)
+    assert captured["end"] == datetime(2024, 1, 1, 23, 59, 59)
+    assert resp.json["revenue"] == 500
+    assert resp.json["sales"] == 5
+    assert resp.json["transactions"] == 2
 
 def test_sales_exception_rolls_back_and_returns_500(client, monkeypatch):
     """Should rollback DB and return error JSON when exception occurs"""

@@ -1,20 +1,18 @@
+import axios from './axiosInstance';
+
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const fetchSalesData = async (startDate, endDate) => {
   try {
-    const res = await fetch(
-      `${VITE_BACKEND_URL}/api/sales-data?start_date=${startDate}&end_date=${endDate}`,
-      {
-        credentials: 'include',
+    const res = await axios.get(`${VITE_BACKEND_URL}/api/sales-data`, {
+      params: {
+        start_date: startDate,
+        end_date: endDate,
       },
-    );
+      withCredentials: true,
+    });
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch sales data: ${res.status}`);
-    }
-
-    const data = await res.json();
-    return data;
+    return res.data;
   } catch (err) {
     console.error('Error fetching sales data:', err);
     throw err;

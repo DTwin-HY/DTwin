@@ -4,7 +4,7 @@ import { TrendingUp, Users, Euro, ChevronLeft, ChevronRight } from 'lucide-react
 
 const SalesCard = () => {
   const [period, setPeriod] = useState('daily');
-  const [offset, setOffset] = useState(0); // week/year offset
+  const [offset, setOffset] = useState(0); // month/year offset
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [salesData, setSalesData] = useState({ revenue: 0, sales: 0, transactions: 0 });
@@ -23,17 +23,15 @@ const SalesCard = () => {
       setEndDate(formatDate(target));
     }
 
-    if (period === 'weekly') {
+    if (period === 'monthly') {
       const current = new Date(today);
-      const mondayOffset = (current.getDay() + 6) % 7; // Monday = 0
-      const monday = new Date(current);
-      monday.setDate(current.getDate() - mondayOffset + offset * 7);
+      const targetMonth = new Date(current.getFullYear(), current.getMonth() + offset, 1);
 
-      const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
+      const firstDay = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1);
+      const lastDay = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0);
 
-      setStartDate(formatDate(monday));
-      setEndDate(formatDate(sunday));
+      setStartDate(formatDate(firstDay));
+      setEndDate(formatDate(lastDay));
     }
 
     if (period === 'yearly') {
@@ -56,7 +54,7 @@ const SalesCard = () => {
         console.error(err);
       }
     })();
-  }, [startDate, endDate, period]);
+  }, [startDate, endDate]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-start p-6">
@@ -65,7 +63,7 @@ const SalesCard = () => {
 
         {/* Period Selector */}
         <div className="mb-4 flex gap-3">
-          {['daily', 'weekly', 'yearly'].map((p) => (
+          {['daily', 'monthly', 'yearly'].map((p) => (
             <button
               key={p}
               onClick={() => {

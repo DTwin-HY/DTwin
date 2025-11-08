@@ -22,8 +22,6 @@ def fetch_sales_data(start, end):
             db.session.execute(sql_query, {"start_date": start, "end_date": end}).mappings().first()
         )
 
-        print("result")
-
         revenue = float(result.get("revenue") or 0)
         sales = int(result.get("sales") or 0)
         transactions = int(result.get("transactions") or 0)
