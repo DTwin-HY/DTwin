@@ -1,30 +1,49 @@
+from typing import Literal
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage
-from langgraph.prebuilt import create_react_agent
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, MessagesState, StateGraph
+from langgraph.prebuilt import ToolNode
 
 from .sql_agent import sql_agent_tool
 
 load_dotenv()
 
 
-storage_react_agent = create_react_agent(
-    name="storage_agent",
-    model="openai:gpt-4o-mini",  # preferably 4o-mini or 5-mini, otherwise queries take too long
-    tools=[sql_agent_tool],
-    prompt=(
-        "You are an **inventory management agent**.\n\n"
-        "**Response rules:**\n"
-        "- Always respond strictly in JSON format.\n"
-        "- No markdown, no natural language text, no explanations.\n"
-        '- Example valid response: `{ "A100": 50 }`\n'
-        '- If you cannot find data, respond with `{ "error": "reason here" }`.\n'
-    ),
-)
+def call_sql_agent(state: MessagesState):
+    """Kutsu SQL-agenttia kerran ilman LLM:n päätöksentekoa."""
+    # Ota käyttäjän viesti
+    user_message = state["messages"][0].content
+    
+    # Kutsu sql agenttia suoraan
+    result = sql_agent_tool.invoke(user_message)
+    
+    # Palauta tulos AI Messagena
+    return {"messages": [AIMessage(content=result)]}
+
+
+def build_storage_agent():
+    """Yksinkertainen graafi: kutsu SQL-agenttia kerran ja lopeta."""
+    workflow = StateGraph(MessagesState)
+    
+    # Vain yksi node eli kutsu SQL agenttia
+    workflow.add_node("call_sql", call_sql_agent)
+    
+    # Suora polku: START -> call_sql -> END
+    workflow.add_edge(START, "call_sql")
+    workflow.add_edge("call_sql", END)
+    
+    compiled = workflow.compile()
+    compiled.name = "storage_agent"
+    return compiled
+
+
+# Luo react agentti
+storage_react_agent = build_storage_agent()
 
 
 if __name__ == "__main__":  # pragma: no cover
-    for step in storage_react_agent.stream(
-        {"messages": [HumanMessage(content="Sum up all the prices in the inventory")]},
-        stream_mode="values",
-    ):
-        print(step["messages"][-1].content)
+    result = storage_react_agent.invoke(
+        {"messages": [HumanMessage(content="Hae varaston saldot")]}
+    )
+    print(result["messages"][-1].content)
