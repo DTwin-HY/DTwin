@@ -195,3 +195,38 @@ def test_call_get_schema_forwards_messages(monkeypatch):
     state = {"messages": [{"role": "user", "content": "show schema"}]}
     out = sql_agent.call_get_schema(state)
     assert out["messages"][0].content == "schema result"
+
+
+def test_should_retry_query_no_tools():
+    state = {"messages": []}
+    assert sql_agent.should_retry_query(state) == "analyze_results"
+
+
+def test_should_retry_query_with_error_tool():
+    msg = SimpleNamespace(type="tool", content="Some error occurred")
+    state = {"messages": [msg]}
+    assert sql_agent.should_retry_query(state) == "generate_query"
+
+
+def test_should_retry_query_max_queries():
+    # Simuloi kaksi suoritettua query-viestiä
+    msg1 = SimpleNamespace(type="tool", content="stub query sql_db_query")
+    msg2 = SimpleNamespace(type="tool", content="stub query sql_db_query")
+    state = {"messages": [msg1, msg2]}
+    assert sql_agent.should_retry_query(state) == "analyze_results"
+
+
+def test_analyze_results_returns_ai_message(monkeypatch):
+    # Patchataan _make_llm, jotta invoke palauttaa tunnetun vastauksen
+    class FakeLLM:
+        def invoke(self, msgs):
+            return SimpleNamespace(content="final answer", id=None)
+
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+
+    state = {"messages": [SimpleNamespace(content="some data")]}
+    result = sql_agent.analyze_results(state)
+    assert isinstance(result, dict)
+    msg = result["messages"][0]
+    assert hasattr(msg, "content")
+    assert msg.content == "final answer"
