@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 import os
-
+import pytest
 # Aseta tarvittavat envit testejä varten
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
@@ -245,3 +245,15 @@ def test_analyze_results_empty_state(monkeypatch):
     state = {"messages": []}  # tyhjä state edge-case
     out = sql_agent.analyze_results(state)
     assert out["messages"][0].content == "no data"
+
+
+def test_make_llm_and_toolkit_types(monkeypatch):
+    # Patchataan dummy envit
+    monkeypatch.setenv("OPENAI_API_KEY", "test")
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
+    llm = sql_agent._make_llm()
+    toolkit = sql_agent._make_toolkit()
+    from langchain_openai import ChatOpenAI
+    from langchain_community.agent_toolkits import SQLDatabaseToolkit
+    assert isinstance(llm, ChatOpenAI)
+    assert isinstance(toolkit, SQLDatabaseToolkit)
