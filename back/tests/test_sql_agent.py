@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 import os
-
+import pytest
 # Aseta tarvittavat envit testejä varten
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
@@ -18,13 +18,13 @@ def make_msg(content="", tool_calls=None, id="mid"):
 
 def test_should_continue_no_tool_calls():
     state = {"messages": [make_msg(content="hi", tool_calls=[])]}
-    res = sql_agent.should_continue(state)
-    assert res == sql_agent.END
+    res = sql_agent.should_continue_after_generate(state)
+    assert res == "analyze_results"
 
 
 def test_should_continue_with_tool_calls():
     state = {"messages": [make_msg(content="hi", tool_calls=[{"foo": "bar"}])]}
-    res = sql_agent.should_continue(state)
+    res = sql_agent.should_continue_after_generate(state)
     assert res == "check_query"
 
 
@@ -195,3 +195,65 @@ def test_call_get_schema_forwards_messages(monkeypatch):
     state = {"messages": [{"role": "user", "content": "show schema"}]}
     out = sql_agent.call_get_schema(state)
     assert out["messages"][0].content == "schema result"
+
+
+def test_should_retry_query_no_tools():
+    state = {"messages": []}
+    assert sql_agent.should_retry_query(state) == "analyze_results"
+
+
+def test_should_retry_query_with_error_tool():
+    msg = SimpleNamespace(type="tool", content="Some error occurred")
+    state = {"messages": [msg]}
+    assert sql_agent.should_retry_query(state) == "generate_query"
+
+
+def test_should_retry_query_max_queries():
+    # Simuloi kaksi suoritettua query-viestiä
+    msg1 = SimpleNamespace(type="tool", content="stub query sql_db_query")
+    msg2 = SimpleNamespace(type="tool", content="stub query sql_db_query")
+    state = {"messages": [msg1, msg2]}
+    assert sql_agent.should_retry_query(state) == "analyze_results"
+
+
+def test_analyze_results_returns_ai_message(monkeypatch):
+    # Patchataan _make_llm, jotta invoke palauttaa tunnetun vastauksen
+    class FakeLLM:
+        def invoke(self, msgs):
+            return SimpleNamespace(content="final answer", id=None)
+
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+
+    state = {"messages": [SimpleNamespace(content="some data")]}
+    result = sql_agent.analyze_results(state)
+    assert isinstance(result, dict)
+    msg = result["messages"][0]
+    assert hasattr(msg, "content")
+    assert msg.content == "final answer"
+
+def test_should_retry_query_edge(monkeypatch):
+    # Viesti, jossa type ei ole 'tool', mutta content on error
+    msg = SimpleNamespace(type="other", content="Some error occurred")
+    state = {"messages": [msg]}
+    assert sql_agent.should_retry_query(state) == "analyze_results"
+
+def test_analyze_results_empty_state(monkeypatch):
+    class FakeLLM:
+        def invoke(self, msgs):
+            return SimpleNamespace(content="no data", id=None)
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+    state = {"messages": []}  # tyhjä state edge-case
+    out = sql_agent.analyze_results(state)
+    assert out["messages"][0].content == "no data"
+
+
+def test_make_llm_and_toolkit_types(monkeypatch):
+    # Patchataan dummy envit
+    monkeypatch.setenv("OPENAI_API_KEY", "test")
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
+    llm = sql_agent._make_llm()
+    toolkit = sql_agent._make_toolkit()
+    from langchain_openai import ChatOpenAI
+    from langchain_community.agent_toolkits import SQLDatabaseToolkit
+    assert isinstance(llm, ChatOpenAI)
+    assert isinstance(toolkit, SQLDatabaseToolkit)

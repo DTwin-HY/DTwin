@@ -20,9 +20,8 @@ def get_sales_data():
         start = datetime.strptime(start_date, "%Y-%m-%d")
         end = datetime.strptime(end_date, "%Y-%m-%d")
 
-        # If same day, extend the end by +1 day
-        if start == end:
-            end += timedelta(days=1)
+        # Set end time to 23:59:59 to include the entire end day
+        end = end.replace(hour=23, minute=59, second=59)
 
         summary = fetch_sales_data(start, end)
         return jsonify(summary)
