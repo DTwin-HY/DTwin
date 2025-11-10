@@ -4,13 +4,12 @@ from functools import lru_cache
 from typing import Any, Dict, Literal
 
 from dotenv import load_dotenv
-from langchain.tools import StructuredTool
+from langchain.tools import Tool
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain.messages import AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
-from langgraph.graph import END, START, MessagesState, StateGraph
-from langgraph.prebuilt import ToolNode
+from langgraph.graph import END, START, StateGraph, MessagesState
 
 load_dotenv()
 
@@ -136,8 +135,8 @@ def build_sql_agent_graph():
     toolkit = _make_toolkit()
     tools = toolkit.get_tools()
 
-    get_schema_node = ToolNode([_get_tool(tools, "sql_db_schema")])
-    run_query_node = ToolNode([_get_tool(tools, "sql_db_query")])
+    get_schema_node = _get_tool(tools, "sql_db_schema")
+    run_query_node = _get_tool(tools, "sql_db_query")
 
     builder = StateGraph(MessagesState)
     builder.add_node("list_tables", list_tables)
@@ -167,7 +166,7 @@ def run_sql_agent(query: str) -> str:
     return result["messages"][-1].content
 
 
-sql_agent_tool = StructuredTool.from_function(
+sql_agent_tool = Tool(
     func=run_sql_agent,
     name="sql_agent_tool",
     description=(

@@ -2,14 +2,14 @@ import json
 import os
 
 from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.postgres import PostgresSaver
-from langgraph_supervisor import create_supervisor
+from langchain.agents import create_agent
+from langchain.messages import HumanMessage
 
-from ..services.math_agent import math_agent
-from ..services.research_agent import research_agent
-from ..services.sales_agent import sales_agent
-from ..services.storage_agent import storage_react_agent
+from ..services.math_agent import math_agent_tool
+from ..services.research_agent import research_agent_tool
+from ..services.sales_agent import sales_agent_tool
+from ..services.storage_agent import storage_agent_tool
 from ..utils.format import format_chunk
 from ..utils.pretty_print import pretty_print_messages
 from .supervisor_prompt import supervisor_prompt
@@ -20,12 +20,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 
-init_supervisor = create_supervisor(
-    model=init_chat_model("openai:gpt-4.1"),
-    agents=[research_agent, math_agent, storage_react_agent, sales_agent],
-    prompt=supervisor_prompt,
-    add_handoff_back_messages=True,
-    output_mode="full_history",
+init_supervisor = create_agent(
+    model="openai:gpt-4.1",
+    tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool],
+    system_prompt=supervisor_prompt,
 )
 
 
@@ -40,12 +38,11 @@ def stream_process(prompt: str, thread_id: str = "3"):
 
     with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer:
         checkpointer.setup()
-        supervisor = init_supervisor.compile(checkpointer=checkpointer)
+        supervisor = init_supervisor
 
         for chunk in supervisor.stream(
             {"messages": [{"role": "user", "content": prompt}]},
-            config,
-            subgraphs=True,
+            stream_mode="updates"
         ):
             output = format_chunk(chunk)  # stream the output to the frontend
             yield f"data: {json.dumps(output)}\n\n"

@@ -4,9 +4,9 @@ from io import BytesIO
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from langchain_core.messages import HumanMessage
-from langchain_core.tools import tool
-from langgraph.prebuilt import create_react_agent
+from langchain.messages import HumanMessage
+from langchain.tools import tool
+from langchain.agents import create_agent
 
 from ..extensions import db
 from ..models.models import Sale
@@ -231,11 +231,12 @@ def create_sales_graph(month: str) -> dict:
     return result
 
 
-sales_agent = create_react_agent(
+
+sales_agent = create_agent(
     name="sales_agent",
     model="openai:gpt-4o-mini",
     tools=[generate_sales_report, create_sales_graph, sql_agent_tool],
-    prompt=(
+    system_prompt=(
         "You are a smart sales analytics assistant."
         " Before starting, read these instructions carefully.\n"
         "You have access to structured tools and a SQL agent.\n\n"
@@ -257,6 +258,16 @@ sales_agent = create_react_agent(
         "RETURN ONLY THE TOOL OUTPUT AS-IS."
     ),
 )
+
+@tool
+def sales_agent_tool(prompt: str) -> str:
+    """
+    Wraps the sales_agent as a single tool.
+    Takes a user prompt string (report, graph, or analytical question)
+    and returns the agent's response as a string.
+    """
+    result = sales_agent.invoke({"messages": [HumanMessage(content=prompt)]})
+    return result["messages"][-1].content
 
 if __name__ == "__main__":
     result = sales_agent.invoke(

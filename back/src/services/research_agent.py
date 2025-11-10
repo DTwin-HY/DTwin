@@ -2,7 +2,8 @@ import os
 
 from dotenv import load_dotenv
 from langchain_tavily import TavilySearch
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
+from langchain.tools import tool
 
 load_dotenv()
 
@@ -12,10 +13,10 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 web_search = TavilySearch(max_results=3)
 web_search_results = web_search.invoke("who is the mayor of NYC?")
 
-research_agent = create_react_agent(
+research_agent = create_agent(
     model="openai:gpt-4.1",
     tools=[web_search],
-    prompt=(
+    system_prompt=(
         "You are a research agent.\n\n"
         "INSTRUCTIONS:\n"
         "- Assist ONLY with research-related tasks, DO NOT do any math\n"
@@ -24,3 +25,9 @@ research_agent = create_react_agent(
     ),
     name="research_agent",
 )
+
+@tool
+def research_agent_tool(prompt: str) -> str:
+    """Wraps research_agent as a tool."""
+    result = research_agent_instance.invoke({"messages": [HumanMessage(content=prompt)]})
+    return result["messages"][-1].content

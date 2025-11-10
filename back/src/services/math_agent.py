@@ -1,7 +1,8 @@
 import os
 
 from dotenv import load_dotenv
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
+from langchain.tools import tool
 
 load_dotenv()
 
@@ -23,10 +24,10 @@ def divide(a: float, b: float):
     return a / b
 
 
-math_agent = create_react_agent(
+math_agent = create_agent(
     model="openai:gpt-4.1",
     tools=[add, multiply, divide],
-    prompt=(
+    system_prompt=(
         "You are a math agent.\n\n"
         "INSTRUCTIONS:\n"
         "- Assist ONLY with math-related tasks\n"
@@ -35,3 +36,9 @@ math_agent = create_react_agent(
     ),
     name="math_agent",
 )
+
+@tool
+def math_agent_tool(prompt: str) -> str:
+    """Wraps math_agent as a tool."""
+    result = math_agent_instance.invoke({"messages": [HumanMessage(content=prompt)]})
+    return result["messages"][-1].content
