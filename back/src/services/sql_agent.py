@@ -4,7 +4,7 @@ from functools import lru_cache
 from typing import Any, Dict, Literal
 
 from dotenv import load_dotenv
-from langchain.tools import StructuredTool
+from langchain_core.tools import StructuredTool
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from langchain_core.messages import AIMessage, HumanMessage

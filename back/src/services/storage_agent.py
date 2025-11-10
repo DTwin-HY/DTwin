@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from langchain.messages import HumanMessage, AIMessage
 from langgraph.graph import END, START, MessagesState, StateGraph
+from langchain.tools import tool
 
 from .sql_agent import sql_agent_tool
 
