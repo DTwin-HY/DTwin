@@ -18,13 +18,13 @@ def make_msg(content="", tool_calls=None, id="mid"):
 
 def test_should_continue_no_tool_calls():
     state = {"messages": [make_msg(content="hi", tool_calls=[])]}
-    res = sql_agent.should_continue(state)
-    assert res == sql_agent.END
+    res = sql_agent.should_continue_after_generate(state)
+    assert res == "analyze_results"
 
 
 def test_should_continue_with_tool_calls():
     state = {"messages": [make_msg(content="hi", tool_calls=[{"foo": "bar"}])]}
-    res = sql_agent.should_continue(state)
+    res = sql_agent.should_continue_after_generate(state)
     assert res == "check_query"
 
 
