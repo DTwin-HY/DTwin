@@ -230,3 +230,18 @@ def test_analyze_results_returns_ai_message(monkeypatch):
     msg = result["messages"][0]
     assert hasattr(msg, "content")
     assert msg.content == "final answer"
+
+def test_should_retry_query_edge(monkeypatch):
+    # Viesti, jossa type ei ole 'tool', mutta content on error
+    msg = SimpleNamespace(type="other", content="Some error occurred")
+    state = {"messages": [msg]}
+    assert sql_agent.should_retry_query(state) == "analyze_results"
+
+def test_analyze_results_empty_state(monkeypatch):
+    class FakeLLM:
+        def invoke(self, msgs):
+            return SimpleNamespace(content="no data", id=None)
+    monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
+    state = {"messages": []}  # tyhjä state edge-case
+    out = sql_agent.analyze_results(state)
+    assert out["messages"][0].content == "no data"
