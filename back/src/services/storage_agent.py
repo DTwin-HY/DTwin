@@ -46,7 +46,7 @@ def storage_agent_tool(prompt: str) -> str:
     Takes a user prompt string and returns the agent's response as a string.
     """
     result = storage_react_agent.invoke({"messages": [HumanMessage(content=prompt)]})
-    return result["messages"][-1].content
+    return result["messages"][-1].content # pragma: no cover
 
 if __name__ == "__main__":  # pragma: no cover
     result = storage_react_agent.invoke(

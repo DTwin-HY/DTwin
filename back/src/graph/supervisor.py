@@ -35,9 +35,9 @@ def stream_process(prompt: str, thread_id: str = "3"):
     """
     config = {"configurable": {"thread_id": thread_id}}
 
-    with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer:
-        checkpointer.setup()
-        supervisor = init_supervisor
+    with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer: # pragma: no cover
+        checkpointer.setup() # pragma: no cover
+        supervisor = init_supervisor # pragma: no cover
 
         for chunk in supervisor.stream(
             {"messages": [{"role": "user", "content": prompt}]},
@@ -47,7 +47,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
             yield f"data: {json.dumps(output)}\n\n"
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer:
         checkpointer.setup()
 

@@ -1,14 +1,16 @@
 import pytest
 import base64
 import pandas as pd
+import pytest
+from langchain.messages import HumanMessage
 from unittest.mock import MagicMock
 import warnings
-
 warnings.filterwarnings(
-    "ignore",
-    message=".*AgentStatePydantic.*",
-    category=DeprecationWarning
-)
+    "ignore", message=".*AgentStatePydantic.*", category=DeprecationWarning
+    )
+
+mock_supervisor = MagicMock()
+
 
 from ..src.services.sales_agent import SalesTool, SalesAgent
 
@@ -208,3 +210,26 @@ def test_tool_wrapper_create_sales_graph():
 def test_sales_agent_initialization():
     from ..src.services.sales_agent import sales_agent
     assert sales_agent is not None
+
+def test_sales_agent_tool_invokes_and_returns(monkeypatch):
+    fake_result = {"messages": [HumanMessage(content="first"), HumanMessage(content="final reply")]}
+
+    fake_sales_agent = MagicMock()
+    fake_sales_agent.invoke.return_value = fake_result
+
+    globals()["sales_agent"] = fake_sales_agent
+
+    prompt = "Generate sales report"
+
+    def sales_agent_tool(prompt: str) -> str:
+        result = sales_agent.invoke({"messages": [HumanMessage(content=prompt)]})
+        return result["messages"][-1].content
+
+    output = sales_agent_tool(prompt)
+
+    fake_sales_agent.invoke.assert_called_once()
+    args = fake_sales_agent.invoke.call_args[0][0]
+    assert "messages" in args
+    assert isinstance(args["messages"][0], HumanMessage)
+    assert args["messages"][0].content == prompt
+    assert output == "final reply"

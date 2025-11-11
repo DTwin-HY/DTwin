@@ -1,7 +1,9 @@
 import os
 import sys
 import types
+
 from pathlib import Path
+
 
 # Aseta testitietokanta ennen app-importia
 os.environ.setdefault("TAVILY_API_KEY", "test")
