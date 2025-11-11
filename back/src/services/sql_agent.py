@@ -4,7 +4,7 @@ from functools import lru_cache
 from typing import Any, Dict, Literal
 
 from dotenv import load_dotenv
-from langchain.tools import StructuredTool
+from langchain_core.tools import StructuredTool
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from langchain_core.messages import AIMessage, HumanMessage
@@ -78,7 +78,7 @@ def generate_query(state: MessagesState) -> Dict[str, Any]:
     only ask for the relevant columns given the question.
 
     DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
-    
+
     IMPORTANT: After receiving query results, do NOT call the tool again. Instead,
     analyze the results and provide the final answer.
     """.strip()
@@ -128,17 +128,17 @@ def check_query(state: MessagesState) -> Dict[str, Any]:
 def analyze_results(state: MessagesState) -> Dict[str, Any]:
     """Analysoi query-tulokset ja muodosta lopullinen vastaus."""
     llm = _make_llm()
-    
+
     system_prompt = """
     You are a helpful assistant analyzing SQL query results.
     Based on the query results in the conversation history, provide a clear,
     concise answer to the user's original question. Format the results in a
     readable way.
-    
+
     CRITICAL: Do NOT call any tools. Simply analyze the data you already have
     and provide the final answer.
     """
-    
+
     response = llm.invoke([{"role": "system", "content": system_prompt}] + state["messages"])
     return {"messages": [response]}
 
@@ -146,11 +146,11 @@ def analyze_results(state: MessagesState) -> Dict[str, Any]:
 def should_continue_after_generate(state: MessagesState) -> Literal["check_query", "analyze_results"]:
     """Päätä pitääkö kysely ajaa vai onko jo tuloksia analysoitavana."""
     last_message = state["messages"][-1]
-    
+
     # Jos LLM haluaa ajaa queryn, mene check_query:yn
     if getattr(last_message, "tool_calls", None):
         return "check_query"
-    
+
     # Jos ei tool_calls:eja, siirry analyysiin
     return "analyze_results"
 
@@ -159,24 +159,24 @@ def should_retry_query(state: MessagesState) -> Literal["generate_query", "analy
     """Päätä pitääkö query ajaa uudelleen vai siirtyä analyysiin."""
     # Laske kuinka monta kertaa query on ajettu
     query_count = sum(
-        1 for msg in state["messages"] 
+        1 for msg in state["messages"]
         if hasattr(msg, "type") and msg.type == "tool" and "sql_db_query" in str(msg)
     )
-    
+
     if query_count >= 2:
         return "analyze_results"
-    
+
     # Tarkista oliko virheitä viimeisimmässä tool-vastauksessa
     last_tool_message = None
     for msg in reversed(state["messages"]):
         if hasattr(msg, "type") and msg.type == "tool":
             last_tool_message = msg
             break
-    
+
     # Jos virheilmoitus, yritä uudelleen (max 2 kertaa)
     if last_tool_message and "error" in str(last_tool_message.content).lower():
         return "generate_query"
-    
+
     # Muuten siirry analyysiin
     return "analyze_results"
 
@@ -204,19 +204,19 @@ def build_sql_agent_graph():
     builder.add_edge("list_tables", "call_get_schema")
     builder.add_edge("call_get_schema", "get_schema")
     builder.add_edge("get_schema", "generate_query")
-    
+
     # Päätös: aja query vai analysoi tulokset?
     builder.add_conditional_edges(
-        "generate_query", 
+        "generate_query",
         should_continue_after_generate,
         {
             "check_query": "check_query",
             "analyze_results": "analyze_results"
         }
     )
-    
+
     builder.add_edge("check_query", "run_query")
-    
+
     # Päätös query-ajon jälkeen: yritä uudelleen vai analysoi?
     builder.add_conditional_edges(
         "run_query",
@@ -226,7 +226,7 @@ def build_sql_agent_graph():
             "analyze_results": "analyze_results"
         }
     )
-    
+
     # Analyysi päättyy aina
     builder.add_edge("analyze_results", END)
 
