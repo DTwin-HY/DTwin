@@ -19,13 +19,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 
-init_supervisor = create_agent(
-    model="openai:gpt-4.1",
-    tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool],
-    system_prompt=supervisor_prompt,
-)
-
-
 # pylint: disable=contextmanager-generator-missing-cleanup
 def stream_process(prompt: str, thread_id: str = "3"):
     """
@@ -36,12 +29,19 @@ def stream_process(prompt: str, thread_id: str = "3"):
     config = {"configurable": {"thread_id": thread_id}}
 
     with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer: # pragma: no cover
+        
         checkpointer.setup() # pragma: no cover
-        supervisor = init_supervisor # pragma: no cover
+        
+        supervisor = create_agent(
+            model="openai:gpt-4.1",
+            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool],
+            system_prompt=supervisor_prompt,
+            checkpointer=checkpointer)
 
         for chunk in supervisor.stream(
             {"messages": [{"role": "user", "content": prompt}]},
-            stream_mode="updates"
+            stream_mode="updates",
+            config=config,
         ):
             output = format_chunk(chunk)  # stream the output to the frontend
             yield f"data: {json.dumps(output)}\n\n"
@@ -73,8 +73,7 @@ if __name__ == "__main__": # pragma: no cover
                 "messages": [
                     {
                         "role": "user",
-                        "content": "Which item was there least of in the previous query"
-                        + ", also what was my name?",
+                        "content": "What is the value of testing_value?",
                     }
                 ]
             },
