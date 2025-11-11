@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 from langgraph.checkpoint.postgres import PostgresSaver
 from langchain.agents import create_agent
+from langchain.agents.middleware import AgentState
+from langchain.tools import tool, ToolRuntime
 
 from ..services.math_agent import math_agent_tool
 from ..services.research_agent import research_agent_tool
@@ -17,6 +19,17 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+class CustomState(AgentState):
+    testing_value: str = "default_value"
+
+
+@tool
+def state_testing_tool(runtime:ToolRuntime) -> str:
+    """Tool to check the value of testing_value in the state."""
+    value = runtime.state["testing_value"]
+
+    return value
 
 
 # pylint: disable=contextmanager-generator-missing-cleanup
@@ -34,12 +47,13 @@ def stream_process(prompt: str, thread_id: str = "3"):
         
         supervisor = create_agent(
             model="openai:gpt-4.1",
-            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool],
+            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool],
             system_prompt=supervisor_prompt,
+            state_schema=CustomState,
             checkpointer=checkpointer)
 
         for chunk in supervisor.stream(
-            {"messages": [{"role": "user", "content": prompt}]},
+            {"messages": [{"role": "user", "content": prompt}],"testing_value": "1"},
             stream_mode="updates",
             config=config,
         ):
