@@ -1,18 +1,14 @@
-import sys
-import os
 import pytest
 import base64
 import pandas as pd
 from unittest.mock import MagicMock
+import warnings
 
-mock_supervisor = MagicMock()
-sys.modules["langgraph_supervisor"] = mock_supervisor
-sys.modules["langgraph_supervisor.supervisor"] = MagicMock()
-sys.modules["langgraph_supervisor.handoff"] = MagicMock()
-
-mock_prebuilt = MagicMock()
-mock_prebuilt.create_react_agent = MagicMock(return_value=MagicMock())
-sys.modules["langgraph.prebuilt"] = mock_prebuilt
+warnings.filterwarnings(
+    "ignore",
+    message=".*AgentStatePydantic.*",
+    category=DeprecationWarning
+)
 
 from ..src.services.sales_agent import SalesTool, SalesAgent
 
@@ -62,7 +58,7 @@ def test_generate_sales_report(sales_tool):
     assert len(report["data"]) == 1
     keys = {"period", "total_revenue", "total_items_sold", "best_selling_product", "best_selling_product_units"}
     assert set(report["data"][0].keys()) == keys
-    
+
 def test_generate_sales_report_groupby_variants(sales_tool):
     """Covers all group_by branches"""
     for group_by in ["year", "month", "week", "day"]:
@@ -72,7 +68,7 @@ def test_generate_sales_report_groupby_variants(sales_tool):
 
     with pytest.raises(ValueError):
         sales_tool.generate_sales_report("2025-09-01", "2025-09-05", group_by="nonsense")
-        
+
 def test_fetch_sales_data_filters(monkeypatch):
     """Ensure _fetch_sales_data applies filters correctly"""
     # Mock db.session.query to simulate SQLAlchemy calls
@@ -100,7 +96,7 @@ def test_fetch_sales_data_filters(monkeypatch):
     assert "date" in df.columns
     assert df.iloc[0]["product"] == "A"
     assert df["month"].dtype.name.startswith("period")
-    
+
 def test_fetch_sales_data_no_rows(monkeypatch):
     """_fetch_sales_data should handle empty results"""
     fake_query = MagicMock()
