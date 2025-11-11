@@ -7,6 +7,7 @@ import pandas as pd
 from langchain.messages import HumanMessage
 from langchain.tools import tool
 from langchain.agents import create_agent
+from deepagents import create_deep_agent
 
 from ..extensions import db
 from ..models.models import Sale
@@ -232,7 +233,7 @@ def create_sales_graph(month: str) -> dict:
 
 
 
-sales_agent = create_agent(
+sales_agent = create_deep_agent(
     name="sales_agent",
     model="openai:gpt-4o-mini",
     tools=[generate_sales_report, create_sales_graph, sql_agent_tool],

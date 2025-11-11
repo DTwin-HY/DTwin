@@ -1,6 +1,7 @@
 import json
 
 from langchain_core.messages import convert_to_messages
+from langgraph.types import Overwrite
 
 
 def format_chunk(chunk, last_message=False):
@@ -16,7 +17,15 @@ def format_chunk(chunk, last_message=False):
         subgraph = ns[-1].split(":")[0]
 
     for node_name, node_update in chunk.items():
-        messages = convert_to_messages(node_update["messages"])
+        if node_update is None:
+            continue
+        raw_messages = node_update.get("messages", [])
+        if isinstance(raw_messages, Overwrite):
+            raw_messages = getattr(raw_messages, "value", getattr(raw_messages, "messages", []))
+        if not hasattr(raw_messages, "__iter__") or isinstance(raw_messages, (str, bytes, dict)):
+            raw_messages = [raw_messages]
+
+        messages = convert_to_messages(raw_messages)
         if last_message:
             messages = messages[-1:]
 
