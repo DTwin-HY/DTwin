@@ -2,7 +2,8 @@ import os
 
 from dotenv import load_dotenv
 from langchain.agents import create_agent
-from langchain.tools import tool
+from langchain.messages import HumanMessage
+from langchain.tools import tool, ToolRuntime
 
 load_dotenv()
 
@@ -11,6 +12,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def add(a: float, b: float):
     """Add two numbers."""
+#    runtime.state["testing_value"] = "math_used"
     return a + b
 
 
@@ -40,5 +42,5 @@ math_agent = create_agent(
 @tool
 def math_agent_tool(prompt: str) -> str:
     """Wraps math_agent as a tool."""
-    result = math_agent_instance.invoke({"messages": [HumanMessage(content=prompt)]})
+    result = math_agent.invoke({"messages": [HumanMessage(content=prompt)]})
     return result["messages"][-1].content # pragma: no cover
