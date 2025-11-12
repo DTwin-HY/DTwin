@@ -4324,6 +4324,7 @@ requests = ">=2.0.1,<3.0.0"
 
 [[package]]
 <<<<<<< HEAD
+<<<<<<< HEAD
 name = "rich"
 version = "14.2.0"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
@@ -4351,10 +4352,16 @@ name = "scikit-learn"
 version = "1.7.2"
 description = "A set of python modules for machine learning and data mining"
 >>>>>>> 55d3cb2 (Add simulation agent and lin reg graph)
+=======
+name = "scikit-learn"
+version = "1.7.2"
+description = "A set of python modules for machine learning and data mining"
+>>>>>>> 8bece80 (Add simulation agent and lin reg graph)
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
+<<<<<<< HEAD
 <<<<<<< HEAD
     {file = "rpds_py-0.28.0-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:7b6013db815417eeb56b2d9d7324e64fcd4fa289caeee6e7a78b2e11fc9b438a"},
     {file = "rpds_py-0.28.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:1a4c6b05c685c0c03f80dabaeb73e74218c49deea965ca63f76a752807397207"},
@@ -4474,6 +4481,8 @@ files = [
 ]
 
 =======
+=======
+>>>>>>> 8bece80 (Add simulation agent and lin reg graph)
     {file = "scikit_learn-1.7.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:6b33579c10a3081d076ab403df4a4190da4f4432d443521674637677dc91e61f"},
     {file = "scikit_learn-1.7.2-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:36749fb62b3d961b1ce4fedf08fa57a1986cd409eff2d783bca5d4b9b5fce51c"},
     {file = "scikit_learn-1.7.2-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:7a58814265dfc52b3295b1900cfb5701589d30a8bb026c7540f1e9d3499d5ec8"},
@@ -4601,7 +4610,10 @@ dev = ["cython-lint (>=0.12.2)", "doit (>=0.36.0)", "mypy (==1.10.0)", "pycodest
 doc = ["intersphinx_registry", "jupyterlite-pyodide-kernel", "jupyterlite-sphinx (>=0.19.1)", "jupytext", "linkify-it-py", "matplotlib (>=3.5)", "myst-nb (>=1.2.0)", "numpydoc", "pooch", "pydata-sphinx-theme (>=0.15.2)", "sphinx (>=5.0.0,<8.2.0)", "sphinx-copybutton", "sphinx-design (>=0.4.0)"]
 test = ["Cython", "array-api-strict (>=2.3.1)", "asv", "gmpy2", "hypothesis (>=6.30)", "meson", "mpmath", "ninja ; sys_platform != \"emscripten\"", "pooch", "pytest (>=8.0.0)", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "threadpoolctl"]
 
+<<<<<<< HEAD
 >>>>>>> 55d3cb2 (Add simulation agent and lin reg graph)
+=======
+>>>>>>> 8bece80 (Add simulation agent and lin reg graph)
 [[package]]
 name = "six"
 version = "1.17.0"
@@ -4957,10 +4969,14 @@ description = "Backported and Experimental Type Hints for Python 3.9+"
 optional = false
 python-versions = ">=3.9"
 <<<<<<< HEAD
+<<<<<<< HEAD
 groups = ["main", "dev"]
 =======
 groups = ["main"]
 >>>>>>> 55d3cb2 (Add simulation agent and lin reg graph)
+=======
+groups = ["main"]
+>>>>>>> 8bece80 (Add simulation agent and lin reg graph)
 files = [
     {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
     {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
@@ -5508,7 +5524,11 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 lock-version = "2.1"
 python-versions = "^3.11"
 <<<<<<< HEAD
+<<<<<<< HEAD
 content-hash = "a4c7950ddfa570943c43dd0ed145367ee948aa0a8d1886d41afa538898de4036"
 =======
 content-hash = "e6b54910235865e59456700906fea971e067348c8da16376592078861ddec40c"
 >>>>>>> 55d3cb2 (Add simulation agent and lin reg graph)
+=======
+content-hash = "e6b54910235865e59456700906fea971e067348c8da16376592078861ddec40c"
+>>>>>>> 8bece80 (Add simulation agent and lin reg graph)
