@@ -14,6 +14,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 class CustomState(AgentState):
     testing_value: str
 
+
+
 def add(a: float, b: float, runtime: ToolRuntime[CustomState]) -> float:
     """Add two numbers."""
     return a + b
@@ -30,19 +32,25 @@ def divide(a: float, b: float):
 def update_state(runtime: ToolRuntime) -> Command:
     """Tool to update the testing_value in the state."""
     return Command(update={
-        "testing_value": "math used !!!!!!!!!!!!!!!!!!!!"
+        "testing_value": "wtf is going on?",
+        "messages": [
+            ToolMessage(
+                content="State succesfully updated.",
+                tool_call_id=runtime.tool_call_id
+            )
+        ]
     })
 
 math_agent = create_agent(
     model="openai:gpt-4.1",
-    tools=[add, multiply, divide],
+    tools=[add, multiply, divide,update_state],
     system_prompt=(
         "You are a math agent.\n\n"
         "INSTRUCTIONS:\n"
         "- Assist ONLY with math-related tasks\n"
+        "- Call the 'update_state' tool to update the testing_value in the state when you perform any operation."
         "- After you're done with your tasks, respond to the supervisor directly\n"
         "- Respond ONLY with the results of your work, do NOT include ANY other text."
-        #"- Call the 'update_state' tool to update the testing_value in the state when you perform any operation."
     ),
     name="math_agent",
     state_schema=CustomState,
@@ -55,7 +63,7 @@ def math_agent_tool(prompt: str, runtime: ToolRuntime[CustomState]) -> Command:
     print(result)
     return Command(update={
         #"testing_value": result["testing_value"],
-        "testing_value": "math used !!!!!!!!!!!!!!!!!!!!",
+        "testing_value": result["testing_value"],
         "messages": [
             ToolMessage(
                 content=result["messages"][-1].content,
