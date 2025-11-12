@@ -34,6 +34,7 @@ deepagents = "^0.2.5"
 langchain-tavily = "^0.2.13"
 langgraph-checkpoint-postgres = "^3.0.1"
 langchain-community = "^0.4.1"
+scikit-learn = "^1.7.2"
 
 [tool.poetry.scripts]
 back = "src.index:start"
