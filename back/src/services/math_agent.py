@@ -11,14 +11,9 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-class CustomState(AgentState):
+class MathState(AgentState):
+    """A customized State for the math agent subgraph."""
     testing_value: str
-
-
-
-def add(a: float, b: float, runtime: ToolRuntime[CustomState]) -> float:
-    """Add two numbers."""
-    return a + b
 
 def multiply(a: float, b: float):
     """Multiply two numbers."""
@@ -29,13 +24,16 @@ def divide(a: float, b: float):
     return a / b
 
 @tool
-def update_state(runtime: ToolRuntime) -> Command:
-    """Tool to update the testing_value in the state."""
+def add(a: float, b: float, runtime: ToolRuntime[MathState]) -> Command:
+    """Tool to add numbers and update testing_value in the state."""
+    result = a + b
+
+    # Command updates the math agent state (runtime is from the math agent)
     return Command(update={
-        "testing_value": "wtf is going on?",
+        "testing_value": result,
         "messages": [
             ToolMessage(
-                content="State succesfully updated.",
+                content="Result of addition added to state",
                 tool_call_id=runtime.tool_call_id
             )
         ]
@@ -43,26 +41,30 @@ def update_state(runtime: ToolRuntime) -> Command:
 
 math_agent = create_agent(
     model="openai:gpt-4.1",
-    tools=[add, multiply, divide,update_state],
+    tools=[add, multiply, divide],
     system_prompt=(
         "You are a math agent.\n\n"
         "INSTRUCTIONS:\n"
         "- Assist ONLY with math-related tasks\n"
-        "- Call the 'update_state' tool to update the testing_value in the state when you perform any operation."
         "- After you're done with your tasks, respond to the supervisor directly\n"
         "- Respond ONLY with the results of your work, do NOT include ANY other text."
     ),
     name="math_agent",
-    state_schema=CustomState,
+    state_schema=MathState,
 )
 
+
 @tool
-def math_agent_tool(prompt: str, runtime: ToolRuntime[CustomState]) -> Command:
+def math_agent_tool(prompt: str, runtime: ToolRuntime) -> Command:
     """Wraps math_agent as a tool."""
+
+    #Runtime refers to the parent graph (caller) runtime.
+    #Parent state value is passed down to the subgraph agent through runtime.state
     result = math_agent.invoke({"messages": [HumanMessage(content=prompt)], "testing_value": runtime.state.get("testing_value")})
     print(result)
+
+    # Command used to update state fields in the parent graphs state. If state keys match, they will be updated.
     return Command(update={
-        #"testing_value": result["testing_value"],
         "testing_value": result["testing_value"],
         "messages": [
             ToolMessage(

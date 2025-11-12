@@ -20,12 +20,13 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-class CustomState(AgentState):
-    testing_value: str
+class MainState(AgentState):
+    """A customized state for the supervisor agent."""
+    testing_value: str #temp placeholder for state testing with math agent
 
 @tool
 def state_testing_tool(runtime:ToolRuntime) -> str:
-    """Tool to check the value of testing_value in the state."""
+    """Tool to check the value of testing_value in the state. Used in development only."""
     value = runtime.state.get("testing_value", "not_set")
 
     return value
@@ -48,7 +49,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
             model="openai:gpt-4.1",
             tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool],
             system_prompt=supervisor_prompt,
-            state_schema=CustomState,
+            state_schema=MainState,
             checkpointer=checkpointer)
 
         for chunk in supervisor.stream(
