@@ -21,13 +21,12 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 class CustomState(AgentState):
-    testing_value: str = "default_value"
-
+    testing_value: str
 
 @tool
 def state_testing_tool(runtime:ToolRuntime) -> str:
     """Tool to check the value of testing_value in the state."""
-    value = runtime.state["testing_value"]
+    value = runtime.state.get("testing_value", "not_set")
 
     return value
 
@@ -53,7 +52,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
             checkpointer=checkpointer)
 
         for chunk in supervisor.stream(
-            {"messages": [{"role": "user", "content": prompt}],"testing_value": "1"},
+            {"messages": [{"role": "user", "content": prompt}]},
             stream_mode="updates",
             config=config,
         ):

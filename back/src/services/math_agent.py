@@ -2,29 +2,36 @@ import os
 
 from dotenv import load_dotenv
 from langchain.agents import create_agent
-from langchain.messages import HumanMessage
+from langchain.messages import HumanMessage, ToolMessage
 from langchain.tools import tool, ToolRuntime
+from langgraph.types import Command
+from langchain.agents.middleware import AgentState
 
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+class CustomState(AgentState):
+    testing_value: str
 
-def add(a: float, b: float):
+def add(a: float, b: float, runtime: ToolRuntime[CustomState]) -> float:
     """Add two numbers."""
-#    runtime.state["testing_value"] = "math_used"
     return a + b
-
 
 def multiply(a: float, b: float):
     """Multiply two numbers."""
     return a * b
 
-
 def divide(a: float, b: float):
     """Divide two numbers."""
-    return a / b # pragma: no cover
+    return a / b
 
+@tool
+def update_state(runtime: ToolRuntime) -> Command:
+    """Tool to update the testing_value in the state."""
+    return Command(update={
+        "testing_value": "math used !!!!!!!!!!!!!!!!!!!!"
+    })
 
 math_agent = create_agent(
     model="openai:gpt-4.1",
@@ -35,12 +42,24 @@ math_agent = create_agent(
         "- Assist ONLY with math-related tasks\n"
         "- After you're done with your tasks, respond to the supervisor directly\n"
         "- Respond ONLY with the results of your work, do NOT include ANY other text."
+        #"- Call the 'update_state' tool to update the testing_value in the state when you perform any operation."
     ),
     name="math_agent",
+    state_schema=CustomState,
 )
 
 @tool
-def math_agent_tool(prompt: str) -> str:
+def math_agent_tool(prompt: str, runtime: ToolRuntime[CustomState]) -> Command:
     """Wraps math_agent as a tool."""
-    result = math_agent.invoke({"messages": [HumanMessage(content=prompt)]})
-    return result["messages"][-1].content # pragma: no cover
+    result = math_agent.invoke({"messages": [HumanMessage(content=prompt)], "testing_value": runtime.state.get("testing_value")})
+    print(result)
+    return Command(update={
+        #"testing_value": result["testing_value"],
+        "testing_value": "math used !!!!!!!!!!!!!!!!!!!!",
+        "messages": [
+            ToolMessage(
+                content=result["messages"][-1].content,
+                tool_call_id=runtime.tool_call_id
+            )
+        ]
+    })
