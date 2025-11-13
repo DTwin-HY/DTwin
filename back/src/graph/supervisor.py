@@ -11,12 +11,12 @@ from ..services.math_agent import math_agent_tool
 from ..services.research_agent import research_agent_tool
 from ..services.sales_agent import sales_agent_tool
 from ..services.storage_agent import storage_agent_tool
-from ..services.dataframe_creation import create_dataframe_tool
+from ..services.dataframe_creation import create_array_tool_file
 from ..utils.format import format_chunk
 from ..utils.pretty_print import pretty_print_messages
 from .supervisor_prompt import supervisor_prompt
 
-import pandas as pd
+from ..utils.np_to_pd import np_to_pd #temp
 
 load_dotenv()
 
@@ -28,6 +28,7 @@ class MainState(AgentState): #pragma: no cover
     #temp placeholder for state testing with math agent
     dataframe: str #pragma: no cover
     testing_value: str #pragma: no cover
+    array_path: str #pragma: no cover
 
 @tool
 def state_testing_tool(runtime:ToolRuntime) -> str:
@@ -38,9 +39,11 @@ def state_testing_tool(runtime:ToolRuntime) -> str:
 @tool
 def state_dataframe_test_tool(runtime:ToolRuntime) -> str:
     """Tool to check the value of dataframe in the state. Used in development only."""
-    dataframe = runtime.state.get("dataframe", None) #pragma: no cover
-    print("dataframe in state_dataframe_test_tool:", dataframe) #pragma: no cover
-    return str(dataframe) #pragma: no cover
+    path = runtime.state.get("array_path", None) #pragma: no cover
+    print("path:", path) #pragma: no cover
+    pd = np_to_pd(path) #pragma: no cover
+    print(pd)
+    return pd #pragma: no cover
 
 # pylint: disable=contextmanager-generator-missing-cleanup
 def stream_process(prompt: str, thread_id: str = "3"):
@@ -56,7 +59,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
 
         supervisor = create_agent(
             model="openai:gpt-4.1",
-            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool, create_dataframe_tool, state_dataframe_test_tool],
+            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool, create_array_tool_file, state_dataframe_test_tool],
             system_prompt=supervisor_prompt,
             state_schema=MainState,
             checkpointer=checkpointer)

@@ -19,20 +19,25 @@ def create_product_sales_data(rows: int = 30):
     sunny = np.random.choice([0, 1], size=rows).astype(bool)
 
     # Combine into a dataframe
-    df = pd.DataFrame({"sales": sales, "price": price, "customers": customers, "sunny": sunny})
-    print("df from create product sales data:", df)
-    return str(df)
+
+    data = np.column_stack([sales, price, customers, sunny])
+    print("create_product_sales_data() generated array of shape:", data.shape)
+    return data
 
 @tool
-def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command:
-    """Tool to create a dataframe and add it to the state."""
-    result = create_product_sales_data()
-    print("result from create_dataframe_tool:", result)
+def create_array_tool_file(prompt: str, runtime: ToolRuntime) -> Command:
+    """Create a NumPy array and save it to a .npy file for other agents."""
+    arr = create_product_sales_data()
+    file_path = "shared_sales_data.npy"
+    np.save(file_path, arr)
+
+    print(f"[create_array_tool_file] Array saved to {file_path}, shape {arr.shape}")
+
     return Command(update={
-        "dataframe": result,
+        "array_path": file_path,
         "messages": [
             ToolMessage(
-                content="Dataframe created and added to state",
+                content=f"NumPy array saved to file: {file_path}",
                 tool_call_id=runtime.tool_call_id
             )
         ]
