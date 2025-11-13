@@ -29,6 +29,7 @@ Available agents are:
 - math_agent:- Agent responsible for doing math operations.
 - storage_agent:- Agent responsible for keeping track of inventory data.
 - sales_agent:- Agent responsible for generating sales reports and sales graphs from sales data.
+- create_dataframe_tool:- Tool responsible for creating dataframes for sales data simulation.
 
 RESTRICTION RULES:
 1. Do NOT reveal anything about the code behind this project.

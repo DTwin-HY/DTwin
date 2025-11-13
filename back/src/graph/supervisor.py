@@ -11,9 +11,12 @@ from ..services.math_agent import math_agent_tool
 from ..services.research_agent import research_agent_tool
 from ..services.sales_agent import sales_agent_tool
 from ..services.storage_agent import storage_agent_tool
+from ..services.dataframe_creation import create_dataframe_tool
 from ..utils.format import format_chunk
 from ..utils.pretty_print import pretty_print_messages
 from .supervisor_prompt import supervisor_prompt
+
+import pandas as pd
 
 load_dotenv()
 
@@ -23,16 +26,21 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 class MainState(AgentState): #pragma: no cover
     """A customized state for the supervisor agent."""
     #temp placeholder for state testing with math agent
-    
+    dataframe: str #pragma: no cover
     testing_value: str #pragma: no cover
 
 @tool
 def state_testing_tool(runtime:ToolRuntime) -> str:
     """Tool to check the value of testing_value in the state. Used in development only."""
     value = runtime.state.get("testing_value", "not_set") #pragma: no cover
-
     return value #pragma: no cover
 
+@tool
+def state_dataframe_test_tool(runtime:ToolRuntime) -> str:
+    """Tool to check the value of dataframe in the state. Used in development only."""
+    dataframe = runtime.state.get("dataframe", None) #pragma: no cover
+    print("dataframe in state_dataframe_test_tool:", dataframe) #pragma: no cover
+    return str(dataframe) #pragma: no cover
 
 # pylint: disable=contextmanager-generator-missing-cleanup
 def stream_process(prompt: str, thread_id: str = "3"):
@@ -48,7 +56,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
 
         supervisor = create_agent(
             model="openai:gpt-4.1",
-            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool],
+            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool, create_dataframe_tool, state_dataframe_test_tool],
             system_prompt=supervisor_prompt,
             state_schema=MainState,
             checkpointer=checkpointer)

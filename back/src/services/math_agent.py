@@ -57,7 +57,6 @@ math_agent = create_agent(
 @tool
 def math_agent_tool(prompt: str, runtime: ToolRuntime) -> Command:
     """Wraps math_agent as a tool."""
-
     #Runtime refers to the parent graph (caller) runtime.
     #Parent state value is passed down to the subgraph agent through runtime.state
     result = math_agent.invoke({"messages": [HumanMessage(content=prompt)], "testing_value": runtime.state.get("testing_value")})
