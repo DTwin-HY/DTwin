@@ -7,7 +7,7 @@ from langchain_core.tools import StructuredTool
 from langgraph.graph import END, StateGraph
 from sklearn.linear_model import LinearRegression
 
-from src.data_scripts.data_analysis_test_data import create_product_sales_data
+from ...data_scripts.data_analysis_test_data import create_product_sales_data
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
