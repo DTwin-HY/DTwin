@@ -35,6 +35,7 @@ def create_product_sales_data(rows: int = 30):
 def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command:
     """Create a pd dataframe and save it to a csv file for other agents."""
     df = create_product_sales_data()
+    df_json = df.to_json(orient="records")
     if not os.path.exists("dataframes"):
         os.makedirs("dataframes")
     file_path = f"dataframes/dataframe_{runtime.tool_call_id}.csv"
@@ -43,7 +44,7 @@ def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command:
     print(f"[create_array_tool_file] DataFrame saved to {file_path}, shape {df.shape}")
 
     return Command(update={
-        "dataframe_path": file_path,
+        "dataframe": df_json,
         "messages": [
             ToolMessage(
                 content=f"Pd dataframe saved to file: {file_path}",
@@ -53,9 +54,20 @@ def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command:
     })
 
 @tool
-def state_dataframe_test_tool(runtime:ToolRuntime) -> str:
+def json_dataframe_test_tool(runtime:ToolRuntime) -> str:
+    """
+        Tool to check the json dataframe. Used in development only.
+        Parameters:
+        dataframe_path: str : path to the dataframe csv file.
+    """
+    dataframe = runtime.state.get("dataframe", None) #pragma: no cover
+    dataframe = pd.read_json(dataframe, orient="records")
+    return str(dataframe) #pragma: no cover
+
+@tool
+def state_dataframe_test_tool(dataframe_path: str) -> str:
     """Tool to check the value of dataframe in the state. Used in development only."""
-    path = runtime.state.get("dataframe_path", None) #pragma: no cover
+    path = dataframe_path
     print("path:", path) #pragma: no cover
     pd = csv_to_pd(path) #pragma: no cover
     print(pd)
