@@ -44,7 +44,6 @@ def stream_process(prompt: str, thread_id: str = "3"):
     config = {"configurable": {"thread_id": thread_id}}
 
     with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer: # pragma: no cover
-
         checkpointer.setup() # pragma: no cover
 
         supervisor = create_agent(
