@@ -5,18 +5,15 @@ from dotenv import load_dotenv
 from langgraph.checkpoint.postgres import PostgresSaver
 from langchain.agents import create_agent
 from langchain.agents.middleware import AgentState
-from langchain.tools import tool, ToolRuntime
 
 from ..services.math_agent import math_agent_tool
 from ..services.research_agent import research_agent_tool
 from ..services.sales_agent import sales_agent_tool
 from ..services.storage_agent import storage_agent_tool
-from ..services.dataframe_creation import create_array_tool_file
+from ..services.dataframe_creation import create_dataframe_tool, state_dataframe_test_tool
 from ..utils.format import format_chunk
-from ..utils.pretty_print import pretty_print_messages
 from .supervisor_prompt import supervisor_prompt
 
-from ..utils.np_to_pd import np_to_pd #temp
 
 load_dotenv()
 
@@ -25,25 +22,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 class MainState(AgentState): #pragma: no cover
     """A customized state for the supervisor agent."""
-    #temp placeholder for state testing with math agent
-    dataframe: str #pragma: no cover
-    testing_value: str #pragma: no cover
-    array_path: str #pragma: no cover
+    dataframe_path: str #pragma: no cover
 
-@tool
-def state_testing_tool(runtime:ToolRuntime) -> str:
-    """Tool to check the value of testing_value in the state. Used in development only."""
-    value = runtime.state.get("testing_value", "not_set") #pragma: no cover
-    return value #pragma: no cover
-
-@tool
-def state_dataframe_test_tool(runtime:ToolRuntime) -> str:
-    """Tool to check the value of dataframe in the state. Used in development only."""
-    path = runtime.state.get("array_path", None) #pragma: no cover
-    print("path:", path) #pragma: no cover
-    pd = np_to_pd(path) #pragma: no cover
-    print(pd)
-    return pd #pragma: no cover
 
 # pylint: disable=contextmanager-generator-missing-cleanup
 def stream_process(prompt: str, thread_id: str = "3"):
@@ -59,7 +39,8 @@ def stream_process(prompt: str, thread_id: str = "3"):
 
         supervisor = create_agent(
             model="openai:gpt-4.1",
-            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool, create_array_tool_file, state_dataframe_test_tool],
+            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool,
+                   create_dataframe_tool, state_dataframe_test_tool],
             system_prompt=supervisor_prompt,
             state_schema=MainState,
             checkpointer=checkpointer)
@@ -71,39 +52,3 @@ def stream_process(prompt: str, thread_id: str = "3"):
         ):
             output = format_chunk(chunk)  # stream the output to the frontend
             yield f"data: {json.dumps(output)}\n\n"
-
-
-if __name__ == "__main__": # pragma: no cover
-    with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer:
-        checkpointer.setup()
-
-        supervisor = init_supervisor.compile(checkpointer=checkpointer)
-
-        config = {"configurable": {"thread_id": "1"}}
-        for chunk in supervisor.stream(
-            {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": "Please take inventory of the warehouse.",
-                    }
-                ]
-            },
-            config,
-            subgraphs=True,
-        ):
-            pretty_print_messages(chunk, last_message=True)
-
-        for chunk in supervisor.stream(
-            {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": "What is the value of testing_value?",
-                    }
-                ]
-            },
-            config,
-            subgraphs=True,
-        ):
-            pretty_print_messages(chunk, last_message=True)

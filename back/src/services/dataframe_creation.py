@@ -1,13 +1,12 @@
 import os
 
-from dotenv import load_dotenv
-from langchain.agents import create_agent
-from langchain.messages import HumanMessage, ToolMessage
+from langchain.messages import ToolMessage
 from langchain.tools import tool, ToolRuntime
 from langgraph.types import Command
-from langchain.agents.middleware import AgentState
 import numpy as np
 import pandas as pd
+
+from ..utils.csv_to_pd import csv_to_pd #temp
 
 def create_product_sales_data(rows: int = 30):
     """Generate (by default 30 rows of) daily product data for simulation testing."""
@@ -20,25 +19,44 @@ def create_product_sales_data(rows: int = 30):
 
     # Combine into a dataframe
 
-    data = np.column_stack([sales, price, customers, sunny])
-    print("create_product_sales_data() generated array of shape:", data.shape)
-    return data
+    df = pd.DataFrame(
+        {
+            "sales": sales,
+            "price": price,
+            "customers": customers,
+            "sunny": sunny,
+        }
+    )
+    print("create_product_sales_data() generated DataFrame:", df.shape)
+    return df
+
 
 @tool
-def create_array_tool_file(prompt: str, runtime: ToolRuntime) -> Command:
-    """Create a NumPy array and save it to a .npy file for other agents."""
-    arr = create_product_sales_data()
-    file_path = "shared_sales_data.npy"
-    np.save(file_path, arr)
+def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command:
+    """Create a pd dataframe and save it to a csv file for other agents."""
+    df = create_product_sales_data()
+    if not os.path.exists("dataframes"):
+        os.makedirs("dataframes")
+    file_path = f"dataframes/dataframe_{runtime.tool_call_id}.csv"
+    df.to_csv(file_path, index=False)
 
-    print(f"[create_array_tool_file] Array saved to {file_path}, shape {arr.shape}")
+    print(f"[create_array_tool_file] DataFrame saved to {file_path}, shape {df.shape}")
 
     return Command(update={
-        "array_path": file_path,
+        "dataframe_path": file_path,
         "messages": [
             ToolMessage(
-                content=f"NumPy array saved to file: {file_path}",
+                content=f"Pd dataframe saved to file: {file_path}",
                 tool_call_id=runtime.tool_call_id
             )
         ]
     })
+
+@tool
+def state_dataframe_test_tool(runtime:ToolRuntime) -> str:
+    """Tool to check the value of dataframe in the state. Used in development only."""
+    path = runtime.state.get("dataframe_path", None) #pragma: no cover
+    print("path:", path) #pragma: no cover
+    pd = csv_to_pd(path) #pragma: no cover
+    print(pd)
+    return pd #pragma: no cover
