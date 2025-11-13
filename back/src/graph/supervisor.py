@@ -20,18 +20,18 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-class MainState(AgentState): #pragmae: no cover
+class MainState(AgentState): #pragma: no cover
     """A customized state for the supervisor agent."""
     #temp placeholder for state testing with math agent
     
-    testing_value: str #pragema: no cover
+    testing_value: str #pragma: no cover
 
 @tool
 def state_testing_tool(runtime:ToolRuntime) -> str:
     """Tool to check the value of testing_value in the state. Used in development only."""
-    value = runtime.state.get("testing_value", "not_set") #pragema: no cover
+    value = runtime.state.get("testing_value", "not_set") #pragma: no cover
 
-    return value #pragema: no cover
+    return value #pragma: no cover
 
 
 # pylint: disable=contextmanager-generator-missing-cleanup
