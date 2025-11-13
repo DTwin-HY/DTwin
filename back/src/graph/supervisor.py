@@ -10,7 +10,7 @@ from ..services.math_agent import math_agent_tool
 from ..services.research_agent import research_agent_tool
 from ..services.sales_agent import sales_agent_tool
 from ..services.storage_agent import storage_agent_tool
-from ..services.dataframe_creation import create_dataframe_tool, state_dataframe_test_tool, json_dataframe_test_tool
+from ..services.dataframe_creation import create_dataframe_tool, csv_dataframe_test_tool, json_dataframe_test_tool
 from ..utils.format import format_chunk
 from .supervisor_prompt import supervisor_prompt
 
@@ -40,7 +40,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
         supervisor = create_agent(
             model="openai:gpt-4.1",
             tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool,
-                   create_dataframe_tool, state_dataframe_test_tool, json_dataframe_test_tool],
+                   create_dataframe_tool, csv_dataframe_test_tool, json_dataframe_test_tool],
             system_prompt=supervisor_prompt,
             state_schema=MainState,
             checkpointer=checkpointer)

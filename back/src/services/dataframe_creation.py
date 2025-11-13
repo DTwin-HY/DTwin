@@ -6,6 +6,7 @@ from langgraph.types import Command
 import numpy as np
 import pandas as pd
 
+from io import StringIO
 from ..utils.csv_to_pd import csv_to_pd #temp
 
 def create_product_sales_data(rows: int = 30):
@@ -33,9 +34,11 @@ def create_product_sales_data(rows: int = 30):
 
 @tool
 def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command:
-    """Create a pd dataframe and save it to a csv file for other agents."""
+    """
+    Create a pd dataframe and save it to a csv file for other agents.
+    Also saves the dataframe in json format in the state, this feature might be unused later.
+    """
     df = create_product_sales_data()
-    df_json = df.to_json(orient="records")
     if not os.path.exists("dataframes"):
         os.makedirs("dataframes")
     file_path = f"dataframes/dataframe_{runtime.tool_call_id}.csv"
@@ -43,8 +46,10 @@ def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command:
 
     print(f"[create_array_tool_file] DataFrame saved to {file_path}, shape {df.shape}")
 
+    df_json = df.to_json(orient="records") # convert to json
+
     return Command(update={
-        "dataframe": df_json,
+        "dataframe": df_json, # save dataframe in state
         "messages": [
             ToolMessage(
                 content=f"Pd dataframe saved to file: {file_path}",
@@ -56,19 +61,28 @@ def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command:
 @tool
 def json_dataframe_test_tool(runtime:ToolRuntime) -> str:
     """
-        Tool to check the json dataframe. Used in development only.
-        Parameters:
-        dataframe_path: str : path to the dataframe csv file.
+    Tool to check the json dataframe from state. Used in development only.
     """
     dataframe = runtime.state.get("dataframe", None) #pragma: no cover
-    dataframe = pd.read_json(dataframe, orient="records")
-    return str(dataframe) #pragma: no cover
+    if dataframe is None: #pragma: no cover
+        return "No dataframe found in state." #pragma: no cover
+    # dataframe must be wrapped in StringIO to avoid a warning
+    dataframe = pd.read_json(StringIO(dataframe), orient="records") #pragma: no cover
+    print("fetched dataframe from state:", dataframe) #pragma: no cover
+    return dataframe #pragma: no cover
 
 @tool
-def state_dataframe_test_tool(dataframe_path: str) -> str:
-    """Tool to check the value of dataframe in the state. Used in development only."""
-    path = dataframe_path
-    print("path:", path) #pragma: no cover
-    pd = csv_to_pd(path) #pragma: no cover
-    print(pd)
-    return pd #pragma: no cover
+def csv_dataframe_test_tool(dataframe_path: str) -> str:
+    """
+    Tool to check the value of dataframe saved as csv. Used in development only.
+    Parameters:
+    dataframe_path: str : path to the dataframe csv file.
+    """
+    try:
+        path = dataframe_path #pragma: no cover
+        print("path:", path) #pragma: no cover
+        dataframe = csv_to_pd(path) #pragma: no cover
+        print("fetched dataframe from csv file:", dataframe) #pragma: no cover
+        return dataframe #pragma: no cover
+    except Exception as e:
+        return "Error fetching dataframe from csv file." #pragma: no cover
