@@ -44,9 +44,9 @@ def stream_process(prompt: str, thread_id: str = "3"):
     config = {"configurable": {"thread_id": thread_id}}
 
     with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer: # pragma: no cover
-        
+
         checkpointer.setup() # pragma: no cover
-        
+
         supervisor = create_agent(
             model="openai:gpt-4.1",
             tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool],
