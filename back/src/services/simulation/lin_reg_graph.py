@@ -14,13 +14,13 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 class ToolState(TypedDict, total=False):
-    df: pd.DataFrame
+    df: dict
     results: Dict[str, Any]
     errors: list[str]
 
 
 def validation_node(state: ToolState) -> ToolState:
-    df = state.get("df")
+    df = pd.DataFrame(state.get("df"))
     if df is None or df.empty:
         state["errors"] = ["No data provided."]
         return state
@@ -36,7 +36,7 @@ def validation_node(state: ToolState) -> ToolState:
 def analysis_node(state: ToolState) -> ToolState:
     if state.get("errors"):
         return state
-    df = state["df"]
+    df = pd.DataFrame(state["df"])
 
     # How much price, weather and customer count affect sales
     X = df[["price", "sunny", "customers"]]
