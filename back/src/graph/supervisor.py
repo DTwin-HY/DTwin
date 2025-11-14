@@ -14,7 +14,7 @@ from ..services.storage_agent import storage_agent_tool
 from ..utils.format import format_chunk
 from ..utils.pretty_print import pretty_print_messages
 from .supervisor_prompt import supervisor_prompt
-
+from ..services.simulation.sim_agent import simulation_agent_tool
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -48,7 +48,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
 
         supervisor = create_agent(
             model="openai:gpt-4.1",
-            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool],
+            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool, simulation_agent_tool],
             system_prompt=supervisor_prompt,
             state_schema=MainState,
             checkpointer=checkpointer)

@@ -26,6 +26,7 @@ CRITICAL INSTRUCTION:
 
 Available agents are:
 - research_agent:- Agent responsible for searching in-depth information from the web, especially when real time data is needed.
+- simulation_agent:- Agent responsible for conducting data analysis and simulations.
 - math_agent:- Agent responsible for doing math operations.
 - storage_agent:- Agent responsible for keeping track of inventory data.
 - sales_agent:- Agent responsible for generating sales reports and sales graphs from sales data.
