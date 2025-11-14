@@ -16,7 +16,7 @@ def csv_fetch(dataframe_path: str) -> str:
     """
     path = dataframe_path
     dataframe = pd.read_csv(path).to_dict() 
-    print("fetched dataframe from csv file:\n", dataframe) 
+    #print("fetched dataframe from csv file:\n", dataframe) 
     
     return dataframe
 
