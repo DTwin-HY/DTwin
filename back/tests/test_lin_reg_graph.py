@@ -23,7 +23,24 @@ TEST_DATA_DICT = {
             10: True, 11: True, 12: True, 13: False, 14: True, 15: False, 16: False, 17: True, 18: True, 19: False, 
             20: False, 21: True, 22: True, 23: True, 24: False, 25: False, 26: False, 27: False, 28: False, 29: False}}
 
-CORRECT_OUTPUT = {"price_coefficient":1.40, "sunny_coefficient":10.75, "customer_coefficient":0.44, "intercept":85.99, "r-square":0.08}
+CORRECT_OUTPUT = {"price":1.40, "sunny":10.75, "customers":0.44, "intercept":86.0, "r-square":0.08}
 
 
-results = build_lin_reg_graph.invoke(TEST_DATA_DICT)
+def test_lin_graph_outputs_correct_values():
+       graph = build_lin_reg_graph()
+       graph_ran = graph.invoke({"df":TEST_DATA_DICT})
+
+       results = graph_ran["results"]
+
+       price = round(results["coefficients"]["price"],2)
+       sunny = round(results["coefficients"]["sunny"],2)
+       customers = round(results["coefficients"]["customers"],2)
+       intercept = round(results["intercept"],2)
+       r_square = round(results["r2_score"],2)
+
+
+       assert price == CORRECT_OUTPUT["price"]
+       assert sunny == CORRECT_OUTPUT["sunny"]
+       assert customers == CORRECT_OUTPUT["customers"]
+       assert intercept == CORRECT_OUTPUT["intercept"]
+       assert r_square == CORRECT_OUTPUT["r-square"]
