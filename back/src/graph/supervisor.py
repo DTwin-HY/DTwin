@@ -11,6 +11,7 @@ from ..services.math_agent import math_agent_tool
 from ..services.research_agent import research_agent_tool
 from ..services.sales_agent import sales_agent_tool
 from ..services.storage_agent import storage_agent_tool
+from ..services.counterfactual_agent import counterfactual_analysis_tool
 from ..utils.format import format_chunk
 from ..utils.pretty_print import pretty_print_messages
 from .supervisor_prompt import supervisor_prompt
@@ -23,7 +24,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 class MainState(AgentState): #pragma: no cover
     """A customized state for the supervisor agent."""
     #temp placeholder for state testing with math agent
-    
+
     testing_value: str #pragma: no cover
 
 @tool
@@ -48,7 +49,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
 
         supervisor = create_agent(
             model="openai:gpt-4.1",
-            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool],
+            tools=[research_agent_tool, math_agent_tool, storage_agent_tool, sales_agent_tool, state_testing_tool, counterfactual_analysis_tool],
             system_prompt=supervisor_prompt,
             state_schema=MainState,
             checkpointer=checkpointer)
