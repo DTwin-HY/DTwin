@@ -72,3 +72,11 @@ disable = [
     "broad-exception-caught",
     "too-few-public-methods"
 ]
+
+[tool.pytest.ini_options]
+addopts = "--maxfail=1 --disable-warnings"
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore:.*AgentStatePydantic.*"
+]
+

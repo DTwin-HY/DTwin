@@ -4,7 +4,7 @@ import pytest
 # Aseta tarvittavat envit testejä varten
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
-import back.src.services.sql_agent as sql_agent
+import src.services.sql_agent as sql_agent
 
 def test_get_env_or_raise_ok(monkeypatch):
     monkeypatch.setenv("FOO", "bar")

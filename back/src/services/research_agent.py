@@ -1,9 +1,10 @@
 import os
 
 from dotenv import load_dotenv
-from langchain_tavily import TavilySearch
 from langchain.agents import create_agent
 from langchain.tools import tool
+from langchain_tavily import TavilySearch
+from langchain_core.messages import HumanMessage
 
 load_dotenv()
 
@@ -26,8 +27,9 @@ research_agent = create_agent(
     name="research_agent",
 )
 
+
 @tool
 def research_agent_tool(prompt: str) -> str:
     """Wraps research_agent as a tool."""
-    result = research_agent_instance.invoke({"messages": [HumanMessage(content=prompt)]})
-    return result["messages"][-1].content # pragma: no cover
+    result = research_agent.invoke({"messages": [HumanMessage(content=prompt)]})
+    return result["messages"][-1].content  # pragma: no cover

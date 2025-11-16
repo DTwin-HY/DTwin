@@ -1,6 +1,8 @@
 import pytest
 import base64
 import pandas as pd
+from pathlib import Path
+import sys
 import pytest
 from langchain.messages import HumanMessage
 from unittest.mock import MagicMock
@@ -11,8 +13,9 @@ warnings.filterwarnings(
 
 mock_supervisor = MagicMock()
 
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from ..src.services.sales_agent import SalesTool, SalesAgent
+from src.services.sales_agent import SalesTool, SalesAgent
 
 
 @pytest.fixture
@@ -87,9 +90,9 @@ def test_fetch_sales_data_filters(monkeypatch):
 
     fake_db = MagicMock()
     fake_db.session.query.return_value = fake_query
-    monkeypatch.setattr("back.src.services.sales_agent.db", fake_db)
+    monkeypatch.setattr("src.services.sales_agent.db", fake_db)
 
-    from back.src.services.sales_agent import Sale
+    from src.services.sales_agent import Sale
 
     tool = SalesTool()
     df = tool._fetch_sales_data("2025-09-01", "2025-09-05", product="A")
@@ -106,7 +109,7 @@ def test_fetch_sales_data_no_rows(monkeypatch):
     fake_query.all.return_value = []
     fake_db = MagicMock()
     fake_db.session.query.return_value = fake_query
-    monkeypatch.setattr("back.src.services.sales_agent.db", fake_db)
+    monkeypatch.setattr("src.services.sales_agent.db", fake_db)
 
     tool = SalesTool()
     df = tool._fetch_sales_data()
