@@ -36,14 +36,3 @@ def lin_reg_tool(data_location: str) -> Dict[str, Any]:
     
     return result.get("results", {"errors": result.get("errors", [])})
 
-
-if __name__ == "__main__":
-    from src.data.data_analysis_test_data import create_product_sales_data
-
-    df = create_product_sales_data()
-    print("Generated sample data:")
-    print(df.head())
-
-    results = run_lin_reg_tool(df.to_dict(orient="records"))
-    print("Simulation results:")
-    print(results)

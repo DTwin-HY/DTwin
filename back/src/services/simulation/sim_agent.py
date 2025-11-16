@@ -67,18 +67,3 @@ def simulation_agent_tool(prompt:str) -> str:
     result = sim_agent.invoke({"messages": [HumanMessage(content=prompt)],})
 
     return result["messages"][-1].content
-
-
-if __name__ == "__main__":
-
-    df = create_product_sales_data()
-    data = df.to_dict(orient="records")
-
-    user_message = (
-        "Run a linear regression simulation, use the fetch data tool to retrieve data."
-        "Explain the coefficients."
-    )
-
-    response = sim_agent.invoke({"messages": [{"role": "user", "content": user_message}],})
-
-    print(response["messages"][-1].content)
