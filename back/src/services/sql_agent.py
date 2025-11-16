@@ -4,10 +4,10 @@ from functools import lru_cache
 from typing import Any, Dict, Literal
 
 from dotenv import load_dotenv
-from langchain_core.tools import StructuredTool
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.tools import StructuredTool
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
@@ -143,7 +143,9 @@ def analyze_results(state: MessagesState) -> Dict[str, Any]:
     return {"messages": [response]}
 
 
-def should_continue_after_generate(state: MessagesState) -> Literal["check_query", "analyze_results"]:
+def should_continue_after_generate(
+    state: MessagesState,
+) -> Literal["check_query", "analyze_results"]:
     """Päätä pitääkö kysely ajaa vai onko jo tuloksia analysoitavana."""
     last_message = state["messages"][-1]
 
@@ -159,7 +161,8 @@ def should_retry_query(state: MessagesState) -> Literal["generate_query", "analy
     """Päätä pitääkö query ajaa uudelleen vai siirtyä analyysiin."""
     # Laske kuinka monta kertaa query on ajettu
     query_count = sum(
-        1 for msg in state["messages"]
+        1
+        for msg in state["messages"]
         if hasattr(msg, "type") and msg.type == "tool" and "sql_db_query" in str(msg)
     )
 
@@ -209,10 +212,7 @@ def build_sql_agent_graph():
     builder.add_conditional_edges(
         "generate_query",
         should_continue_after_generate,
-        {
-            "check_query": "check_query",
-            "analyze_results": "analyze_results"
-        }
+        {"check_query": "check_query", "analyze_results": "analyze_results"},
     )
 
     builder.add_edge("check_query", "run_query")
@@ -221,10 +221,7 @@ def build_sql_agent_graph():
     builder.add_conditional_edges(
         "run_query",
         should_retry_query,
-        {
-            "generate_query": "generate_query",
-            "analyze_results": "analyze_results"
-        }
+        {"generate_query": "generate_query", "analyze_results": "analyze_results"},
     )
 
     # Analyysi päättyy aina
@@ -247,7 +244,8 @@ sql_agent_tool = StructuredTool.from_function(
     name="sql_agent_tool",
     description=(
         "Executes SQL queries on the storage and sales databases and returns structured results. "
-        "Call this tool ONCE with a comprehensive query - it returns ALL needed data in one execution."
+        "Call this tool ONCE with a comprehensive query - "
+        "it returns ALL needed data in one execution."
     ),
 )
 

@@ -11,9 +11,9 @@ os.environ.setdefault("TAVILY_API_KEY", "test")
 import pytest
 
 # Lisää back/src import-pathiin
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from back.src.index import app  # noqa: E402
+from src.index import app  # noqa: E402
 
 
 @pytest.fixture()
@@ -24,7 +24,7 @@ def client():
 
 def test_supervisor_streams_and_saves(client, monkeypatch):
     # Import the route module to monkeypatch symbols
-    from back.src.routes import supervisor_route
+    from src.routes import supervisor_route
 
     # Fake current_user with get_id method
     class FakeUser:
@@ -76,7 +76,7 @@ def test_supervisor_rejects_non_json(client):
 
 
 def test_fetch_chats_serializes_models(client, monkeypatch):
-    from back.src.routes import chat_route
+    from src.routes import chat_route
 
     # Fake current_user ja get_chats_by_user
     monkeypatch.setattr(chat_route, "current_user", types.SimpleNamespace(id=999), raising=False)

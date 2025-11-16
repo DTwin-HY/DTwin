@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
-from langchain.messages import HumanMessage, AIMessage
-from langgraph.graph import END, START, MessagesState, StateGraph
+from langchain.messages import AIMessage, HumanMessage
 from langchain.tools import tool
+from langgraph.graph import END, START, MessagesState, StateGraph
 
 from .sql_agent import sql_agent_tool
 
@@ -39,6 +39,7 @@ def build_storage_agent():
 # Luo react agentti
 storage_react_agent = build_storage_agent()
 
+
 @tool
 def storage_agent_tool(prompt: str) -> str:
     """
@@ -46,10 +47,9 @@ def storage_agent_tool(prompt: str) -> str:
     Takes a user prompt string and returns the agent's response as a string.
     """
     result = storage_react_agent.invoke({"messages": [HumanMessage(content=prompt)]})
-    return result["messages"][-1].content # pragma: no cover
+    return result["messages"][-1].content  # pragma: no cover
+
 
 if __name__ == "__main__":  # pragma: no cover
-    result = storage_react_agent.invoke(
-        {"messages": [HumanMessage(content="Hae varaston saldot")]}
-    )
+    result = storage_react_agent.invoke({"messages": [HumanMessage(content="Hae varaston saldot")]})
     print(result["messages"][-1].content)

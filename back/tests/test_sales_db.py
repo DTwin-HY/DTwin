@@ -2,10 +2,10 @@ import pytest
 from unittest.mock import MagicMock, patch
 from datetime import datetime
 
-@patch("back.src.database.sales.db")
+@patch("src.database.sales.db")
 def test_fetch_sales_data_returns_correct_values(mock_db):
     """fetch_sales_data should return correct numbers from query result."""
-    from back.src.database.sales import fetch_sales_data
+    from src.database.sales import fetch_sales_data
 
     # Mock the query result
     mock_result = {"revenue": 200.75, "sales": 15, "transactions": 3}
@@ -18,10 +18,10 @@ def test_fetch_sales_data_returns_correct_values(mock_db):
     assert summary == mock_result
 
 
-@patch("back.src.database.sales.db")
+@patch("src.database.sales.db")
 def test_fetch_sales_data_handles_missing_values(mock_db):
     """Should safely handle None values and replace with 0."""
-    from back.src.database.sales import fetch_sales_data
+    from src.database.sales import fetch_sales_data
 
     mock_result = {"revenue": None, "sales": None, "transactions": None}
     mock_db.session.execute.return_value.mappings.return_value.first.return_value = mock_result
@@ -33,10 +33,10 @@ def test_fetch_sales_data_handles_missing_values(mock_db):
     assert summary == {"revenue": 0.0, "sales": 0, "transactions": 0}
 
 
-@patch("back.src.database.sales.db")
+@patch("src.database.sales.db")
 def test_fetch_sales_data_raises_and_rolls_back(mock_db):
     """If query fails, function should rollback and raise error."""
-    from back.src.database.sales import fetch_sales_data
+    from src.database.sales import fetch_sales_data
 
     mock_db.session.execute.side_effect = Exception("SQL failed")
 
