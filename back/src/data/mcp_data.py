@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional
 
 class WeatherData(BaseModel):
@@ -11,7 +11,7 @@ class WeatherData(BaseModel):
     humidity: Optional[float] = Field(None, description="Relative humidity percentage")
     condition: Optional[str] = Field(None, description="Weather description (e.g., 'light snow')")
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def normalize_fields(cls, values):
         # Normalize alternative MCP field names
         if "city" in values and "location" not in values:
