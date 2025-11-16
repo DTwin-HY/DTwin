@@ -22,7 +22,7 @@ async def create_mcp_agent():
         {
             "weather": {
                 "transport": "streamable_http",
-                "url": "http://mcp:8000/mcp",
+                "url": "http://mcp:8000/mcp", # TODO: address from env
             }
         }
     )
@@ -33,7 +33,7 @@ async def create_mcp_agent():
 
 # Only one valid and complete invoke_mcp_agent function
 @retry(wait=wait_fixed(1), stop=stop_after_attempt(3))
-async def invoke_mcp_agent(prompt: str) -> WeatherData:
+async def invoke_mcp_agent(prompt: str) -> str:
     """
     Sends a user query to the MCP agent and returns a WeatherData object.
     Validates and normalizes MCP server response.
@@ -46,6 +46,7 @@ async def invoke_mcp_agent(prompt: str) -> WeatherData:
         logger.info("Sending prompt to MCP agent: %s", prompt)
         result = await agent.ainvoke(payload)
         logger.debug("Raw MCP result: %s", result)
+        return str(result)
 
         # Validate empty response
         if not result.get("messages"):
@@ -77,7 +78,10 @@ def mcp_agent_tool(prompt: str) -> str:
     LangChain tool for invoking the MCP agent.
     Returns the weather information as a JSON string.
     """
-    weather = asyncio.run(invoke_mcp_agent(prompt))
+    result = asyncio.run(invoke_mcp_agent(prompt))
+    logger.info(result)
+    return result
+
     return weather.model_dump_json(indent=2)
 
 

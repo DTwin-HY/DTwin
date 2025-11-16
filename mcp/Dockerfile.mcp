@@ -2,9 +2,12 @@ FROM python:3.12-alpine3.22
 
 WORKDIR /app
 
-RUN pip install mcp_weather_server starlette uvicorn
+RUN apk add --no-cache git
+
+RUN pip install --no-cache-dir \
+    "git+https://github.com/jensjvh/mcp_historical_weather_server.git@main#egg=mcp_historical_weather_server" \
+    starlette uvicorn
 
 EXPOSE 8000
 
-#CMD ["python3", "-m", "mcp_weather_server", "--mode", "sse", "--host", "localhost", "--port", "8000"]
-CMD ["python3", "-m", "mcp_weather_server", "--mode", "streamable-http", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3", "-m", "mcp_historical_weather_server", "--mode", "streamable-http", "--host", "0.0.0.0", "--port", "8000"]
