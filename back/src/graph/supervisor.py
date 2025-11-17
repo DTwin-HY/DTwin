@@ -22,6 +22,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 class MainState(AgentState):  # pragma: no cover
     """A customized state for the supervisor agent."""
+
     test_value: str
 
 

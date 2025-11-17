@@ -8,6 +8,7 @@ from ..graph.supervisor import stream_process
 from ..index import app
 from ..utils.generate_thread_id import generate_unique_thread_id
 
+
 @app.post("/api/supervisor")
 @login_required
 def supervisor_route():

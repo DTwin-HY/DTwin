@@ -74,7 +74,7 @@ def math_agent_tool(prompt: str, runtime: ToolRuntime) -> Command:
     )
     print(result)
 
-    # Command used to update state fields in the parent graphs state. 
+    # Command used to update state fields in the parent graphs state.
     # If state keys match, they will be updated.
     return Command(
         update={

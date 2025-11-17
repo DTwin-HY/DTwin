@@ -73,42 +73,45 @@ const Chatbot = () => {
     setChats((prevChats) => [...(prevChats || []), { role: 'user', message: inputValue }]);
 
     try {
-      await streamMessage(inputValue, threadId, (chunk) => {
-        console.log('Received chunk:', chunk);
-        if (Array.isArray(chunk)) {
-          const cards = chunk.map((update) => {
-            const title = headerLine(update);
-            let body = '';
-            let imageData = null;
+      await streamMessage(
+        inputValue,
+        threadId,
+        (chunk) => {
+          console.log('Received chunk:', chunk);
+          if (Array.isArray(chunk)) {
+            const cards = chunk.map((update) => {
+              const title = headerLine(update);
+              let body = '';
+              let imageData = null;
 
-            if (update.messages && update.messages.length) {
-              update.messages.forEach((msg) => {
-                if (msg.image_data) {
-                  imageData = msg.image_data;
-                }
+              if (update.messages && update.messages.length) {
+                update.messages.forEach((msg) => {
+                  if (msg.image_data) {
+                    imageData = msg.image_data;
+                  }
 
-                const content = msg.content || '';
-                if (content) body += `${content}\n`;
-                (msg.tool_calls || []).forEach((t) => (body += `→ ${t.name}()\n`));
-              });
-            }
+                  const content = msg.content || '';
+                  if (content) body += `${content}\n`;
+                  (msg.tool_calls || []).forEach((t) => (body += `→ ${t.name}()\n`));
+                });
+              }
 
-            return { title, body: body.trim(), imageData };
-          });
+              return { title, body: body.trim(), imageData };
+            });
 
-          setResponses((prev) => [...prev, ...cards]);
-        }
-      },
-      (newThreadId) => {
-        setThreadId((prev) => {
-          if (!prev) {
-            setThreadCookie(newThreadId);
-            return newThreadId;
+            setResponses((prev) => [...prev, ...cards]);
           }
-          return prev;
-        });
-      }
-    );
+        },
+        (newThreadId) => {
+          setThreadId((prev) => {
+            if (!prev) {
+              setThreadCookie(newThreadId);
+              return newThreadId;
+            }
+            return prev;
+          });
+        },
+      );
       //const latest = await fetchChats();
       //setChats(latest);
       setSuccessMessage('Prompt and response saved to database!');
@@ -126,32 +129,32 @@ const Chatbot = () => {
     <div className="w-full max-w-full p-6">
       <div className="rounded-xl bg-white p-6 shadow-md">
         <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the DTwin assistant</h3>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <textarea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            disabled={loading}
+            className="min-h-[100px] rounded-lg border border-gray-300 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            placeholder="Type your message..."
+          />
+          <div className="flex gap-3">
+            <button
+              type="submit"
               disabled={loading}
-              className="min-h-[100px] rounded-lg border border-gray-300 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-              placeholder="Type your message..."
-            />
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 rounded-lg bg-purple-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-purple-600 disabled:bg-gray-400"
-              >
-                {loading ? 'Streaming...' : 'Send Message'}
-              </button>
-              <button
-                type="button"
-                onClick={handleNewChat}
-                disabled={loading}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-100 disabled:opacity-50"
-              >
-                New chat
-              </button>
-            </div>
-          </form>
+              className="flex-1 rounded-lg bg-purple-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-purple-600 disabled:bg-gray-400"
+            >
+              {loading ? 'Streaming...' : 'Send Message'}
+            </button>
+            <button
+              type="button"
+              onClick={handleNewChat}
+              disabled={loading}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-100 disabled:opacity-50"
+            >
+              New chat
+            </button>
+          </div>
+        </form>
         {loading && (
           <div className="mt-4 flex justify-center">
             <div className="w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">

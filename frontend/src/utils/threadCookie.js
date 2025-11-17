@@ -2,9 +2,7 @@ const THREAD_COOKIE_NAME = 'dtwin_thread_id';
 
 export const getThreadCookie = () => {
   if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(
-    new RegExp('(^| )' + THREAD_COOKIE_NAME + '=([^;]+)')
-  );
+  const match = document.cookie.match(new RegExp('(^| )' + THREAD_COOKIE_NAME + '=([^;]+)'));
   return match ? match[2] : null;
 };
 

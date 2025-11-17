@@ -23,12 +23,12 @@ export const streamMessage = async (message, threadId, onChunk, onThreadId) => {
   if (!res.ok) {
     throw new Error(`Request failed with status ${res.status}`);
   }
-  
+
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
 
   let buffer = '';
-  
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -46,7 +46,7 @@ export const streamMessage = async (message, threadId, onChunk, onThreadId) => {
       const lines = part.split('\n');
       let eventType = 'message';
       let dataLine = null;
-      
+
       for (const line of lines) {
         if (line.startsWith('event:')) {
           eventType = line.slice('event:'.length).trim();
@@ -63,7 +63,6 @@ export const streamMessage = async (message, threadId, onChunk, onThreadId) => {
         console.error('JSON parse error:', err, dataLine);
         continue;
       }
-
 
       if (eventType === 'thread_id') {
         if (onThreadId && payload.thread_id) {

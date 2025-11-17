@@ -33,7 +33,7 @@ def create_product_sales_data(rows: int = 30):
 
 
 @tool
-def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command:
+def create_dataframe_tool(prompt: str, runtime: ToolRuntime) -> Command: # pylint: disable=unused-argument
     """
     Create a pd dataframe and save it to a csv file for other agents.
     """
