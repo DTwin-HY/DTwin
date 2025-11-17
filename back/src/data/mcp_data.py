@@ -1,17 +1,20 @@
-from pydantic import BaseModel, Field, model_validator
 from typing import Optional
+
+from pydantic import BaseModel, Field, model_validator
+
 
 class WeatherData(BaseModel):
     """
     Internal structured model for data returned by the MCP Weather Server.
     Handles multiple possible field names from different MCP implementations.
     """
+
     location: str = Field(..., description="Location name or city")
     temperature: float = Field(..., description="Temperature in Celsius")
     humidity: Optional[float] = Field(None, description="Relative humidity percentage")
     condition: Optional[str] = Field(None, description="Weather description (e.g., 'light snow')")
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     def normalize_fields(cls, values):
         # Normalize alternative MCP field names
         if "city" in values and "location" not in values:
@@ -30,6 +33,6 @@ class WeatherData(BaseModel):
                 "location": "Helsinki",
                 "temperature": -2.5,
                 "humidity": 85,
-                "condition": "light snow"
+                "condition": "light snow",
             }
         }
