@@ -40,3 +40,9 @@ def check_thread_id_exists(thread_id):
     """
     existing = Chat.query.filter_by(thread_id=thread_id).first()
     return existing is not None
+
+def get_chat_by_thread_id(thread_id):
+    """
+    Return Chat row for given thread_id or None.
+    """
+    return Chat.query.filter_by(thread_id=thread_id).first()

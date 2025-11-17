@@ -1,10 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { streamMessage } from '../api/chatgpt';
+import { fetchMe } from '../api/me';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 import StepCard from './StepCard';
 import ListMessages from './ListMessages';
 import { headerLine } from '../utils/streamFormat';
-import { getThreadCookie, setThreadCookie, clearThreadCookie } from '../utils/threadCookie';
+import {
+  getThreadIdForUser,
+  setThreadIdForUser,
+  clearThreadIdForUser,
+} from '../utils/threadCookie';
 
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
@@ -14,14 +19,28 @@ const Chatbot = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [chats, setChats] = useState([]);
   const [threadId, setThreadId] = useState(null);
+  const [userId, setUserId] = useState(null);
+
   const finalizedRef = useRef(false); // Prevent double-finalize
 
   useEffect(() => {
-    const savedId = getThreadCookie();
-    if (savedId) {
-      console.log('Loaded threadId from cookie:', savedId);
-      setThreadId(savedId);
-    }
+    const initUserAndThread = async () => {
+      try {
+        const data = await fetchMe();
+        if (data?.user_id != null) {
+          setUserId(data.user_id);
+          const savedThreadId = getThreadIdForUser(data.user_id);
+          if (savedThreadId) {
+            console.log('Loaded threadId for user from cookie:', savedThreadId);
+            setThreadId(savedThreadId);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load /api/me', err);
+      }
+    };
+
+    initUserAndThread();
   }, []);
 
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
@@ -50,7 +69,9 @@ const Chatbot = () => {
 
   const handleNewChat = () => {
     finalizedRef.current = false;
-    clearThreadCookie();
+    if (userId != null) {
+      clearThreadIdForUser(userId);
+    }
     setThreadId(null);
     setResponses([]);
     setSuccessMessage('');
@@ -103,14 +124,15 @@ const Chatbot = () => {
           }
         },
         (newThreadId) => {
+          // SSE:stä tuleva thread_id talteen sekä stateen että user-kohtaiseen cookieen
           setThreadId((prev) => {
-            if (!prev) {
-              setThreadCookie(newThreadId);
-              return newThreadId;
+            const effective = prev || newThreadId;
+            if (userId != null) {
+              setThreadIdForUser(userId, effective);
             }
-            return prev;
+            return effective;
           });
-        },
+        }
       );
       //const latest = await fetchChats();
       //setChats(latest);
@@ -133,14 +155,14 @@ const Chatbot = () => {
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            disabled={loading}
+            disabled={loading || userId == null}
             className="min-h-[100px] rounded-lg border border-gray-300 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            placeholder="Type your message..."
+            placeholder={userId == null ? 'Loading user...' : 'Type your message...'}
           />
           <div className="flex gap-3">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || userId == null}
               className="flex-1 rounded-lg bg-purple-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-purple-600 disabled:bg-gray-400"
             >
               {loading ? 'Streaming...' : 'Send Message'}
@@ -148,7 +170,7 @@ const Chatbot = () => {
             <button
               type="button"
               onClick={handleNewChat}
-              disabled={loading}
+              disabled={loading || userId == null}
               className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-100 disabled:opacity-50"
             >
               New chat

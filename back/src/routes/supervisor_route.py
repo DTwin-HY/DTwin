@@ -3,7 +3,7 @@ import json
 from flask import Response, abort, request, stream_with_context
 from flask_login import current_user, login_required
 
-from ..database.supervisor_db import create_new_chat
+from ..database.supervisor_db import create_new_chat, get_chat_by_thread_id
 from ..graph.supervisor import stream_process
 from ..index import app
 from ..utils.generate_thread_id import generate_unique_thread_id
@@ -21,10 +21,19 @@ def supervisor_route():
     # Get thread id from frontend
     client_thread_id = data.get("thread_id")
 
+    thread_id = None
+
     if client_thread_id:
+        existing_chat = get_chat_by_thread_id(client_thread_id)
         # Continuing an existing chat
-        thread_id = client_thread_id
-        print(f"Continuing chat with the existent thread_id: {thread_id}")
+        if existing_chat and existing_chat.user_id == current_user.id:
+            # OK → tämä thread kuuluu tälle userille
+            thread_id = client_thread_id
+            print(f"Continuing chat with existing thread_id: {thread_id}")
+        else:
+            # Either no such chat or belongs to another user → ÄLÄ käytä
+            print("Client supplied invalid or foreign thread_id, creating a new one")
+            thread_id = generate_unique_thread_id()
     else:
         # New chat → create a new unique id
         print("Starting a new chat with a new thread_id")

@@ -129,6 +129,23 @@ def test_supervisor_uses_client_thread_id(client, monkeypatch):
 
     monkeypatch.setattr(supervisor_route, "current_user", FakeUser(123), raising=False)
 
+    # Fake Chat-objekti
+    class FakeChat:
+        def __init__(self, user_id, thread_id):
+            self.user_id = user_id
+            self.thread_id = thread_id
+
+    client_thread_id = "existing-thread-id-123"
+
+    # Kun route kutsuu get_chat_by_thread_id, palautetaan "olemassa oleva" chatti
+    def fake_get_chat_by_thread_id(thread_id):
+        assert thread_id == client_thread_id
+        return FakeChat(user_id=123, thread_id=thread_id)
+
+    monkeypatch.setattr(
+        supervisor_route, "get_chat_by_thread_id", fake_get_chat_by_thread_id, raising=False
+    )
+
     # Kerätään talteen mitä thread_id:tä stream_process ja create_new_chat käyttävät
     seen = {"stream_thread_id": None, "saved_thread_id": None}
 
@@ -151,11 +168,11 @@ def test_supervisor_uses_client_thread_id(client, monkeypatch):
 
     # Jos generate_unique_thread_id kutsuttaisiin tässä branchissa, testi räjähtää
     def boom():
-        raise AssertionError("generate_unique_thread_id should not be called when client_thread_id is provided")
+        raise AssertionError(
+            "generate_unique_thread_id should not be called when valid client_thread_id is provided"
+        )
 
     monkeypatch.setattr(supervisor_route, "generate_unique_thread_id", boom)
-
-    client_thread_id = "existing-thread-id-123"
 
     resp = client.post(
         "/api/supervisor",
