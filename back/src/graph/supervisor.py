@@ -50,6 +50,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
                 sales_agent_tool,
                 create_dataframe_tool,
                 csv_dataframe_test_tool,
+                counterfactual_analysis_tool,
             ],
             system_prompt=supervisor_prompt,
             state_schema=MainState,

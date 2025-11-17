@@ -41,7 +41,6 @@ COUNTERFACTUAL ANALYSIS (CRITICAL):
 - This must bypass the sales_agent COMPLETELY.
 - Examples:
   - “What if all prices were 10% higher?”
-  - “What if product BU was $10 more expensive?”
   - “What if total revenue had been 20% higher?”
   - “Simulate a scenario where we sold 2000 fewer units.”
 

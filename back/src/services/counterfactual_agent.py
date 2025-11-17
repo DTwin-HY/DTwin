@@ -279,39 +279,54 @@ class CounterfactualAgent:
             "data_separation_verified": True
         }
 
-    def _extract_key_metrics(self, data: Dict[str, Any], analysis_type: str) -> Dict[str, Any]:
-        """Extract key metrics based on analysis type"""
-        if analysis_type == "sales":
-            report_data_list = data.get("data", [])
-            if isinstance(report_data_list, list) and len(report_data_list) > 0:
-                total_revenue = sum(float(item.get("total_revenue", 0)) for item in report_data_list)
-                total_items = sum(int(item.get("total_items_sold", 0)) for item in report_data_list)
-                avg_order_value = total_revenue / total_items if total_items > 0 else 0
+    def _extract_key_metrics(self, data, analysis_type):
+        try:
+            if analysis_type == "sales":
+                if isinstance(data, dict) and "data" in data and isinstance(data["data"], list):
+                    item = data["data"][0]
+                    total_revenue = item.get("total_revenue", 0)
+                    total_items_sold = item.get("total_items_sold", 0)
+                else:
+                    total_revenue = data.get("total_revenue", 0)
+                    total_items_sold = data.get("total_items_sold", 1)
+                avg_order_value = (
+                    total_revenue / total_items_sold if total_items_sold else 0
+                )
                 return {
                     "total_revenue": total_revenue,
-                    "total_items_sold": total_items,
-                    "average_order_value": avg_order_value
+                    "total_items_sold": total_items_sold,
+                    "average_order_value": round(avg_order_value, 2),
                 }
-            else:
+
+            elif analysis_type == "storage":
+                if isinstance(data, dict) and "data" in data and isinstance(data["data"], list):
+                    total_inventory = sum(
+                        item.get("amount", 0) or item.get("quantity", 0)
+                        for item in data["data"]
+                    )
+                    item_count = len(data["data"])
+                else:
+                    total_inventory = data.get("total_inventory", 0)
+                    item_count = data.get("item_count", 0)
                 return {
-                    "total_revenue": data.get("total_revenue", 0),
-                    "total_items_sold": data.get("total_items_sold", 0),
-                    "average_order_value": data.get("average_order_value", 0)
+                    "total_inventory": total_inventory,
+                    "item_count": item_count,
                 }
-        elif analysis_type == "storage":
-            if isinstance(data.get("data"), list):
-                total_inventory = sum(float(item.get("amount", item.get("quantity", 0))) for item in data["data"])
-                return {"total_inventory": total_inventory, "item_count": len(data["data"])}
-            elif "total_inventory" in data:
-                return {
-                    "total_inventory": data.get("total_inventory", 0),
-                    "low_stock_items": data.get("low_stock_items", 0),
-                    "inventory_value": data.get("inventory_value", 0)
-                }
+
             else:
-                return {k: v for k, v in data.items() if isinstance(v, (int, float)) and k not in ["metadata", "status"]}
-        else:
-            return {"raw_result": str(data).get("raw_result", str(data))[:200] + "..."}
+                if isinstance(data, dict):
+                    if "raw_result" in data:
+                        return {"raw_result": str(data["raw_result"])[:200] + "..."}
+
+                    return {
+                        k: v for k, v in data.items()
+                        if k not in ["metadata", "status"]
+                    }
+
+                return {"raw_result": str(data)[:200] + "..."}
+
+        except Exception as e:
+            return {"error": f"metric extraction failed: {e}"}
 
     def _calculate_differences(self, real_metrics: Dict[str, Any], cf_metrics: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
         """Calculate differences between real and counterfactual metrics"""
