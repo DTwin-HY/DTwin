@@ -28,6 +28,8 @@ services:
     volumes:
       - ./back:/app
     depends_on:
+      mcp:
+        condition: service_started
       db:
         condition: service_healthy
     ports:
@@ -48,6 +50,15 @@ services:
         condition: service_started
     ports:
       - "5173:5173"
+    networks:
+      - dtwin-network
+    
+  mcp:
+    build:
+      context: ./mcp
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "8000:8000"
     networks:
       - dtwin-network
 
