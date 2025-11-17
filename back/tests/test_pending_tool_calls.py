@@ -28,9 +28,9 @@ def test_check_pending_tool_call_true():
     snap = DummySnapshot(history)
     assert check_pending_tool_call(snap) is True
 
-def test_check_pending_tool_call_true():
+def test_check_pending_tool_call_false():
     # faulty object
-    snap2 = DummySnapshot({"faulty": "data"})
+    snap2 = {"faulty": "object"}
     assert check_pending_tool_call(snap2) is False
 
     # no messages
