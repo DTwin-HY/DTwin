@@ -77,7 +77,6 @@ JSON object:"""
     return WeatherData(**data)
 
 
-@retry(wait=wait_fixed(1), stop=stop_after_attempt(3))
 async def invoke_mcp_agent(prompt: str) -> WeatherData:
     """
     Send query to MCP agent and return structured WeatherData.
