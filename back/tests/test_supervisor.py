@@ -271,3 +271,67 @@ def test_supervisor_creates_new_client_thread_id(client, monkeypatch):
     assert seen["saved_thread_id"] == "new_created_id"
     assert seen["user_id"] == 123
     assert seen["messages"][0]["role"] == "user"
+def test_stream_process_removal_loop(monkeypatch):
+    # Patch supervisor module internals
+    import src.graph.supervisor as sup
+    from src.utils.check_pending_tool_call import check_pending_tool_call
+
+    # Dummy messages with two consecutive pending tool calls at tail
+    class Msg:
+        def __init__(self, mid, tool_calls=None):
+            self.id = mid
+            self.tool_calls = tool_calls or []
+            self.additional_kwargs = {}
+
+    class Snapshot:
+        def __init__(self, msgs):
+            self.values = {"messages": msgs}
+
+    class RemoveMessage:
+        def __init__(self, id):
+            self.id = id
+
+    # Fake PostgresSaver context
+    class Saver:
+        @classmethod
+        def from_conn_string(cls, _):
+            return cls()
+        def setup(self): pass
+        def __enter__(self): return self
+        def __exit__(self, a, b, c): return False
+
+    messages = [
+        Msg("ok-1"),
+        Msg("pending-a", tool_calls=[{"id": "tc-a"}]),
+        Msg("pending-b", tool_calls=[{"id": "tc-b"}]),
+        Msg("tail")
+    ]
+
+    class FakeSupervisor:
+        def get_state(self, config):
+            return Snapshot(messages)
+        def update_state(self, config, update):
+            rm = update.get("messages", [None])[0]
+            if rm and messages and rm.id == messages[-1].id:
+                messages.pop()
+        def stream(self, input_state, stream_mode="updates", config=None):
+            yield {"done": True, "len": len(messages)}
+
+    monkeypatch.setattr(sup, "PostgresSaver", Saver)
+    monkeypatch.setattr(sup, "RemoveMessage", RemoveMessage)
+    monkeypatch.setattr(sup, "create_agent", lambda **_: FakeSupervisor())
+    monkeypatch.setattr(sup, "format_chunk", lambda x: x)
+    # Use existing check_pending_tool_call (already imported above)
+
+    # Run generator
+    gen = sup.stream_process("hello", thread_id="7")
+    out = list(gen)
+    assert out, "Should stream at least one chunk"
+
+    # Removal loop should have stripped pending messages from the END until none pending.
+    # Original tail order: ok-1, pending-a, pending-b, tail
+    # Loop removes only from end; pending-b at end removed, then tail becomes end (not pending),
+    # leaving ok-1, pending-a, tail.
+    # Because pending-a not at end, it stays (loop only removes last message).
+    ids = [m.id for m in messages]
+    assert ids == ["ok-1", "pending-a", "tail"]

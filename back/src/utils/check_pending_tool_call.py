@@ -24,23 +24,10 @@ def check_pending_tool_call(snapshot) -> bool:
                 cid = getattr(c, "id", None) or (c.get("id") if isinstance(c, dict) else None)
                 if cid:
                     tool_call_ids.append(cid)
-        else:
-            ak = getattr(msg, "additional_kwargs", None)
-            if isinstance(ak, dict):
-                for c in ak.get("tool_calls", []) or []:
-                    cid = c.get("id") or c.get("tool_call_id")
-                    if cid:
-                        tool_call_ids.append(cid)
 
         # Collect tool_call_id from ToolMessage responses
         if msg.__class__.__name__ == "ToolMessage":
             tcid = getattr(msg, "tool_call_id", None) or (msg.additional_kwargs.get("tool_call_id") if hasattr(msg, "additional_kwargs") and isinstance(msg.additional_kwargs, dict) else None)
-            if tcid:
-                responded_ids.add(tcid)
-
-        # Dict-style tool message
-        if isinstance(msg, dict) and msg.get("type") == "tool":
-            tcid = msg.get("tool_call_id") or msg.get("id")
             if tcid:
                 responded_ids.add(tcid)
 
