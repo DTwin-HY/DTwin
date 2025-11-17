@@ -33,3 +33,9 @@ def get_chats_by_user(user_id):
     """
     return Chat.query.filter_by(user_id=user_id).all()
 
+def check_thread_id_exists(thread_id):
+    """
+    Check if a chat with the given thread_id exists.
+    """
+    existing = Chat.query.filter_by(thread_id=thread_id).first()
+    return existing is not None
