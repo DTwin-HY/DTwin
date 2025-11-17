@@ -6,15 +6,14 @@ from langchain.tools import tool
 from ...services.simulation.lin_reg_graph import build_lin_reg_graph
 
 
-def csv_fetch(dataframe_path: str) -> str:
+def csv_fetch(dataframe_path: str) -> dict:
     """
-    Tool to check the value of dataframe saved as csv. Used in development only.
+    Fetches data saved as csv and returns a dictionary containing data.
     Parameters:
     dataframe_path: str : path to the dataframe csv file.
     """
     path = dataframe_path
     dataframe = pd.read_csv(path).to_dict()
-    # print("fetched dataframe from csv file:\n", dataframe)
 
     return dataframe
 
