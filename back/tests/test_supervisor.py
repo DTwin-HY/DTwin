@@ -271,12 +271,12 @@ def test_supervisor_creates_new_client_thread_id(client, monkeypatch):
     assert seen["saved_thread_id"] == "new_created_id"
     assert seen["user_id"] == 123
     assert seen["messages"][0]["role"] == "user"
+
 def test_stream_process_removal_loop(monkeypatch):
     # Patch supervisor module internals
     import src.graph.supervisor as sup
-    from src.utils.check_pending_tool_call import check_pending_tool_call
 
-    # Dummy messages with two consecutive pending tool calls at tail
+    # Dummy messages with two consecutive pending tool calls before a non-pending tail
     class Msg:
         def __init__(self, mid, tool_calls=None):
             self.id = mid
@@ -296,42 +296,50 @@ def test_stream_process_removal_loop(monkeypatch):
         @classmethod
         def from_conn_string(cls, _):
             return cls()
-        def setup(self): pass
-        def __enter__(self): return self
-        def __exit__(self, a, b, c): return False
 
+        def setup(self):  # pragma: no cover
+            pass
+
+        def __enter__(self):  # pragma: no cover
+            return self
+
+        def __exit__(self, a, b, c):  # pragma: no cover
+            return False
+
+    # History: ok-1, pending-a, pending-b, tail
     messages = [
         Msg("ok-1"),
         Msg("pending-a", tool_calls=[{"id": "tc-a"}]),
         Msg("pending-b", tool_calls=[{"id": "tc-b"}]),
-        Msg("tail")
+        Msg("tail"),
     ]
 
     class FakeSupervisor:
         def get_state(self, config):
             return Snapshot(messages)
+
         def update_state(self, config, update):
+            # Expect {"messages": [RemoveMessage(id=...)]} and pop last if id matches
             rm = update.get("messages", [None])[0]
             if rm and messages and rm.id == messages[-1].id:
                 messages.pop()
+
         def stream(self, input_state, stream_mode="updates", config=None):
+            # After pre-loop, yield one dummy chunk
             yield {"done": True, "len": len(messages)}
 
+    # Patch symbols on module under test
     monkeypatch.setattr(sup, "PostgresSaver", Saver)
     monkeypatch.setattr(sup, "RemoveMessage", RemoveMessage)
     monkeypatch.setattr(sup, "create_agent", lambda **_: FakeSupervisor())
     monkeypatch.setattr(sup, "format_chunk", lambda x: x)
-    # Use existing check_pending_tool_call (already imported above)
 
     # Run generator
     gen = sup.stream_process("hello", thread_id="7")
     out = list(gen)
     assert out, "Should stream at least one chunk"
 
-    # Removal loop should have stripped pending messages from the END until none pending.
-    # Original tail order: ok-1, pending-a, pending-b, tail
-    # Loop removes only from end; pending-b at end removed, then tail becomes end (not pending),
-    # leaving ok-1, pending-a, tail.
-    # Because pending-a not at end, it stays (loop only removes last message).
+    # The loop removes the last message repeatedly while any pending exists,
+    # so it ends up removing tail, then pending-b, then pending-a -> leaving only ok-1.
     ids = [m.id for m in messages]
-    assert ids == ["ok-1", "pending-a", "tail"]
+    assert ids == ["ok-1"]
