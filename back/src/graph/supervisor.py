@@ -6,6 +6,7 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import AgentState
 from langgraph.checkpoint.postgres import PostgresSaver
 
+from ..services.mcp_client import mcp_agent_tool
 from ..services.dataframe_creation import create_dataframe_tool, csv_dataframe_test_tool
 from ..services.math_agent import math_agent_tool
 from ..services.research_agent import research_agent_tool
@@ -43,6 +44,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
             tools=[
                 research_agent_tool,
                 math_agent_tool,
+                mcp_agent_tool,
                 storage_agent_tool,
                 sales_agent_tool,
                 create_dataframe_tool,
