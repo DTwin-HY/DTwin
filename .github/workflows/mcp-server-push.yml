@@ -1,0 +1,31 @@
+name: Build and push mcp server image to Docker Hub
+
+on:
+  push:
+    paths:
+      - mcp/**
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ vars.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: mcp
+        file: mcp/Dockerfile.mcp
+        push: true
+        tags: ${{ vars.DOCKERHUB_USERNAME }}/dtwin:mcp-server
