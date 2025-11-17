@@ -20,39 +20,9 @@ class SimulationState(AgentState):
     dataframe: dict
 
 
-### TODO: Temp data fetch for branch testing. DROP BEFORE MERGE!
-@tool
-def fetch_data_tool(runtime: ToolRuntime) -> Command:
-    """
-    Fetches data for a linear regression and writes it to file.
-    Returns the file location which can be passed to the linear regression.
-    """
-
-    df = create_product_sales_data()
-    if not os.path.exists("dataframes"):
-        os.makedirs("dataframes")
-    file_path = "dataframes/csv_data.csv"
-    df.to_csv(file_path, index=False)
-
-    print(f"[create_array_tool_file] DataFrame saved to {file_path}, shape {df.shape}")
-
-    return Command(
-        update={
-            "messages": [
-                ToolMessage(
-                    content=f"Pd dataframe saved to file: {file_path}",
-                    tool_call_id=runtime.tool_call_id,
-                )
-            ]
-        }
-    )
-
-
-#####
-
 sim_agent = create_agent(
     model="openai:gpt-4.1",
-    tools=[lin_reg_tool, fetch_data_tool],  # TODO: Remove fetch_data tool before merge
+    tools=[lin_reg_tool],  # TODO: Remove fetch_data tool before merge
     system_prompt=(
         "You are a simulation agent responsible for running company data simulations.\n"
         "You can use the lin_reg_tool to analyze how product sales are affected by "
