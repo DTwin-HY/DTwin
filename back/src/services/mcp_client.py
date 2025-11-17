@@ -2,6 +2,7 @@ import asyncio
 import json
 import re
 import sys
+import os
 from dotenv import load_dotenv
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.agents import create_agent
@@ -35,7 +36,7 @@ async def create_mcp_agent():
         {
             "weather": {
                 "transport": "streamable_http",
-                "url": "http://mcp:8000/mcp",  # TODO: load from env
+                "url": os.getenv("WEATHER_MCP_URL", "http://mcp:8000/mcp"),
             }
         }
     )
