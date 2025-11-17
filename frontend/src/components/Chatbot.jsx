@@ -27,7 +27,8 @@ const Chatbot = () => {
     const initUserAndThread = async () => {
       try {
         const data = await fetchMe();
-        if (data?.user_id != null) {
+        // eqeqeq-yhteensopiva tapa tarkistaa, että user_id ei ole null/undefined
+        if (data && data.user_id !== null && data.user_id !== undefined) {
           setUserId(data.user_id);
           const savedThreadId = getThreadIdForUser(data.user_id);
           if (savedThreadId) {
@@ -56,20 +57,18 @@ const Chatbot = () => {
       const steps = prev.slice(0, -1);
       console.log('Last message and steps:', last, steps);
 
-      // append a compact chat object for history usage
       setChats((prevChats) => [
         ...(prevChats || []),
-        { role: 'supervisor', finalMessage: last.body, steps: steps },
+        { role: 'supervisor', finalMessage: last.body, steps },
       ]);
       console.log('Updated chats:', chats);
-      // keep steps in responses (you can clear if you prefer: return [])
       return steps;
     });
   };
 
   const handleNewChat = () => {
     finalizedRef.current = false;
-    if (userId != null) {
+    if (userId !== null) {
       clearThreadIdForUser(userId);
     }
     setThreadId(null);
@@ -86,7 +85,7 @@ const Chatbot = () => {
       setErrorMessage('Input cannot be empty');
       return;
     }
-    finalizedRef.current = false; // Reset for new turn
+    finalizedRef.current = false;
     setLoading(true);
     setSuccessMessage('');
     setErrorMessage('');
@@ -124,18 +123,15 @@ const Chatbot = () => {
           }
         },
         (newThreadId) => {
-          // SSE:stä tuleva thread_id talteen sekä stateen että user-kohtaiseen cookieen
           setThreadId((prev) => {
             const effective = prev || newThreadId;
-            if (userId != null) {
+            if (userId !== null) {
               setThreadIdForUser(userId, effective);
             }
             return effective;
           });
-        }
+        },
       );
-      //const latest = await fetchChats();
-      //setChats(latest);
       setSuccessMessage('Prompt and response saved to database!');
       setInputValue('');
     } catch (err) {
@@ -147,6 +143,7 @@ const Chatbot = () => {
       finalizeLastResponse();
     }
   };
+
   return (
     <div className="w-full max-w-full p-6">
       <div className="rounded-xl bg-white p-6 shadow-md">
@@ -155,14 +152,14 @@ const Chatbot = () => {
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            disabled={loading || userId == null}
+            disabled={loading || userId === null}
             className="min-h-[100px] rounded-lg border border-gray-300 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            placeholder={userId == null ? 'Loading user...' : 'Type your message...'}
+            placeholder={userId === null ? 'Loading user...' : 'Type your message...'}
           />
           <div className="flex gap-3">
             <button
               type="submit"
-              disabled={loading || userId == null}
+              disabled={loading || userId === null}
               className="flex-1 rounded-lg bg-purple-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-purple-600 disabled:bg-gray-400"
             >
               {loading ? 'Streaming...' : 'Send Message'}
@@ -170,7 +167,7 @@ const Chatbot = () => {
             <button
               type="button"
               onClick={handleNewChat}
-              disabled={loading || userId == null}
+              disabled={loading || userId === null}
               className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-100 disabled:opacity-50"
             >
               New chat
@@ -185,7 +182,6 @@ const Chatbot = () => {
           </div>
         )}
 
-        {/* Render message card for the latest response if loading=true*/}
         {loading &&
           responses.length > 0 &&
           (() => {

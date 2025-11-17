@@ -11,9 +11,7 @@ const safeParse = (value) => {
 
 const getCookieRaw = () => {
   if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(
-    new RegExp('(^| )' + THREAD_COOKIE_NAME + '=([^;]+)')
-  );
+  const match = document.cookie.match(new RegExp('(^| )' + THREAD_COOKIE_NAME + '=([^;]+)'));
   return match ? decodeURIComponent(match[2]) : null;
 };
 
