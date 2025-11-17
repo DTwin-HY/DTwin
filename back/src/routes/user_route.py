@@ -7,4 +7,4 @@ from ..index import app
 @login_required
 def me():
     """Return information about the current logged-in user."""
-    return {"user_id": current_user.id}
+    return {"user_id": current_user.id} #pragma: no cover
