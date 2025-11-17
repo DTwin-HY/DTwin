@@ -32,8 +32,8 @@ def supervisor_route():
             print(f"Continuing chat with existing thread_id: {thread_id}")
         else:
             # Either no such chat or belongs to another user → ÄLÄ käytä
-            print("Client supplied invalid or foreign thread_id, creating a new one") #pragma: no cover
-            thread_id = generate_unique_thread_id() #pragma: no cover
+            print("Client supplied invalid or foreign thread_id, creating a new one")
+            thread_id = generate_unique_thread_id()
     else:
         # New chat → create a new unique id
         print("Starting a new chat with a new thread_id")
