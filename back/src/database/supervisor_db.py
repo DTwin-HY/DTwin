@@ -32,3 +32,4 @@ def get_chats_by_user(user_id):
     Retrieve all chats for a given user.
     """
     return Chat.query.filter_by(user_id=user_id).all()
+

@@ -12,7 +12,7 @@ const Chatbot = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [chats, setChats] = useState([]);
-
+  const [threadId, setThreadId] = useState(null);
   const finalizedRef = useRef(false); // Prevent double-finalize
 
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
@@ -39,6 +39,18 @@ const Chatbot = () => {
     });
   };
 
+  const handleNewChat = () => {
+    finalizedRef.current = false;
+    setThreadId(null);      // seuraava viesti → uusi uuid backendiin
+    setResponses([]);       // tyhjennä tämän session stepit näytöstä
+    setSuccessMessage('');
+    setErrorMessage('');
+    // HUOM: jätetään chats ennalleen, jos haluat säilyttää historiaa
+    // Jos haluat tyhjentää myös historiacomponentin, lisää:
+    setChats([]);
+  };
+
+
   const handleSubmit = async (e) => {
     console.log('Submitting message:', inputValue);
     e.preventDefault();
@@ -54,7 +66,7 @@ const Chatbot = () => {
     setChats((prevChats) => [...(prevChats || []), { role: 'user', message: inputValue }]);
 
     try {
-      await streamMessage(inputValue, (chunk) => {
+      await streamMessage(inputValue, threadId, (chunk) => {
         console.log('Received chunk:', chunk);
         if (Array.isArray(chunk)) {
           const cards = chunk.map((update) => {
@@ -79,7 +91,12 @@ const Chatbot = () => {
 
           setResponses((prev) => [...prev, ...cards]);
         }
-      });
+      },
+      (newThreadId) => {
+        // eka event streamista: talletetaan thread_id
+        setThreadId((prev) => prev || newThreadId);
+      }
+    );
       //const latest = await fetchChats();
       //setChats(latest);
       setSuccessMessage('Prompt and response saved to database!');
@@ -97,24 +114,32 @@ const Chatbot = () => {
     <div className="w-full max-w-full p-6">
       <div className="rounded-xl bg-white p-6 shadow-md">
         <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the Supervisor</h3>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            disabled={loading}
-            className="min-h-[100px] rounded-lg border border-gray-300 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            placeholder="Type your message..."
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-lg bg-purple-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-purple-600 disabled:bg-gray-400"
-          >
-            {loading ? 'Streaming...' : 'Send Message'}
-          </button>
-        </form>
-
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <textarea
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              disabled={loading}
+              className="min-h-[100px] rounded-lg border border-gray-300 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              placeholder="Type your message..."
+            />
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 rounded-lg bg-purple-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-purple-600 disabled:bg-gray-400"
+              >
+                {loading ? 'Streaming...' : 'Send Message'}
+              </button>
+              <button
+                type="button"
+                onClick={handleNewChat}
+                disabled={loading}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-100 disabled:opacity-50"
+              >
+                New chat
+              </button>
+            </div>
+          </form>
         {loading && (
           <div className="mt-4 flex justify-center">
             <div className="w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">

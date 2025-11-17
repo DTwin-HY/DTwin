@@ -1,4 +1,5 @@
 import uuid
+import json
 
 from flask import Response, abort, request, stream_with_context
 from flask_login import current_user, login_required
@@ -18,12 +19,27 @@ def supervisor_route():
     prompt = data.get("message", "").strip()
 
     # thread_id = uuid.uuid4().hex
-    thread_id = str(current_user.get_id())
+    # thread_id = str(current_user.get_id())
+
+    client_thread_id = data.get("thread_id")
+
+    if client_thread_id:
+        # Jatketaan olemassa olevaa chattia
+        thread_id = client_thread_id
+        print(f"Continuing chat with the existent thread_id: {thread_id}")
+    else:
+        # New chat → luodaan uusi uniikki id
+        print("Starting a new chat with a new thread_id")
+        thread_id = uuid.uuid4().hex
 
     def event_stream():
         messages = [{"role": "user", "content": prompt}]
         # assistant_parts = []
         raw = []
+
+        meta_event = {"thread_id": thread_id}
+        yield f"event: thread_id\ndata: {json.dumps(meta_event)}\n\n"
+
         try:
             for sse in stream_process(prompt, thread_id):
                 raw.append(sse)  # koko rivi talteen
