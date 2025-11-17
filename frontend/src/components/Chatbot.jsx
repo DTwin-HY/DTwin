@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { streamMessage } from '../api/chatgpt';
 import { useAutoClearMessage } from '../hooks/useAutoClearMessage';
 import StepCard from './StepCard';
 import ListMessages from './ListMessages';
 import { headerLine } from '../utils/streamFormat';
+import { getThreadCookie, setThreadCookie, clearThreadCookie } from '../utils/threadCookie';
 
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
@@ -14,6 +15,14 @@ const Chatbot = () => {
   const [chats, setChats] = useState([]);
   const [threadId, setThreadId] = useState(null);
   const finalizedRef = useRef(false); // Prevent double-finalize
+
+  useEffect(() => {
+    const savedId = getThreadCookie();
+    if (savedId) {
+      console.log('Loaded threadId from cookie:', savedId);
+      setThreadId(savedId);
+    }
+  }, []);
 
   const showSuccess = useAutoClearMessage(successMessage, setSuccessMessage);
   const showError = useAutoClearMessage(errorMessage, setErrorMessage);
@@ -41,15 +50,13 @@ const Chatbot = () => {
 
   const handleNewChat = () => {
     finalizedRef.current = false;
-    setThreadId(null);      // seuraava viesti → uusi uuid backendiin
-    setResponses([]);       // tyhjennä tämän session stepit näytöstä
+    clearThreadCookie();
+    setThreadId(null);
+    setResponses([]);
     setSuccessMessage('');
     setErrorMessage('');
-    // HUOM: jätetään chats ennalleen, jos haluat säilyttää historiaa
-    // Jos haluat tyhjentää myös historiacomponentin, lisää:
     setChats([]);
   };
-
 
   const handleSubmit = async (e) => {
     console.log('Submitting message:', inputValue);
@@ -93,8 +100,13 @@ const Chatbot = () => {
         }
       },
       (newThreadId) => {
-        // eka event streamista: talletetaan thread_id
-        setThreadId((prev) => prev || newThreadId);
+        setThreadId((prev) => {
+          if (!prev) {
+            setThreadCookie(newThreadId);
+            return newThreadId;
+          }
+          return prev;
+        });
       }
     );
       //const latest = await fetchChats();
@@ -113,7 +125,7 @@ const Chatbot = () => {
   return (
     <div className="w-full max-w-full p-6">
       <div className="rounded-xl bg-white p-6 shadow-md">
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the Supervisor</h3>
+        <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the DTwin assistant</h3>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <textarea
               value={inputValue}
