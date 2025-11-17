@@ -2,6 +2,8 @@
 source=back
 omit=
     src/services/math_agent.py
+    src/services/research_agent.py
+    src/data_scripts/data_analysis_test_data.py
     tests/*
 
 [report]

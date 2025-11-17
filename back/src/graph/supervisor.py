@@ -14,7 +14,7 @@ from ..services.sales_agent import sales_agent_tool
 from ..services.storage_agent import storage_agent_tool
 from ..utils.format import format_chunk
 from .supervisor_prompt import supervisor_prompt
-
+from ..services.simulation.sim_agent import simulation_agent_tool
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -49,6 +49,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
                 sales_agent_tool,
                 create_dataframe_tool,
                 csv_dataframe_test_tool,
+                simulation_agent_tool,
             ],
             system_prompt=supervisor_prompt,
             state_schema=MainState,
