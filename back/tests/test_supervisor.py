@@ -115,3 +115,64 @@ def test_fetch_chats_serializes_models(client, monkeypatch):
     assert "chats" in data and isinstance(data["chats"], list)
     assert data["chats"][0]["id"] == 1
     assert data["chats"][1]["thread_id"] == "t2"
+
+def test_supervisor_uses_client_thread_id(client, monkeypatch):
+    from src.routes import supervisor_route
+
+    # Fake current_user
+    class FakeUser:
+        def __init__(self, user_id):
+            self.id = user_id
+
+        def get_id(self):
+            return self.id
+
+    monkeypatch.setattr(supervisor_route, "current_user", FakeUser(123), raising=False)
+
+    # Kerätään talteen mitä thread_id:tä stream_process ja create_new_chat käyttävät
+    seen = {"stream_thread_id": None, "saved_thread_id": None}
+
+    def fake_stream(prompt, thread_id):
+        # Varmistetaan, että prompt tulee läpi oikein
+        assert prompt == "hello"
+        seen["stream_thread_id"] = thread_id
+        # Pieni feikki SSE-vastaus
+        yield 'data: {"step":"one"}\n\n'
+
+    monkeypatch.setattr(supervisor_route, "stream_process", fake_stream)
+
+    def fake_save(user_id, messages, thread_id, raw_stream=""):
+        seen["saved_thread_id"] = thread_id
+        seen["user_id"] = user_id
+        seen["messages"] = messages
+        seen["raw_stream"] = raw_stream
+
+    monkeypatch.setattr(supervisor_route, "create_new_chat", fake_save)
+
+    # Jos generate_unique_thread_id kutsuttaisiin tässä branchissa, testi räjähtää
+    def boom():
+        raise AssertionError("generate_unique_thread_id should not be called when client_thread_id is provided")
+
+    monkeypatch.setattr(supervisor_route, "generate_unique_thread_id", boom)
+
+    client_thread_id = "existing-thread-id-123"
+
+    resp = client.post(
+        "/api/supervisor",
+        json={"message": "hello", "thread_id": client_thread_id},
+    )
+
+    # Perusassertit
+    assert resp.status_code == 200
+    assert resp.mimetype == "text/event-stream"
+
+    body = resp.data.decode("utf-8")
+
+    # SSE:n alussa pitäisi olla event: thread_id jossa sama id
+    assert f'"thread_id": "{client_thread_id}"' in body
+
+    # Varmistetaan, että sama thread_id kulki koko matkan
+    assert seen["stream_thread_id"] == client_thread_id
+    assert seen["saved_thread_id"] == client_thread_id
+    assert seen["user_id"] == 123
+    assert seen["messages"][0]["role"] == "user"
