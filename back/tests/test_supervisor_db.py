@@ -3,7 +3,7 @@ import importlib
 import pytest
 from ..src.extensions import db
 from ..src.models.models import User
-from ..src.database.supervisor_db import create_new_chat, get_chats_by_user
+from ..src.database.supervisor_db import create_new_chat, get_chats_by_user, check_thread_id_exists, get_chat_by_thread_id
 
 
 @pytest.fixture
@@ -99,3 +99,33 @@ class TestSupervisorDB:
             assert len(chats) == 2
             assert all(chat.user_id == test_user.id for chat in chats)
             assert {chat.thread_id for chat in chats} == {"thread-1", "thread-2"}
+
+    def test_thread_id_exists(self, app,test_user):
+
+        with app.app_context():
+            messages = [{"role": "user", "content": "test message"}]
+            chat = create_new_chat(
+                user_id=test_user.id,
+                messages=messages,
+                thread_id="test-thread-123",
+                raw_stream="test stream data"
+            )
+
+            thread_id_exists = check_thread_id_exists("test-thread-123")
+            assert thread_id_exists == True
+
+
+    def test_get_chat_by_thread_id(self, app, test_user):
+
+        with app.app_context():
+            messages = [{"role": "user", "content": "test message"}]
+            chat = create_new_chat(
+                user_id=test_user.id,
+                messages=messages,
+                thread_id="test-thread-123",
+                raw_stream="test stream data"
+            )
+
+            get_chat = get_chat_by_thread_id("test-thread-123")
+            print(get_chat)
+            assert chat.user_id == get_chat.user_id
