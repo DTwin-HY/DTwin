@@ -55,6 +55,13 @@ def test_supervisor_streams_and_saves(client, monkeypatch):
 
     monkeypatch.setattr(supervisor_route, "create_new_chat", fake_save)
 
+    monkeypatch.setattr(
+        supervisor_route,
+        "generate_unique_thread_id",
+        lambda: "test-thread-id",
+        raising=False,
+    )
+
     resp = client.post("/api/supervisor", json={"message": "hello"})
     assert resp.status_code == 200
     assert resp.mimetype == "text/event-stream"
