@@ -2,3 +2,9 @@
 source=back
 omit=
     src/services/math_agent.py
+    tests/*
+
+[report]
+exclude_also =
+    logger.
+    if __name__ == .__main__.:

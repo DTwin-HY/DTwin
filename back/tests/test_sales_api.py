@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 import types
 import pytest
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from back.src.index import app
+from src.index import app
 
 
 @pytest.fixture()
@@ -27,7 +27,7 @@ def test_sales_missing_dates_returns_400(client):
 
 def test_sales_valid_dates_returns_summary(client, monkeypatch):
     """Should return mocked summary when valid dates are given"""
-    from back.src.routes import sales
+    from src.routes import sales
 
     def fake_fetch_sales_data(start, end):
         assert isinstance(start, datetime)
@@ -44,7 +44,7 @@ def test_sales_valid_dates_returns_summary(client, monkeypatch):
 
 def test_sales_daily_data(client, monkeypatch):
     """Should query a single day when start_date equals end_date"""
-    from back.src.routes import sales
+    from src.routes import sales
     captured = {}
 
     def fake_fetch_sales_data(start, end):
@@ -64,7 +64,7 @@ def test_sales_daily_data(client, monkeypatch):
 
 def test_sales_exception_rolls_back_and_returns_500(client, monkeypatch):
     """Should rollback DB and return error JSON when exception occurs"""
-    from back.src.routes import sales
+    from src.routes import sales
 
     def fake_fetch_sales_data(start, end):
         raise Exception("DB error")

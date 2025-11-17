@@ -4,9 +4,9 @@ from io import BytesIO
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from langchain.agents import create_agent
 from langchain.messages import HumanMessage
 from langchain.tools import tool
-from langchain.agents import create_agent
 
 from ..extensions import db
 from ..models.models import Sale
@@ -231,7 +231,6 @@ def create_sales_graph(month: str) -> dict:
     return result
 
 
-
 sales_agent = create_agent(
     name="sales_agent",
     model="openai:gpt-4o-mini",
@@ -259,6 +258,7 @@ sales_agent = create_agent(
     ),
 )
 
+
 @tool
 def sales_agent_tool(prompt: str) -> str:
     """
@@ -268,6 +268,7 @@ def sales_agent_tool(prompt: str) -> str:
     """
     result = sales_agent.invoke({"messages": [HumanMessage(content=prompt)]})
     return result["messages"][-1].content
+
 
 if __name__ == "__main__":
     result = sales_agent.invoke(
