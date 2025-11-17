@@ -32,7 +32,6 @@ class CounterfactualDataManager:
         cf_data = copy.deepcopy(base_data)
 
         self._apply_modifications_recursive(cf_data, modifications)
-
         self._recalculate_dependent_metrics(cf_data)
 
         scenario_id = f"{scenario_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -61,25 +60,23 @@ class CounterfactualDataManager:
         """
         if isinstance(data, dict):
             for key, modification in modifications.items():
-                if isinstance(modification, dict) and "operation" in modification:
+                if key in data and isinstance(modification, dict) and "operation" in modification:
                     self._apply_operation(data, key, modification)
-                elif isinstance(modification, dict):
-                    if key in data:
-                        self._apply_modifications_recursive(data[key], modification)
+                elif key in data and isinstance(modification, dict):
+                    self._apply_modifications_recursive(data[key], modification)
 
             if "data" in data and isinstance(data["data"], list):
                 for item in data["data"]:
                     if isinstance(item, dict):
                         self._apply_modifications_recursive(item, modifications)
 
-            if isinstance(data.get("data"), list) and all(isinstance(item, dict) for item in data["data"]):
-                for item in data["data"]:
-                    if isinstance(item, dict):
-                        self._apply_modifications_recursive(item, modifications)
+            for k, v in data.items():
+                if isinstance(v, (dict, list)) and k != "data":
+                     self._apply_modifications_recursive(v, modifications)
 
         elif isinstance(data, list):
             for item in data:
-                if isinstance(item, dict):
+                if isinstance(item, (dict, list)):
                     self._apply_modifications_recursive(item, modifications)
 
     def _apply_operation(
@@ -89,19 +86,18 @@ class CounterfactualDataManager:
         operation: Dict[str, Any]
     ) -> None:
         """Apply specific operations like percentage increase, set value, etc."""
-        op_type = operation["operation"]
-        value = operation["value"]
+        op_type = operation.get("operation")
+        value = operation.get("value")
 
-        if key not in data:
-            if "data" in data and isinstance(data["data"], list):
-                for item in data["data"]:
-                    if isinstance(item, dict) and key in item:
-                        self._apply_operation(item, key, operation)
+        if value is None:
             return
 
-        current_value = data[key]
+        current_value = data.get(key)
+        if current_value is None:
+            return
 
         try:
+            current_value = float(current_value)
             if op_type == "percentage_increase":
                 data[key] = current_value * (1 + value/100)
             elif op_type == "percentage_decrease":
@@ -128,32 +124,33 @@ class CounterfactualDataManager:
         if "data" in data and isinstance(data["data"], list):
             for item in data["data"]:
                 if isinstance(item, dict):
-                    # Calculate unit price if we have revenue and quantity
-                    if "total_revenue" in item and "total_items_sold" in item and item["total_items_sold"] > 0:
-                        unit_price = item["total_revenue"] / item["total_items_sold"]
+                    self._recalculate_item_metrics(item)
+        self._recalculate_item_metrics(data)
 
-                        # If quantity was modified, adjust revenue
-                        if "total_items_sold" in item and "total_revenue" in item:
-                            # Calculate new revenue based on new quantity and same unit price
-                            new_revenue = item["total_items_sold"] * unit_price
-                            item["total_revenue"] = new_revenue
-                    elif "unit_price" in item and "quantity" in item:
-                        item["revenue"] = item["unit_price"] * item["quantity"]
-                    elif "total_revenue" not in item and "unit_price" in item and "total_items_sold" in item:
-                        item["total_revenue"] = item["unit_price"] * item["total_items_sold"]
+    def _recalculate_item_metrics(self, item: Dict[str, Any]) -> None:
+        """Helper to recalculate metrics for a single dictionary item"""
 
-        if "total_revenue" in data and "total_items_sold" in data and data["total_items_sold"] > 0:
-            # Calculate unit price from current data
-            unit_price = data["total_revenue"] / data["total_items_sold"]
+        if "total_revenue" in item and "total_items_sold" in item:
+            try:
+                revenue = float(item["total_revenue"])
+                items = float(item["total_items_sold"])
+                if items > 0:
+                    unit_price = revenue / items
+                    item["total_revenue"] = item["total_items_sold"] * unit_price
+            except (ValueError, TypeError, ZeroDivisionError):
+                pass
 
-            # If total_items_sold was modified, adjust total_revenue proportionally
-            if "total_items_sold" in data:
-                new_total_revenue = data["total_items_sold"] * unit_price
-                data["total_revenue"] = new_total_revenue
-        elif "unit_price" in data and "quantity" in data:
-            data["revenue"] = data["unit_price"] * data["quantity"]
-        elif "unit_price" in data and "total_items_sold" in data:
-            data["total_revenue"] = data["unit_price"] * data["total_items_sold"]
+        elif "unit_price" in item and "quantity" in item:
+            try:
+                item["revenue"] = item["unit_price"] * item["quantity"]
+            except (ValueError, TypeError):
+                pass
+
+        elif "unit_price" in item and "total_items_sold" in item:
+             try:
+                item["total_revenue"] = item["unit_price"] * item["total_items_sold"]
+             except (ValueError, TypeError):
+                pass
 
     def get_counterfactual_data(
         self,
@@ -185,9 +182,7 @@ class CounterfactualDataManager:
             return True
         return False
 
-    def list_scenarios(
-        self
-    ) -> List[Dict[str, Any]]:
+    def list_scenarios(self) -> List[Dict[str, Any]]:
         """List all active counterfactual scenarios with metadata"""
         return [
             {
@@ -273,18 +268,19 @@ class CounterfactualAgent:
             return {"error": f"Unsupported analysis type: {analysis_type}"}
 
         try:
-            tool = self.analysis_tools[analysis_type]
-            result = tool.invoke(query)
+            tool_instance = self.analysis_tools[analysis_type]
+            result = tool_instance.invoke(query)
+
             if isinstance(result, str):
                 try:
                     parsed = json.loads(result)
                     return parsed
                 except Exception:
-                    return {"raw_result": result, "error": "Could not parse result as structured data"}
+                    return {"raw_result": result, "status": "success"}
 
             return result
         except Exception as e:
-            return {"error": f"Failed to get base  {str(e)}"}
+            return {"error": f"Failed to get base data: {str(e)}"}
 
     def _run_analysis_on_counterfactual(
         self,
@@ -292,11 +288,6 @@ class CounterfactualAgent:
         analysis_type: str
     ) -> Dict[str, Any]:
         """Run analysis on counterfactual data"""
-        if isinstance(cf_data, str):
-            try:
-                cf_data = json.loads(cf_data)
-            except Exception:
-                cf_data = {"raw_result": cf_data}
         return {
             "counterfactual_data": cf_data,
             "analysis_type": analysis_type,
@@ -350,9 +341,9 @@ class CounterfactualAgent:
     ) -> Dict[str, Any]:
         """Extract key metrics based on analysis type"""
         if analysis_type == "sales":
-            if "status" in data and data["status"] == "success" and "data" in data:
-                total_revenue = sum(item.get("total_revenue", 0) for item in data["data"])
-                total_items = sum(item.get("total_items_sold", 0) for item in data["data"])
+            if "data" in data and isinstance(data["data"], list):
+                total_revenue = sum(float(item.get("total_revenue", 0)) for item in data["data"])
+                total_items = sum(int(item.get("total_items_sold", 0)) for item in data["data"])
                 avg_order_value = total_revenue / total_items if total_items > 0 else 0
 
                 return {
@@ -366,9 +357,10 @@ class CounterfactualAgent:
                     "total_items_sold": data.get("total_items_sold", 0),
                     "average_order_value": data.get("average_order_value", 0)
                 }
+
         elif analysis_type == "storage":
             if isinstance(data.get("data"), list):
-                total_inventory = sum(item.get("amount", item.get("quantity", 0)) for item in data["data"])
+                total_inventory = sum(float(item.get("amount", item.get("quantity", 0))) for item in data["data"])
                 return {
                     "total_inventory": total_inventory,
                     "item_count": len(data["data"])
@@ -382,12 +374,12 @@ class CounterfactualAgent:
             else:
                 return {
                     key: value for key, value in data.items()
-                    if isinstance(value, (int, float, str)) and key not in ["metadata", "status", "error", "raw_result"]
+                    if isinstance(value, (int, float)) and key not in ["metadata", "status", "error", "raw_result"]
                 }
         else:
             return {
                 key: value for key, value in data.items()
-                if isinstance(value, (int, float, str)) and key not in ["metadata", "status", "error", "raw_result"]
+                if isinstance(value, (int, float)) and key not in ["metadata", "status", "error", "raw_result"]
             }
 
     def _calculate_differences(
@@ -400,8 +392,8 @@ class CounterfactualAgent:
 
         for key in real_metrics:
             if key in cf_metrics and isinstance(real_metrics[key], (int, float)) and isinstance(cf_metrics[key], (int, float)):
-                real_value = real_metrics[key]
-                cf_value = cf_metrics[key]
+                real_value = float(real_metrics[key])
+                cf_value = float(cf_metrics[key])
 
                 absolute_diff = cf_value - real_value
                 percentage_diff = (absolute_diff / real_value * 100) if real_value != 0 else 0
@@ -459,14 +451,6 @@ def counterfactual_analysis_tool(
     - Counterfactual data summary
     - Comparison showing differences
     - Clear separation metadata
-
-    Example:
-    {
-        "scenario_name": "price_increase_10_percent",
-        "base_query": "SELECT * FROM sales WHERE month = '2025-09'",
-        "modifications": {"price": {"operation": "percentage_increase", "value": 10}},
-        "analysis_type": "sales"
-    }
     """
     request = {
         "scenario_name": scenario_name,
