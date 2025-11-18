@@ -1,4 +1,5 @@
 import pytest
+import json
 from unittest.mock import MagicMock, patch
 
 with patch("langchain.agents.create_agent"), \
@@ -6,6 +7,9 @@ with patch("langchain.agents.create_agent"), \
     from back.src.services.counterfactual_agent import (
         CounterfactualDataManager,
         CounterfactualAgent,
+        run_what_if_scenario_utility,
+        counterfactual_analysis_tool,
+        counterfactual_reasoning_agent
     )
 
 @pytest.fixture
@@ -144,3 +148,141 @@ def test_handle_counterfactual_request_errors(agent):
     with patch.object(agent, '_get_base_data', return_value={"error": "db fail"}):
         res = agent.handle_counterfactual_request({"base_query": "q", "analysis_type": "sql"})
         assert res["error"] == "db fail"
+
+def test_recalculate_dependent_metrics_coverage(data_manager):
+    """Test specific math logic in _recalculate_item_metrics that wasn't covered."""
+    data_case_1 = {
+        "data": [
+            {"unit_price": 10.0, "quantity": 5}
+        ]
+    }
+    data_manager._recalculate_dependent_metrics(data_case_1)
+    assert data_case_1["data"][0]["revenue"] == 50.0
+
+    data_case_2 = {
+        "data": [
+            {"unit_price": 20.0, "total_items_sold": 4}
+        ]
+    }
+    data_manager._recalculate_dependent_metrics(data_case_2)
+    assert data_case_2["data"][0]["total_revenue"] == 80.0
+
+    data_case_3 = {
+        "data": [
+            {"total_revenue": 100.0, "total_items_sold": 10.0}
+        ]
+    }
+    data_manager._recalculate_dependent_metrics(data_case_3)
+    assert data_case_3["data"][0]["total_revenue"] == 100.0
+
+    data_zero = {
+        "data": [
+            {"total_revenue": 100.0, "total_items_sold": 0}
+        ]
+    }
+
+    data_manager._recalculate_dependent_metrics(data_zero)
+    assert data_zero["data"][0]["total_revenue"] == 100.0
+
+    data_bad = {
+        "data": [
+            {"unit_price": "invalid", "quantity": 5}
+        ]
+    }
+
+    data_manager._recalculate_dependent_metrics(data_bad)
+    assert data_bad["data"][0]["unit_price"] == "invalid"
+
+
+def test_cache_real_data(data_manager):
+    """Test that real data is cached with correct structure."""
+    data = {"some": "data"}
+    data_manager.cache_real_data("key1", data)
+
+    cached = data_manager.real_data_cache["key1"]
+    assert cached["data"] == data
+    assert "hash" in cached
+    assert "cached_at" in cached
+
+
+def test_tool_run_what_if_scenario_utility():
+    """Test the @tool function for running scenarios."""
+    with patch("back.src.services.counterfactual_agent.counterfactual_agent_instance") as mock_agent_instance:
+        mock_agent_instance.handle_counterfactual_request.return_value = {
+            "status": "success",
+            "scenario_id": "123"
+        }
+        try:
+            result_json = run_what_if_scenario_utility.func(
+                scenario_name="Test",
+                base_query="query",
+                modifications={}
+            )
+        except AttributeError:
+            result_json = run_what_if_scenario_utility(
+                scenario_name="Test",
+                base_query="query",
+                modifications={}
+            )
+
+        result = json.loads(result_json)
+        assert result["status"] == "success"
+        assert result["scenario_id"] == "123"
+
+        mock_agent_instance.handle_counterfactual_request.assert_called_once()
+
+
+def test_tool_counterfactual_analysis_tool():
+    """Test the main orchestration tool."""
+    mock_runtime = MagicMock()
+
+    mock_runtime.state = {}
+    res_empty = counterfactual_analysis_tool.func(mock_runtime)
+    assert "Error" in res_empty
+
+    mock_runtime.state = {
+        "messages": [
+            MagicMock(content="User query"),
+            MagicMock(content="Current message")
+        ]
+    }
+
+    with patch.object(counterfactual_reasoning_agent, "invoke") as mock_invoke:
+        mock_response_msg = MagicMock()
+        mock_response_msg.content = '{"tool_output": "success"}'
+
+        mock_invoke.return_value = {
+            "messages": [
+                MagicMock(),
+                mock_response_msg
+            ]
+        }
+
+        res = counterfactual_analysis_tool.func(mock_runtime)
+        assert res == '{"tool_output": "success"}'
+        mock_invoke.assert_called_once()
+
+def test_agent_handle_request_parse_raw_string(agent):
+    """Test handling where real data is returned as a JSON string from the tool."""
+    with patch.object(agent, '_get_base_data') as mock_get:
+        mock_get.return_value = '{"data": [{"total_revenue": 500}]}'
+
+        request = {
+            "base_query": "q",
+            "analysis_type": "sales",
+            "modifications": {"total_revenue": {"operation": "add_value", "value": 100}}
+        }
+
+        response = agent.handle_counterfactual_request(request)
+
+        assert response["status"] == "success"
+        assert response["real_data"]["summary"]["total_revenue"] == 500
+        assert response["counterfactual_data"]["summary"]["total_revenue"] == 600
+
+def test_agent_handle_request_exception_handling(agent):
+    """Test the top-level try/except block in handle_counterfactual_request."""
+    with patch.object(agent, '_get_base_data', side_effect=Exception("Critical Failure")):
+        request = {"base_query": "q", "analysis_type": "sql"}
+        response = agent.handle_counterfactual_request(request)
+        assert "error" in response
+        assert "Critical Failure" in response["error"]
