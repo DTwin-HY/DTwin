@@ -286,3 +286,50 @@ def test_agent_handle_request_exception_handling(agent):
         response = agent.handle_counterfactual_request(request)
         assert "error" in response
         assert "Critical Failure" in response["error"]
+
+def test_recalculate_metrics_exceptions(data_manager):
+    """Force exception blocks in _recalculate_item_metrics"""
+    item_fail_2 = {"unit_price": "not_a_num", "quantity": "also_not_num"}
+    data_manager._recalculate_item_metrics(item_fail_2)
+    assert "revenue" not in item_fail_2
+
+    item_fail_3 = {"unit_price": "not_a_num", "total_items_sold": "also_not_num"}
+    data_manager._recalculate_item_metrics(item_fail_3)
+    assert "total_revenue" not in item_fail_3
+
+def test_recursive_nested_list_custom_key(data_manager):
+    """Test recursion into a list that is NOT named 'data'."""
+    data = {
+        "other_list": [
+            {"val": 10},
+            {"val": 20}
+        ]
+    }
+    mods = {"val": {"operation": "add_value", "value": 5}}
+    data_manager._apply_modifications_recursive(data, mods)
+    assert data["other_list"][0]["val"] == 15
+    assert data["other_list"][1]["val"] == 25
+
+def test_handle_request_returns_raw_string_structure(agent):
+    """
+    Force _get_base_data to return a plain string that IS NOT json parsable
+    to test the 'if isinstance(real_data_result, str)' block in handle_counterfactual_request
+    assuming _get_base_data could theoretically return a raw string.
+    """
+    with patch.object(agent, '_get_base_data') as mock_get:
+        mock_get.return_value = "Raw SQL Result String"
+
+
+        request = {"base_query": "q", "analysis_type": "sql"}
+        response = agent.handle_counterfactual_request(request)
+
+        assert response["real_data"]["summary"]["raw_result"].startswith("Raw SQL Result String")
+
+def test_extract_metrics_generic_failure(agent):
+    """Test the generic Exception catch in _extract_key_metrics."""
+    class AngryObject:
+        def __getitem__(self, item):
+            raise Exception("I refuse")
+
+    res = agent._extract_key_metrics(AngryObject(), "sales")
+    assert "error" in res
