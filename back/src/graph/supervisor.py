@@ -52,12 +52,8 @@ def stream_process(prompt: str, thread_id: str = "3"):
                 sales_agent_tool,
                 create_dataframe_tool,
                 csv_dataframe_test_tool,
-<<<<<<< HEAD
                 simulation_agent_tool,
                 counterfactual_analysis_tool
-=======
-                counterfactual_analysis_tool,
->>>>>>> b1124b9 (Fix bugs and add tests for counterfactual_agent)
             ],
             system_prompt=supervisor_prompt,
             state_schema=MainState,
