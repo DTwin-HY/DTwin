@@ -120,7 +120,6 @@ class CounterfactualDataManager:
                 if isinstance(item, dict):
                     self._recalculate_item_metrics(item) # pragma: no cover
         self._recalculate_item_metrics(data) # pragma: no cover
-
     def _recalculate_item_metrics(self, item: Dict[str, Any]) -> None:
         """Helper to recalculate metrics for a single dictionary item"""
         if "total_revenue" in item and "total_items_sold" in item:
