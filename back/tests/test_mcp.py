@@ -1,7 +1,8 @@
 import sys
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
+import asyncio
 
 import pytest
 import tenacity
@@ -11,6 +12,9 @@ from ..src.services.mcp_client import (
     _extract_weather_data_with_llm,
     create_mcp_agent,
     invoke_mcp_agent,
+    _run_in_new_loop,
+    mcp_agent_tool,
+    WeatherData
 )
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -118,3 +122,56 @@ async def test_invoke_mcp_agent_agent_raises(monkeypatch):
     inner = excinfo.value.last_attempt.exception()
     assert isinstance(inner, ValueError)
     assert "Failed to parse MCP data" in str(inner)
+
+
+def test_run_in_new_loop_executes_coroutine_in_new_loop():
+    """Ensure new loop is created, run_until_complete is called, and result is returned."""
+
+    async def fake_coro():
+        return "OK"
+
+    # Create a real loop instance so asyncio.set_event_loop accepts it
+    real_loop = asyncio.new_event_loop()
+
+    with patch("asyncio.new_event_loop", return_value=real_loop):
+
+        # Patch only the loop methods
+        with patch.object(real_loop, "run_until_complete", return_value="OK") as run_mock, \
+             patch.object(real_loop, "close") as close_mock:
+
+            result = _run_in_new_loop(fake_coro())
+
+            run_mock.assert_called_once()
+            close_mock.assert_called_once()
+            assert result == "OK"
+
+    real_loop.close()
+
+
+
+def test_mcp_agent_tool_success():
+    """mcp_agent_tool returns JSON from WeatherData and calls _run_in_new_loop."""
+    weather = WeatherData(
+        location="Helsinki", temperature=4, humidity=80, condition="cloudy"
+    )
+
+    with patch("back.src.services.mcp_client._run_in_new_loop") as run_mock:
+        run_mock.return_value = weather
+
+        # StructuredTool → call via .run()
+        result = mcp_agent_tool.run("test")
+
+    run_mock.assert_called_once()
+    assert "Helsinki" in result
+    assert '"temperature": 4' in result
+
+
+def test_mcp_agent_tool_error():
+    """mcp_agent_tool returns JSON error string when _run_in_new_loop raises."""
+    with patch("back.src.services.mcp_client._run_in_new_loop") as run_mock:
+        run_mock.side_effect = RuntimeError("boom")
+
+        result = mcp_agent_tool.run("test")
+
+        assert '"error": "boom"' in result
+
