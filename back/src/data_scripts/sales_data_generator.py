@@ -29,9 +29,23 @@ def sales_data_exists():
 
 
 def generate_sales_data(num_days: int, output_path: Path):
+<<<<<<< HEAD
     products = fetch_product_data()
     # num_products = len(products)
     product_ids = []
+=======
+    print("Fetching product data from database...", fetch_product_data()["1"])
+    num_products = config.get("data.num_products", 100)
+    product_names = []
+    for i in range(num_products):
+        n = i
+        name = ""
+        while n >= 0:
+            name = chr(65 + (n % 26)) + name
+            n = n // 26 - 1
+        product_names.append(name)
+
+>>>>>>> e810a76 (Add database product changes and data generator changes)
     prices = {}
     for id, price in products.items():
         product_ids.append(id)
