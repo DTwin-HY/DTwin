@@ -1,37 +1,52 @@
 import asyncio
 import json
+import os
 import re
 import sys
-import os
+from concurrent.futures import ThreadPoolExecutor
+
 from dotenv import load_dotenv
-from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.agents import create_agent
 from langchain.tools import tool
-from tenacity import retry, wait_fixed, stop_after_attempt
-from ..data.mcp_data import WeatherData
-
-# Rich + Loguru logging
+from langchain_mcp_adapters.client import MultiServerMCPClient
 from loguru import logger
 from rich.logging import RichHandler
+from tenacity import retry, stop_after_attempt, wait_fixed
+
+from ..data.mcp_data import WeatherData
 
 load_dotenv()
 
 logger.remove()
-# Add RichHandler to stdout
 logger.add(
     sys.stdout,
     level="INFO",
     backtrace=True,
     diagnose=True,
     colorize=True,
-    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | {message}"
+    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | {message}",
 )
+
+
+def _run_in_new_loop(coroutine):
+    """Run a coroutine in a new event loop in a thread pool."""
+    executor = ThreadPoolExecutor(max_workers=4)
+
+    def run():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(coroutine)
+        finally:
+            loop.close()
+
+    return executor.submit(run).result()
 
 
 async def create_mcp_agent():
     """Create MCP agent connected to weather server."""
     from langchain_openai import ChatOpenAI
-    
+
     client = MultiServerMCPClient(
         {
             "weather": {
@@ -49,12 +64,9 @@ async def create_mcp_agent():
 async def _extract_weather_data_with_llm(narrative_text: str, original_prompt: str) -> WeatherData:
     """Parse narrative weather response into structured WeatherData using LLM."""
     from langchain_openai import ChatOpenAI
-    
-    llm = ChatOpenAI(
-        model="gpt-4o-mini",
-        model_kwargs={"response_format": {"type": "json_object"}}
-    )
-    
+
+    llm = ChatOpenAI(model="gpt-4o-mini", model_kwargs={"response_format": {"type": "json_object"}})
+
     extraction_prompt = f"""Extract weather information from the following text and return ONLY a JSON object.
 
 Original query: {original_prompt}
@@ -69,10 +81,10 @@ Return a JSON object with these fields:
 - condition: string or null (brief weather description like "overcast", "clear", "snowy")
 
 JSON object:"""
-    
+
     response = await llm.ainvoke(extraction_prompt)
     response_text = response.content
-    response_text = re.sub(r'```json\s*|\s*```', '', response_text).strip()
+    response_text = re.sub(r"```json\s*|\s*```", "", response_text).strip()
     data = json.loads(response_text)
     return WeatherData(**data)
 
@@ -90,30 +102,30 @@ async def invoke_mcp_agent(prompt: str) -> WeatherData:
         logger.info("Sending prompt to MCP agent: {}", prompt)
         result = await agent.ainvoke(payload)
         logger.debug("Raw MCP result: {}", result)
-        
+
         result_text = str(result)
         logger.debug("Result text: {}", result_text)
-        
+
         # Try to extract JSON directly from response
-        json_matches = re.finditer(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', result_text, re.DOTALL)
-        
+        json_matches = re.finditer(r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}", result_text, re.DOTALL)
+
         for json_match in json_matches:
             try:
                 json_str = json_match.group(0)
                 data = json.loads(json_str)
-                
+
                 # Skip incomplete objects
-                if not data or 'location' not in data or 'temperature' not in data:
+                if not data or "location" not in data or "temperature" not in data:
                     logger.debug("Skipping incomplete JSON: {}", json_str)
                     continue
-                
+
                 weather_data = WeatherData(**data)
                 logger.info("Successfully parsed WeatherData from JSON: {}", weather_data)
                 return weather_data
             except (json.JSONDecodeError, Exception) as e:
                 logger.debug("Failed to parse JSON candidate: {}", e)
                 continue
-        
+
         # Fallback: extract structured data using LLM
         logger.info("No valid JSON found, extracting data with LLM...")
         weather_data = await _extract_weather_data_with_llm(result_text, prompt)
@@ -132,7 +144,7 @@ async def invoke_mcp_agent(prompt: str) -> WeatherData:
 def mcp_agent_tool(prompt: str) -> str:
     """LangChain tool wrapper for MCP agent. Returns weather data as JSON string."""
     try:
-        result = asyncio.run(invoke_mcp_agent(prompt))
+        result = _run_in_new_loop(invoke_mcp_agent(prompt))
         logger.info("MCP agent result: {}", result)
         return result.model_dump_json(indent=2)
     except Exception as e:
