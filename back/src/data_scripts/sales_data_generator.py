@@ -10,6 +10,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
+
+from ..database.product_db import fetch_product_data
 from .. import config
 from ..models import models
 
@@ -27,9 +29,9 @@ def sales_data_exists():
 
 
 def generate_sales_data(num_days: int, output_path: Path):
+    print("Fetching product data from database...", fetch_product_data()["1"])
     num_products = config.get("data.num_products", 100)
     product_names = []
-
     for i in range(num_products):
         n = i
         name = ""
