@@ -1,13 +1,15 @@
 import os
+import json
 
 import numpy as np
 import pandas as pd
-from langchain.messages import ToolMessage
+from langchain.messages import ToolMessage, HumanMessage
 from langchain.tools import ToolRuntime, tool
 from langgraph.types import Command
+from langchain.agents import create_agent
 
 from ..utils.csv_to_pd import csv_to_pd  # temp
-
+from .sql_agent import sql_agent_tool
 
 def create_product_sales_data(rows: int = 30):
     """Generate (by default 30 rows of) daily product data for simulation testing."""
@@ -31,33 +33,62 @@ def create_product_sales_data(rows: int = 30):
     print("create_product_sales_data() generated DataFrame:", df.shape)
     return df
 
-
 @tool
 def create_dataframe_tool(
-    prompt: str, runtime: ToolRuntime  # pylint: disable=unused-argument
-) -> Command:
+    json_data: str,
+    runtime: ToolRuntime
+) -> str:
     """
-    Create a pd dataframe and save it to a csv file for other agents.
+    Create a DataFrame from JSON data and save as CSV.
+    
+    Parameters:
+    json_data: JSON string containing array of objects with the data
+    
+    Returns path to the saved CSV file.
     """
-    df = create_product_sales_data()
     if not os.path.exists("dataframes"):
         os.makedirs("dataframes")
     file_path = f"dataframes/dataframe_{runtime.tool_call_id}.csv"
-    df.to_csv(file_path, index=False)
+    try:
+        # Parse JSON data
+        data = json.loads(json_data) if isinstance(json_data, str) else json_data
+        
+        # Create DataFrame
+        df = pd.DataFrame(data)
+        
+        # Save to CSV
+        df.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")
+        
+        print(f"[create_dataframe_tool] DataFrame saved to {file_path}, shape {df.shape}")
+        return f"DataFrame created and saved to: {file_path}"
+        
+    except Exception as e:
+        print(f"[create_dataframe_tool] Error: {e}, creating mock data")
+        df = create_product_sales_data()
+        df.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")
+        return f"Error creating DataFrame from JSON. Created mock data instead at: {file_path}"
 
-    print(f"[create_array_tool_file] DataFrame saved to {file_path}, shape {df.shape}")
+dataframe_agent = create_agent(
+    name="dataframe_agent",
+    model="openai:gpt-4o-mini",
+    tools=[sql_agent_tool, create_dataframe_tool],
+    system_prompt=(
+        "You are an agent responsible for creating dataframes for sales analysis. "
+        "When asked to create a dataframe: "
+        "1. First, use sql_agent_tool to fetch the required data from the database. "
+        "   Ask the SQL agent to return data as JSON. "
+        "2. Then, pass the JSON result to create_dataframe_tool to save it as a CSV file. "
+        "3. Return the file path to the user."
+    ),
+)
 
-    return Command(
-        update={
-            "messages": [
-                ToolMessage(
-                    content=f"Pd dataframe saved to file: {file_path}",
-                    tool_call_id=runtime.tool_call_id,
-                )
-            ]
-        }
-    )
-
+@tool
+def dataframe_agent_tool(prompt: str) -> str:
+    """
+    Wraps the dataframe_agent as a single tool.
+    """
+    result = dataframe_agent.invoke({"messages": [HumanMessage(content=prompt)]})
+    return result["messages"][-1].content
 
 @tool
 def csv_dataframe_test_tool(dataframe_path: str) -> str:
