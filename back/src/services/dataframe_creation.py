@@ -2,13 +2,37 @@ import os
 import json
 
 import pandas as pd
-from langchain.messages import HumanMessage
+from langchain.messages import ToolMessage, HumanMessage
 from langchain.tools import ToolRuntime, tool
 from langchain.agents import create_agent
 
 from ..utils.csv_to_pd import csv_to_pd  # temp
 from .sql_agent import sql_agent_tool
 from .mcp_client import mcp_agent_tool
+
+from .sql_agent import sql_agent_tool
+
+def create_product_sales_data(rows: int = 30):
+    """Generate (by default 30 rows of) daily product data for simulation testing."""
+    np.random.seed(42)  # same numbers each run, for reproducibility
+
+    sales = np.random.randint(70, 200, size=rows)
+    price = np.round(np.random.uniform(10.0, 15.0, size=30), 2)
+    customers = np.random.randint(40, 100, size=rows)
+    sunny = np.random.choice([0, 1], size=rows).astype(bool)
+
+    # Combine into a dataframe
+
+    df = pd.DataFrame(
+        {
+            "sales": sales,
+            "price": price,
+            "customers": customers,
+            "sunny": sunny,
+        }
+    )
+    print("create_product_sales_data() generated DataFrame:", df.shape)
+    return df
 
 @tool
 def create_dataframe_tool(
