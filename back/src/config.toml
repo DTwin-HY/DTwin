@@ -1,4 +1,4 @@
 [data]
-rows_to_generate=100000
+rows_to_generate=100
 filename="data.csv"
 write_to_csv=false

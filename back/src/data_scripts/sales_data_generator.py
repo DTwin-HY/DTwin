@@ -29,31 +29,30 @@ def sales_data_exists():
 
 
 def generate_sales_data(num_days: int, output_path: Path):
-    print("Fetching product data from database...", fetch_product_data()["1"])
-    num_products = config.get("data.num_products", 100)
-    product_names = []
-    for i in range(num_products):
-        n = i
-        name = ""
-        while n >= 0:
-            name = chr(65 + (n % 26)) + name
-            n = n // 26 - 1
-        product_names.append(name)
-
+    products = fetch_product_data()
+    # num_products = len(products)
+    product_ids = []
     prices = {}
-    for name in product_names:
-        if random.random() < 0.8:
-            prices[name] = round(random.uniform(1, 20), 2)
-        else:
-            prices[name] = round(random.uniform(20, 100), 2)
+    for id, price in products.items():
+        product_ids.append(id)
+        prices[id] = price
+    
+    print("tässä prodyucts length: ",len(products))
+
+    # prices = {}
+    # for name in product_names:
+    #     if random.random() < 0.8:
+    #         prices[name] = round(random.uniform(1, 20), 2)
+    #     else:
+    #         prices[name] = round(random.uniform(20, 100), 2)
 
     start_date = datetime.now() - timedelta(days=num_days)
     dates = [(start_date + timedelta(days=i)).date() for i in range(num_days)]
 
     sales_records = []
     for date in dates:
-        for product_name in product_names:
-            price = Decimal(str(prices[product_name]))
+        for product_id in product_ids:
+            price = Decimal(str(prices[product_id]))
 
             if price > 80:
                 items_sold = random.choice([0] * 5 + list(range(1, 6)))
@@ -69,7 +68,7 @@ def generate_sales_data(num_days: int, output_path: Path):
             sales_records.append(
                 {
                     "transaction_id": str(uuid.uuid4()),
-                    "item_id": product_name,
+                    "product_id": product_id,
                     "quantity": items_sold,
                     "timestamp": datetime.combine(date, datetime.min.time()),
                     "amount": revenue,
@@ -96,9 +95,9 @@ def generate_sales_data(num_days: int, output_path: Path):
         [
             {
                 "date": record["timestamp"].date(),
-                "product": record["item_id"],
+                "product": record["product_id"],
                 "items_sold": record["quantity"],
-                "unit_price": float(prices[record["item_id"]]),
+                "unit_price": float(prices[record["product_id"]]),
                 "revenue": float(record["amount"]),
             }
             for record in sales_records
@@ -122,7 +121,8 @@ def main():
     output_filename = config.get("data.sales_filename", "sales_data.csv")
     output_path = Path(__file__).resolve().parent / output_filename
 
-    num_days = config.get("data.sales_days_to_generate", 1000)
+    # num_days = config.get("data.sales_days_to_generate", 100)
+    num_days = 1
 
     generate_sales_data(num_days, output_path)
 
