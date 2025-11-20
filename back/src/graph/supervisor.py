@@ -8,7 +8,7 @@ from langchain.messages import RemoveMessage
 from langgraph.checkpoint.postgres import PostgresSaver
 
 from ..services.mcp_client import mcp_agent_tool
-from ..services.dataframe_creation import create_dataframe_tool, csv_dataframe_test_tool
+from ..services.dataframe_creation import dataframe_agent_tool, csv_dataframe_test_tool
 from ..services.math_agent import math_agent_tool
 from ..services.research_agent import research_agent_tool
 from ..services.sales_agent import sales_agent_tool
@@ -49,7 +49,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
                 mcp_agent_tool,
                 storage_agent_tool,
                 sales_agent_tool,
-                create_dataframe_tool,
+                dataframe_agent_tool,
                 csv_dataframe_test_tool,
                 simulation_agent_tool,
             ],
