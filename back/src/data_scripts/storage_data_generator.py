@@ -104,7 +104,7 @@ def main():
     output_filename = config.get("data.filename", "data.csv")
     output_path = Path(__file__).resolve().parent / output_filename  # parent_dir/filename.csv
 
-    data_rows = config.get("data.rows_to_generate", 100000)
+    data_rows = config.get("data.rows_to_generate", 100)
 
     generate_data(data_rows, output_path)
 
