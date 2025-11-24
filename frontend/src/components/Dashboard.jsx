@@ -99,6 +99,11 @@ const Dashboard = () => {
             isCollapsed ? 'max-h-0 p-0 opacity-0' : 'max-h-[900px] opacity-100 p-0'
           } ${isCompact ? 'grid-cols-1 md:grid-cols-3' : 'md:grid-cols-3'}`}
         >
+          <MetricCard title="Sales" metric={sales} compact={isCompact} color="hsl(220 90% 56%)" />
+
+          <MetricCard title="Transactions" metric={transactions} compact={isCompact} color="hsl(140 60% 40%)" />
+
+          <MetricCard title="Revenue" metric={revenue} compact={isCompact} color="hsl(30 90% 50%)" />
         </div>
       </div>
     </div>
