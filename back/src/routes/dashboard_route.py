@@ -9,7 +9,7 @@ from ..index import app
 def get_dashboard_data():
 
     try:
-        data = fetch_dashboard_data(0,1)
+        data = fetch_dashboard_data()
         return jsonify(data)
     
     except Exception as e:
