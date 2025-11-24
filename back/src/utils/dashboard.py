@@ -27,7 +27,7 @@ TEMP_DICT = {
                 "transactions":TRANSACTIONS
 }
 
-def fetch_dashboard_data(start,end):
+def fetch_dashboard_data():
 
     return TEMP_DICT
 
