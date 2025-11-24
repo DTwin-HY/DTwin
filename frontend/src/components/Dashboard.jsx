@@ -16,10 +16,11 @@ const Dashboard =  () => {
     })();
     },[]);
     
+    const ytd_sales_growth = dashboardData?.sales?.ytd?.growth ?? "N/A";
 
     return (
         <div>
-            <p>  {JSON.stringify(dashboardData)} </p>
+            <p>  {ytd_sales_growth} </p>
         </div>
     );
 };
