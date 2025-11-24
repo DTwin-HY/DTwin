@@ -1,6 +1,7 @@
 import Chatbot from './Chatbot';
 import InfoPanel from './InfoPanel';
 import SalesCard from './SalesCard';
+import Dashboard from './Dashboard';
 
 const Home = () => {
   return (
@@ -15,6 +16,9 @@ const Home = () => {
         </div>
 
         <div className="lg:col-span-1">
+          <div>
+            <Dashboard />
+          </div>
           <div className="lg:sticky">
             <Chatbot />
           </div>
