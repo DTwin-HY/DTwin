@@ -57,12 +57,6 @@ TEMP_DICT = {
 }
 
 def fetch_dashboard_data():
-        test1 = query_transactions('2025-11-23','2025-11-25')
-        test2 = query_sales('2025-11-23','2025-11-25')
-
-        transactions_df = pd.DataFrame.from_records(test1, columns=['timestamp','transactions'])
-        #print(transactions_df)
-
         sales = create_sales_data()
 
         return sales
@@ -129,7 +123,6 @@ def build_dataset(df:pd.DataFrame, type: str):
         this_year = df[(df.timestamp > end_of_previous_year)]
         last_year = df[(df.timestamp <= end_of_previous_year)]
 
-
         # Calc total revenues per time period
         current_q_total = int(current_quarter[type].sum())
         previous_q_total = int(previous_quarter[type].sum())
@@ -167,7 +160,6 @@ def build_dataset(df:pd.DataFrame, type: str):
 
 
 def create_sales_data():
-        result = {}
         #Set time stuff
         today = datetime.today()
         todays_date = today.strftime('%Y-%m-%d')
@@ -182,15 +174,13 @@ def create_sales_data():
         tdf = pd.DataFrame.from_records(raw_transactions_query, columns=["timestamp", "transactions"])
      
         #Set data:
+        result = {}
         result["revenue"] = build_dataset(df,'revenue')
         result["sales"] = build_dataset(df,'quantity')
         result["transactions"] = build_dataset(tdf, 'transactions')
         
 
-
         return result
-
-
 
 
 
