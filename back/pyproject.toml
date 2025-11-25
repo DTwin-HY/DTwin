@@ -38,6 +38,7 @@ langchain-mcp-adapters = "^0.1.12"
 pytest-asyncio = "^1.3.0"
 rich = "^14.2.0"
 scikit-learn = "^1.7.2"
+python-dateutil = "^2.9.0.post0"
 
 [tool.poetry.scripts]
 back = "src.index:start"
