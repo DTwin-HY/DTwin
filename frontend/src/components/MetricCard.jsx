@@ -194,7 +194,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
 
                         <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.08)" vertical={true} />
                         <XAxis dataKey="name" tick={{ fontSize: 12 }} tickLine={false} />
-                        <YAxis tick={{ fontSize: 12 }} tickLine={false} />
+                        <YAxis tick={{ fontSize: 12 }} tickLine={false} domain={['auto', 'auto']} />
 
                         <Tooltip
                           content={<FixedTooltipInside />}
@@ -207,7 +207,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                           stroke={color}
                           strokeWidth={2.5}
                           fill={`url(#gradient-${title}-${i})`}
-                          dot={{ r: 2, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
+                          dot={{ r: 0.8, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
                           activeDot={{ r: 4, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
                           isAnimationActive={true}
                         />
