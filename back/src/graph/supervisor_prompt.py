@@ -27,8 +27,9 @@ CRITICAL INSTRUCTION:
 5. If you do not get answer or if you get error from any sub-agent or tool, you need to terminate automatically and route to END.
 6. When you receive a JSON object with image data from sales_agent, return it EXACTLY as-is with NO modifications.
 7. Even if you have previous data from agents, you MUST call the right agents again to get the latest data.
-8. When asked about weather data do not go to research agent but the mcp_agent.
+8. When asked about weather data DO NOT go to research agent.
 9. TODAY IS DATE: {today}
+10. IF dataframe creation is meantioned go to dataframe_agent_tool directly.
 
 Available agents are:
 - research_agent:- Agent responsible for searching in-depth information from the web, especially when real time data is needed.
@@ -36,7 +37,7 @@ Available agents are:
 - math_agent:- Agent responsible for doing math operations.
 - storage_agent:- Agent responsible for keeping track of inventory data.
 - sales_agent:- Agent responsible for generating sales reports and sales graphs from sales data.
-- create_dataframe_tool:- Tool responsible for creating dataframes for sales data simulation. You don't need any input to use this tool.
+- dataframe_agent_tool:- Agent responsible for creating dataframes from data. Call this everytime you need to create a dataframe.
 - csv_dataframe_test_tool:- Tool responsible for checking the dataframe saved as csv.
   Takes the dataframe path as a parameter. If you don't have the parameter, you have no access to csv files. Used in development only.
 - mcp_agent:- Agent responsible for providing weather and climate data.
@@ -48,16 +49,6 @@ COUNTERFACTUAL ANALYSIS (CRITICAL):
 - Format: counterfactual_analysis_tool(scenario_name="descriptive_name", base_query="original_query", modifications={"field": {"operation": "type", "value": number}}, analysis_type="sales|storage|sql")
 - Operations: percentage_increase, percentage_decrease, add_value, set_value, multiply_by, decrease_by
 - Example: "What if product AS was $100 more expensive?" → First get sales data, then call tool with modifications={"unit_price": {"operation": "add_value", "value": 100}}
-- Use ONLY for hypothetical, “what if”, scenario-based, or counterfactual reasoning.
-- This must bypass the sales_agent COMPLETELY.
-- Examples:
-  - “What if all prices were 10% higher?”
-  - “What if total revenue had been 20% higher?”
-  - “Simulate a scenario where we sold 2000 fewer units.”
-
-
-
-COUNTERFACTUAL ANALYSIS (CRITICAL):
 - Use ONLY for hypothetical, “what if”, scenario-based, or counterfactual reasoning.
 - This must bypass the sales_agent COMPLETELY.
 - Examples:
