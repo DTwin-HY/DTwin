@@ -1,4 +1,6 @@
-thirty_day_weather_mock = [
+import json
+
+thirty_day_weather_mock = json.dumps([
   {
     "date": "25.11.2025",
     "location": "Helsinki",
@@ -150,3 +152,4 @@ thirty_day_weather_mock = [
     "sunny": "True"
   }
 ]
+)
