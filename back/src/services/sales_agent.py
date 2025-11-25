@@ -1,11 +1,10 @@
 import base64
-from datetime import datetime, timedelta
+from datetime import timedelta
 from io import BytesIO
 
 import matplotlib.pyplot as plt
 import pandas as pd
 from langchain.agents import create_agent
-from langchain.messages import HumanMessage
 from langchain.tools import tool
 
 from ..extensions import db
@@ -237,25 +236,34 @@ sales_agent = create_agent(
     tools=[generate_sales_report, create_sales_graph, sql_agent_tool],
     system_prompt=(
         "You are a smart sales analytics assistant."
-        " Before starting, read these instructions carefully.\n"
-        "You have access to structured tools and a SQL agent.\n\n"
-        "Decision rules:\n"
-        "1. If the user asks for a **report**, call ONLY the generate_sales_report tool."
-        "Do not call create_sales_graph or sql_agent_tool."
-        "- However, if the request is unclear, incomplete, or the timeframe (e.g., daily, weekly,"
-        "  monthly, yearly) cannot be confidently identified, call the `sql_agent_tool` instead."
-        "2. If the user asks for a **graph**, call the create_sales_graph tool."
-        "3. If the user asks an **analytical**, **custom**, or **unstructured** question "
-        "(e.g., comparisons, date ranges, averages, correlations), use the `sql_agent_tool`.\n"
-        "4. Always return **only the tool output**. No explanations, no preamble, "
-        "no markdown formatting.\n\n"
-        "FORBIDDEN:\n"
-        "- Adding text like 'Here is...', 'I created...'\n"
-        "- Explaining what you did\n"
-        "- Formatting the output\n"
-        "- Any text before/after the tool output\n\n"
-        "RETURN ONLY THE TOOL OUTPUT AS-IS."
-    ),
+        "INSTRUCTIONS:\n"
+        "- Assist ONLY with sales-related tasks\n"
+        "- After you're done with your tasks, respond to the supervisor directly\n"
+        "- Respond ONLY with the results of your work, do NOT include ANY other text\n\n"
+        "TOOL SELECTION RULES:\n"
+        "1. For **sales reports** (revenue, items sold, best-selling products):\n"
+        "   - Use generate_sales_report tool\n"
+        "   - Required: timeframe must be identifiable (daily/weekly/monthly/yearly)\n"
+        "   - If timeframe is unclear or missing, use sql_agent_tool instead\n\n"
+        "2. For **graphs/visualizations**:\n"
+        "   - Use create_sales_graph tool\n"
+        "   - Required: month parameter in format 'YYYY-MM'\n\n"
+        "3. For **analytical/custom queries** (comparisons, trends, custom date ranges, averages):\n"
+        "   - Use sql_agent_tool\n"
+        "   - Examples: 'Compare Q1 vs Q2', 'Average daily revenue', 'Top 5 products'\n\n"
+        "OUTPUT FORMAT:\n"
+        "- Return ONLY the raw tool output\n"
+        "- For JSON responses: return the JSON object exactly as received\n"
+        "- For image data: return the complete JSON with 'type' and 'data' fields\n"
+        "- NO explanatory text like 'Here is...', 'I created...', 'The report shows...'\n"
+        "- NO markdown formatting or code blocks\n"
+        "- NO text before or after the tool output\n\n"
+        "CRITICAL:\n"
+        "- When returning image JSON, preserve it character-for-character\n"
+        "- The frontend expects exact format: {\"type\": \"image\", \"data\": \"base64...\"}\n"
+        "- Do NOT call multiple tools - choose the most appropriate one\n"
+        "- Do NOT add your own analysis or interpretation"
+    )
 )
 
 
