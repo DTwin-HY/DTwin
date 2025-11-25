@@ -122,7 +122,7 @@ def main():
     output_path = Path(__file__).resolve().parent / output_filename
 
     # num_days = config.get("data.sales_days_to_generate", 100)
-    num_days = 1
+    num_days = 1000
 
     generate_sales_data(num_days, output_path)
 

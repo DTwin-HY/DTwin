@@ -47,7 +47,7 @@ class SalesTool:
         """
         query = db.session.query(
             Sale.timestamp.label("date"),
-            Sale.item_id.label("product"),
+            Sale.product_id.label("product"),
             Sale.quantity.label("items_sold"),
             Sale.amount.label("revenue"),
         )
@@ -61,7 +61,7 @@ class SalesTool:
             query = query.filter(Sale.timestamp <= end_date)
 
         if product:
-            query = query.filter(Sale.item_id == product)
+            query = query.filter(Sale.product_id == product)
 
         rows = query.all()
 
