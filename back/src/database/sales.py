@@ -32,3 +32,59 @@ def fetch_sales_data(start, end):
         # ensure DB session rollback on error
         db.session.rollback()
         raise
+
+
+def query_sales(start,end):
+
+        sql = text(
+                """
+                SELECT 
+	                s.timestamp,
+	                SUM(s.quantity) as quantity,
+	                SUM(s.amount)  as revenue 
+                FROM 
+	                sales as s 
+                WHERE 
+	                timestamp BETWEEN :start_date AND :end_date
+                GROUP BY 
+	                s.timestamp
+                ORDER BY
+                	s.timestamp; 
+                """
+        )
+        try:
+            result = db.session.execute(sql, {"start_date":start, "end_date":end}).fetchall()
+
+            return result
+
+        except Exception:
+            db.session.rollback()
+            raise
+
+
+def query_transactions(start, end):
+        sql = text(
+                """
+                SELECT 
+                        timestamp, 
+                        COUNT(transaction_id) as transactions
+                FROM 
+                        sales 
+                WHERE 
+                        timestamp BETWEEN :start_date AND :end_date 
+                GROUP BY 
+                        timestamp 
+                ORDER BY 
+                        timestamp;
+                """
+                )
+        try:
+            result = db.session.execute(sql, {"start_date":start, "end_date":end}).fetchall()
+            return result
+
+        except Exception:
+            db.session.rollback()
+            raise
+        
+
+        
