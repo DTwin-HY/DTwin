@@ -69,15 +69,14 @@ def generate_query(state: MessagesState) -> Dict[str, Any]:
     generate_query_system_prompt = f"""
     You are an agent designed to interact with a SQL database.
     Given an input question, create a syntactically correct {sql_db.dialect} query to run,
-    then look at the results of the query and return the answer. Unless the user
-    specifies a specific number of examples they wish to obtain, always limit your
-    query to at most 5 results.
+    then look at the results of the query and return the answer.
 
     You can order the results by a relevant column to return the most interesting
     examples in the database. Never query for all the columns from a specific table,
     only ask for the relevant columns given the question.
 
     DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
+    DO NOT come up with any data, only return real data present in the database.
 
     IMPORTANT: After receiving query results, do NOT call the tool again. Instead,
     analyze the results and provide the final answer.
@@ -86,6 +85,7 @@ def generate_query(state: MessagesState) -> Dict[str, Any]:
     system_message = {"role": "system", "content": generate_query_system_prompt}
     llm_with_tools = _make_llm().bind_tools([run_query_tool])
     response = llm_with_tools.invoke([system_message] + state["messages"])
+    print("sql response:", response)
     return {"messages": [response]}
 
 
@@ -235,7 +235,9 @@ def get_sql_agent_graph():
 
 
 def run_sql_agent(query: str) -> str:
+    print("Running SQL agent with query:", query)
     result = get_sql_agent_graph().invoke({"messages": [HumanMessage(content=query)]})
+    print("SQL agent response:", result)
     return result["messages"][-1].content
 
 
@@ -244,7 +246,7 @@ sql_agent_tool = StructuredTool.from_function(
     name="sql_agent_tool",
     description=(
         "Executes SQL queries on the storage and sales databases and returns structured results. "
-        "Call this tool ONCE with a comprehensive query - "
+        "Call this tool ONCE with a comprehensive query written in natural language - "
         "it returns ALL needed data in one execution."
     ),
 )
