@@ -86,10 +86,11 @@ dataframe_agent = create_agent(
 =======
         "When asked to create a dataframe: "
         "1. First, use sql_agent_tool to fetch the required data from the database. "
-        "   Ask the SQL agent to return data as JSON. "
+        "   Ask the SQL agent to return data as JSON."
+        "   Give the prompt in natural language to the sql agent, it will generate the query"
         "2. Then, pass the JSON result to create_dataframe_tool to save it as a CSV file. "
         "3. Return the file path to the user."
->>>>>>> 47ee51b (Change dataframe creation tool is now wrapped under agent and it uses sql agents to fetch the data)
+        " DO NOT MAKE UP ANY DATA YOURSELF"
     ),
 )
 
