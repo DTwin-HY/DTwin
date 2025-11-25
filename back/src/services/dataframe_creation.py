@@ -74,11 +74,14 @@ dataframe_agent = create_agent(
     tools=[sql_agent_tool, create_dataframe_tool],
     system_prompt=(
         "You are an agent responsible for creating dataframes for sales analysis. "
+        "Dataframes are created from REAL DATA THAT IS ALRADY IN THE DATABASE. USE THE SQL AGENT TOOL TO FETCH THE DATA. "
         "When asked to create a dataframe: "
         "1. First, use sql_agent_tool to fetch the required data from the database. "
-        "   Ask the SQL agent to return data as JSON. "
+        "   Ask the SQL agent to return data as JSON."
+        "   Give the prompt in natural language to the sql agent, it will generate the query"
         "2. Then, pass the JSON result to create_dataframe_tool to save it as a CSV file. "
         "3. Return the file path to the user."
+        " DO NOT MAKE UP ANY DATA YOURSELF"
     ),
 )
 
