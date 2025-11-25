@@ -46,7 +46,6 @@ def stream_process(prompt: str, thread_id: str = "3"):
             tools=[
                 research_agent_tool,
                 math_agent_tool,
-                mcp_agent_tool,
                 storage_agent_tool,
                 sales_agent_tool,
                 dataframe_agent_tool,
