@@ -1,6 +1,6 @@
 import React from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { ResponsiveContainer, LineChart, Line, Tooltip, Area, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return '—';
@@ -35,8 +35,14 @@ const buildRowsFromMetric = (metric) => {
 
 const buildCombinedSeries = (raw_graph_data) => {
   if (!raw_graph_data) return null;
-  // collect keys from available series and sort
-  const idxs = Array.from(new Set(Object.keys(raw_graph_data?.current_quarter || {}).concat(Object.keys(raw_graph_data?.previous_quarter || {})).concat(Object.keys(raw_graph_data?.ytd || {})))).sort((a,b)=>Number(a)-Number(b));
+  const idxs = Array.from(
+    new Set([
+      ...Object.keys(raw_graph_data?.current_quarter || {}),
+      ...Object.keys(raw_graph_data?.previous_quarter || {}),
+      ...Object.keys(raw_graph_data?.ytd || {}),
+    ])
+  ).sort((a, b) => Number(a) - Number(b));
+
   return idxs.map((k) => ({
     name: String(k),
     current: raw_graph_data.current_quarter?.[k] ?? null,
@@ -52,13 +58,38 @@ const seriesObjToArray = (obj) => {
     .map((k) => ({ name: k, value: obj[k] }));
 };
 
-export const MetricCard = ({ title, metric = null, compact = false, color = '#3b82f6' }) => {
+const FixedTooltipInside = ({ active, payload, coordinate }) => {
+  if (!active || !payload || !payload.length) return null;
+  if (!coordinate) return null;
+
+  const { x, y } = coordinate;
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: x + 5,
+        top: y - 30,
+        background: 'rgba(255,255,255,0.9)',
+        padding: '2px 6px',
+        borderRadius: 4,
+        fontSize: 12,
+        pointerEvents: 'none',
+        border: '1px solid rgba(0,0,0,0.1)',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      }}
+    >
+      {payload[0].value}
+    </div>
+  );
+};
+
+export const MetricCard = ({ title, metric = null, compact = false, color = '#3b82f6', dotOutlineColor = '#1E3A8A' }) => {
   const rows = metric ? buildRowsFromMetric(metric) : [];
   const combined = metric?.raw_graph_data ? buildCombinedSeries(metric.raw_graph_data) : null;
 
   if (compact) {
-    // compact: show title, small sparkline and a single percent (use current_quarter.growth)
-    const pct = metric?.current_quarter?.growth != null ? `${(metric.current_quarter.growth*100).toFixed(1)}%` : '—';
+    const pct = metric?.current_quarter?.growth != null ? `${(metric.current_quarter.growth * 100).toFixed(1)}%` : '—';
     const sparkVals = combined ? combined.map((d) => d.current) : null;
     const isPositive = metric?.current_quarter?.growth != null ? metric.current_quarter.growth >= 0 : null;
 
@@ -76,15 +107,22 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
       });
       return (
         <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} xmlns="http://www.w3.org/2000/svg">
-          <polyline fill="none" stroke={stroke} strokeWidth="1.5" points={points.join(' ')} strokeLinecap="round" strokeLinejoin="round" />
+          <polyline
+            fill="none"
+            stroke={stroke}
+            strokeWidth="1.5"
+            points={points.join(' ')}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       );
     };
 
     return (
-      <div className="p-2 rounded-lg border bg-card/40 border-border/50 transition-colors flex items-center justify-between gap-2 overflow-hidden">
+      <div className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md transition-all flex items-center justify-between gap-3 overflow-hidden">
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium truncate">{title}</div>
+          <div className="text-sm font-semibold text-gray-700 truncate">{title}</div>
         </div>
         <div className="flex items-center gap-3">
           <div>
@@ -103,41 +141,76 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
     );
   }
 
-  // full mode: show rows on top and a larger combined chart under them
   return (
-    <div className="p-4 rounded-lg border bg-card/40 border-border/50 transition-colors">
-      <div className="mb-3">
-        <p className="text-sm text-muted-foreground">{title}</p>
+    <div
+      className="p-5 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all"
+      style={{ animation: 'fadeInUp 0.5s ease-out' }}
+    >
+      <div className="mb-4 pb-4 border-b border-gray-100" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+        <p className="text-lg font-bold text-gray-800">{title}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
         <div className="space-y-4">
           {rows.map((r, i) => {
             const change = r.growth != null ? (r.growth * 100).toFixed(1) + '%' : '—';
-            const isPositive = typeof change === 'string' && change.startsWith('-') === false && change !== '—';
+            const isPositive = typeof change === 'string' && !change.startsWith('-') && change !== '—';
             const seriesArr = seriesObjToArray(r.series);
+
             return (
-              <div key={i}>
-                <div className="flex items-center justify-between">
+              <div
+                key={i}
+                className="metric-row"
+                style={{
+                  opacity: 0,
+                  animation: `fadeInUp 0.5s ease-out ${i * 80}ms forwards`,
+                }}
+              >
+                <div className="flex items-center justify-between pb-3">
                   <div>
-                    <div className="text-sm text-muted-foreground">{r.label}</div>
-                    <div className="text-lg font-semibold">{formatNumber(r.amount)}</div>
+                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">{r.label}</div>
+                    <div className="text-xl font-bold text-gray-900 mt-1">{formatNumber(r.amount)}</div>
                   </div>
-                  <div className={`text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                    {isPositive ? <TrendingUp className="inline-block mr-1 w-4 h-4 text-green-600" /> : <TrendingDown className="inline-block mr-1 w-4 h-4 text-red-600" />}
+                  <div
+                    className={`text-sm font-semibold flex items-center gap-1 px-2 py-1 rounded-full ${
+                      isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                    }`}
+                  >
+                    {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                     {change}
                   </div>
                 </div>
 
-                <div style={{ height: 96 }} className="mt-2">
+                <div style={{ height: 140 }} className="mt-3 relative">
                   {seriesArr ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={seriesArr} margin={{ top: 6, right: 12, left: 0, bottom: 6 }}>
-                        <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip formatter={(value) => [value, '']} />
-                        <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={{ r: 2 }} />
+                      <LineChart data={seriesArr} margin={{ top: 8, right: 16, left: -20, bottom: 8 }}>
+                        <defs>
+                          <linearGradient id={`gradient-${title}-${i}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+                            <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+
+                        <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.08)" vertical={true} />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} tickLine={false} />
+                        <YAxis tick={{ fontSize: 12 }} tickLine={false} />
+
+                        <Tooltip
+                          content={<FixedTooltipInside />}
+                          cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '4 4' }}
+                        />
+
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          stroke={color}
+                          strokeWidth={2.5}
+                          fill={`url(#gradient-${title}-${i})`}
+                          dot={{ r: 2, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
+                          activeDot={{ r: 4, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
+                          isAnimationActive={true}
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   ) : null}
