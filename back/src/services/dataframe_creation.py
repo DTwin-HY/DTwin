@@ -2,75 +2,89 @@ import os
 import json
 
 import pandas as pd
-from langchain.messages import ToolMessage, HumanMessage
+from langchain.messages import HumanMessage
 from langchain.tools import ToolRuntime, tool
-from langgraph.types import Command
 from langchain.agents import create_agent
 
 from ..utils.csv_to_pd import csv_to_pd  # temp
 from .sql_agent import sql_agent_tool
+from ..utils.mock_weather import thirty_day_weather_mock
+from .mcp_client import mcp_agent_tool
 
-def create_product_sales_data(rows: int = 30):
-    """Generate (by default 30 rows of) daily product data for simulation testing."""
-    np.random.seed(42)  # same numbers each run, for reproducibility
-
-    sales = np.random.randint(70, 200, size=rows)
-    price = np.round(np.random.uniform(10.0, 15.0, size=30), 2)
-    customers = np.random.randint(40, 100, size=rows)
-    sunny = np.random.choice([0, 1], size=rows).astype(bool)
-
-    # Combine into a dataframe
-
-    df = pd.DataFrame(
-        {
-            "sales": sales,
-            "price": price,
-            "customers": customers,
-            "sunny": sunny,
-        }
-    )
-    print("create_product_sales_data() generated DataFrame:", df.shape)
-    return df
+@tool
+def weather_tool() -> str:
+    """
+    Tool to return weather data as JSON string.
+    """
+    return "error while fetching weather data"
 
 @tool
 def create_dataframe_tool(
-    json_data: str,
-    runtime: ToolRuntime
+    sales_json: str,
+    runtime: ToolRuntime,
+    weather_json: str = None
 ) -> str:
     """
-    Create a DataFrame from JSON data and save as CSV.
+    Create a DataFrame by combining sales data and weather data, then save as CSV.
     
     Parameters:
-    json_data: JSON string containing array of objects with the data
+    sales_json: JSON string with sales data from database
+    weather_json: JSON string with weather data from external API
     
     Returns path to the saved CSV file.
     """
     if not os.path.exists("dataframes"):
         os.makedirs("dataframes")
     file_path = f"dataframes/dataframe_{runtime.tool_call_id}.csv"
+    
+    print("creating dataframe")
+    print(weather_json)
     try:
-        # Parse JSON data
-        data = json.loads(json_data) if isinstance(json_data, str) else json_data
+        # Parse both JSON inputs
+        json_data = json.loads(sales_json) if isinstance(sales_json, str) else sales_json
         
-        # Create DataFrame
-        df = pd.DataFrame(data)
-        
+        # Create DataFrames
+        df_sales = pd.DataFrame(json_data)
+
+        if weather_json:
+            if weather_json == "MOCK_WEATHER":
+                weather_json = json.dumps(thirty_day_weather_mock())
+            else:
+                weather_data = json.loads(weather_json) if isinstance(weather_json, str) else weather_json
+                df_weather = pd.DataFrame(weather_data)
+
+                # Convert timestamp to date for merging
+                if 'timestamp' in df_sales.columns:
+                    df_sales['date'] = pd.to_datetime(df_sales['timestamp']).dt.date
+                
+                # Convert weather date string to date
+                if 'date' in df_weather.columns:
+                    df_weather['date'] = pd.to_datetime(df_weather['date']).dt.date
+                
+                # Merge on date
+                df_final = pd.merge(
+                    df_sales, 
+                    df_weather[['date', 'sunny']], 
+                    on='date', 
+                    how='left'
+                )
+        else:
+            df_final = df_sales
+
         # Save to CSV
-        df.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")
+        df_final.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")
         
-        print(f"[create_dataframe_tool] DataFrame saved to {file_path}, shape {df.shape}")
+        print(f"[create_dataframe_tool] Combined DataFrame saved to {file_path}, shape {df_final.shape}")
         return f"DataFrame created and saved to: {file_path}"
         
     except Exception as e:
-        print(f"[create_dataframe_tool] Error: {e}, creating mock data")
-        df = create_product_sales_data()
-        df.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")
-        return f"Error creating DataFrame from JSON. Created mock data instead at: {file_path}"
+        print(f"[create_dataframe_tool] Error: {e}")
+        return f"Error creating DataFrame: {str(e)}"
 
 dataframe_agent = create_agent(
     name="dataframe_agent",
     model="openai:gpt-4o-mini",
-    tools=[sql_agent_tool, create_dataframe_tool],
+    tools=[sql_agent_tool, create_dataframe_tool, weather_tool],
     system_prompt=(
         "You are an agent responsible for creating dataframes for sales analysis. "
         "Dataframes are created from REAL DATA THAT IS ALRADY IN THE DATABASE. USE THE SQL AGENT TOOL TO FETCH THE DATA. "
@@ -78,8 +92,9 @@ dataframe_agent = create_agent(
         "1. First, use sql_agent_tool to fetch the required data from the database. "
         "   Ask the SQL agent to return data as JSON."
         "   Give the prompt in natural language to the sql agent, it will generate the query"
-        "2. Then, pass the JSON result to create_dataframe_tool to save it as a CSV file. "
-        "3. Return the file path to the user."
+        "2. If user asks for weather data, fetch it from weather_tool as JSON."
+        "3. Then, pass the JSON result to create_dataframe_tool to save it as a CSV file. If weather data is needed butnot provided, give \"MOCK_WEATHER\" as weather_json parameter."
+        "4. Return the file path to the user."
         " DO NOT MAKE UP ANY DATA YOURSELF"
     ),
 )
