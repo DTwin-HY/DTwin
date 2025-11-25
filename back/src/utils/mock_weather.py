@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 import json
 
 thirty_day_weather_mock = json.dumps([
+=======
+thirty_day_weather_mock = [
+>>>>>>> 2ba183f (Add mock weather data)
   {
     "date": "25.11.2025",
     "location": "Helsinki",
@@ -152,4 +156,7 @@ thirty_day_weather_mock = json.dumps([
     "sunny": "True"
   }
 ]
+<<<<<<< HEAD
 )
+=======
+>>>>>>> 2ba183f (Add mock weather data)
