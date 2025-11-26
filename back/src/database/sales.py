@@ -14,7 +14,7 @@ def fetch_sales_data(start, end):
             COALESCE(SUM(quantity), 0) AS sales,
             COUNT(DISTINCT transaction_id) AS transactions
         FROM sales
-        WHERE timestamp BETWEEN :start_date AND :end_date;
+        WHERE date BETWEEN :start_date AND :end_date;
     """
     )
     try:

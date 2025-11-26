@@ -41,7 +41,7 @@ class Sale(db.Model):
     transaction_id = db.Column(db.String(36), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=True)
 
 
