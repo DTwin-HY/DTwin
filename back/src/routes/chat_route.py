@@ -7,8 +7,10 @@ from ..database.supervisor_db import get_chats_by_user
 from ..index import app
 
 
-# Muuttaa SQLAlchemy-mallin dictiksi, mukaan lukien päivämäärät ISO-muotoon
 def _model_to_dict(obj):
+    """
+    Changes SQLAlchemy-model to dict, including dates to ISO form.
+    """
     if hasattr(obj, "to_dict"):
         return obj.to_dict()
     data = {}
@@ -23,6 +25,9 @@ def _model_to_dict(obj):
 @app.get("/api/fetch_chats")
 @login_required
 def fetch_chats():
+    """
+    Fetches chats for the current user.
+    """
     user_id = current_user.id
     chats = get_chats_by_user(user_id)
     return jsonify({"chats": [_model_to_dict(c) for c in chats]})

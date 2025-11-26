@@ -14,7 +14,7 @@ def load_user(user_id):
 @app.post("/api/signup")
 def signup():
     """
-    create a new user and log them in
+    Create a new user and log them in.
     """
     data = request.json
     username = data["username"]
@@ -32,7 +32,7 @@ def signup():
 @app.post("/api/signin")
 def signin():
     """
-    log in an existing user
+    Log in an existing user.
     """
     data = request.get_json()
     username = data.get("username")
@@ -55,7 +55,7 @@ def signin():
 @login_required
 def logout():
     """
-    log out the current user
+    Log out the current user.
     """
     logout_user()
     return jsonify({"message": "Logged out successfully"})
@@ -64,7 +64,7 @@ def logout():
 @app.get("/api/check_auth")
 def check_auth():
     """
-    check if the user is logged in
+    Check if the user is logged in.
     """
     if current_user.is_authenticated:
         return jsonify({"authenticated": True, "user": {"username": current_user.username}})

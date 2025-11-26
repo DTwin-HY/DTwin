@@ -10,7 +10,9 @@ from ..utils.csv_to_pd import csv_to_pd  # temp
 
 
 def create_product_sales_data(rows: int = 30):
-    """Generate (by default 30 rows of) daily product data for simulation testing."""
+    """
+    Generate (by default 30 rows of) daily product data for simulation testing.
+    """
     np.random.seed(42)  # same numbers each run, for reproducibility
 
     sales = np.random.randint(70, 200, size=rows)

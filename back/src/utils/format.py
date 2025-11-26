@@ -41,7 +41,7 @@ def format_chunk(chunk, last_message=False):
 
 def extract(message):
     """
-    return only the content and tool calls from an AI/tool message
+    Return only the content and tool calls from an AI/tool message.
     """
     content = getattr(message, "content", "")
     tool_calls = getattr(message, "tool_calls", [])

@@ -29,7 +29,9 @@ logger.add(
 
 
 def _run_in_new_loop(coroutine):
-    """Run a coroutine in a new event loop in a thread pool."""
+    """
+    Run a coroutine in a new event loop in a thread pool.
+    """
     executor = ThreadPoolExecutor(max_workers=4)
 
     def run():
@@ -44,7 +46,9 @@ def _run_in_new_loop(coroutine):
 
 
 async def create_mcp_agent():
-    """Create MCP agent connected to weather server."""
+    """
+    Create MCP agent connected to weather server.
+    """
     from langchain_openai import ChatOpenAI
 
     client = MultiServerMCPClient(
@@ -62,7 +66,9 @@ async def create_mcp_agent():
 
 
 async def _extract_weather_data_with_llm(narrative_text: str, original_prompt: str) -> WeatherData:
-    """Parse narrative weather response into structured WeatherData using LLM."""
+    """
+    Parse narrative weather response into structured WeatherData using LLM.
+    """
     from langchain_openai import ChatOpenAI
 
     llm = ChatOpenAI(model="gpt-4o-mini", model_kwargs={"response_format": {"type": "json_object"}})
@@ -142,7 +148,9 @@ async def invoke_mcp_agent(prompt: str) -> WeatherData:
 
 @tool
 def mcp_agent_tool(prompt: str) -> str:
-    """LangChain tool wrapper for MCP agent. Returns weather data as JSON string."""
+    """
+    LangChain tool wrapper for MCP agent. Returns weather data as JSON string.
+    """
     try:
         result = _run_in_new_loop(invoke_mcp_agent(prompt))
         logger.info("MCP agent result: {}", result)

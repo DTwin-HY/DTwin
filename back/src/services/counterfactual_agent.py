@@ -31,7 +31,9 @@ class CounterfactualDataManager:
         base_data: Dict[str, Any],
         modifications: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Create a new counterfactual scenario by modifying base data."""
+        """
+        Create a new counterfactual scenario by modifying base data.
+        """
         cf_data = copy.deepcopy(base_data)
 
         self._apply_modifications_recursive(cf_data, modifications)
@@ -57,7 +59,9 @@ class CounterfactualDataManager:
         data: Any,
         modifications: Dict[str, Any]
     ) -> None: # pragma: no cover
-        """Recursively apply modifications to handle nested data structures."""
+        """
+        Recursively apply modifications to handle nested data structures.
+        """
         if isinstance(data, dict):
             for key, modification in modifications.items():
                 if key in data and isinstance(modification, dict) and "operation" in modification:
@@ -85,7 +89,9 @@ class CounterfactualDataManager:
         key: str,
         operation: Dict[str, Any]
     ) -> None:
-        """Apply specific operations like percentage increase, set value, etc."""
+        """
+        Apply specific operations like percentage increase, set value, etc.
+        """
         op_type = operation.get("operation")
         value = operation.get("value")
 
@@ -114,7 +120,9 @@ class CounterfactualDataManager:
             pass
 
     def _recalculate_dependent_metrics(self, data: Dict[str, Any]) -> None:
-        """Recalculate dependent metrics after modifications."""
+        """
+        Recalculate dependent metrics after modifications.
+        """
         if "data" in data and isinstance(data["data"], list):
             for item in data["data"]:
                 if isinstance(item, dict):
@@ -122,7 +130,9 @@ class CounterfactualDataManager:
         self._recalculate_item_metrics(data) # pragma: no cover
 
     def _recalculate_item_metrics(self, item: Dict[str, Any]) -> None: # pragma: no cover"
-        """Helper to recalculate metrics for a single dictionary item"""
+        """
+        Helper to recalculate metrics for a single dictionary item
+        """
         if "total_revenue" in item and "total_items_sold" in item:
             try:
                 revenue = float(item["total_revenue"])
@@ -144,7 +154,9 @@ class CounterfactualDataManager:
                 pass
 
     def cache_real_data(self, data_key: str, data: Dict[str, Any]) -> None:
-        """Cache real data with hash for comparison"""
+        """
+        Cache real data with hash for comparison
+        """
         self.real_data_cache[data_key] = {
             "data": data,
             "hash": hash(json.dumps(data, sort_keys=True, default=str)),
@@ -165,7 +177,9 @@ class CounterfactualAgent:
         self,
         request: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Handle counterfactual requests with proper data separation and analysis."""
+        """
+        Handle counterfactual requests with proper data separation and analysis.
+        """
         try:
             base_query = request.get("base_query")
             analysis_type = request.get("analysis_type", "sql")
@@ -217,7 +231,9 @@ class CounterfactualAgent:
             }
 
     def _get_base_data(self, query: str, analysis_type: str) -> Dict[str, Any]:
-        """Get base real data using appropriate analysis tool"""
+        """
+        Get base real data using appropriate analysis tool
+        """
         if analysis_type not in self.analysis_tools:
             return {"error": f"Unsupported analysis type: {analysis_type}"}
 
@@ -250,7 +266,9 @@ class CounterfactualAgent:
         cf_analysis: Dict[str, Any],
         analysis_type: str
     ) -> Dict[str, Any]:
-        """Format response with clear separation between real and counterfactual data"""
+        """
+        Format response with clear separation between real and counterfactual data
+        """
 
         real_metrics = self._extract_key_metrics(real_data, analysis_type)
         cf_metrics = self._extract_key_metrics(cf_analysis["counterfactual_data"], analysis_type)
@@ -329,7 +347,9 @@ class CounterfactualAgent:
             return {"error": f"metric extraction failed: {e}"}
 
     def _calculate_differences(self, real_metrics: Dict[str, Any], cf_metrics: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-        """Calculate differences between real and counterfactual metrics"""
+        """
+        Calculate differences between real and counterfactual metrics
+        """
         differences = {}
         for key in real_metrics:
             if key in cf_metrics and isinstance(real_metrics[key], (int, float)) and isinstance(cf_metrics[key], (int, float)):

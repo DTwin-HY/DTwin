@@ -30,6 +30,8 @@ research_agent = create_agent(
 
 @tool
 def research_agent_tool(prompt: str) -> str:
-    """Wraps research_agent as a tool."""
+    """
+    Wraps research_agent as a tool.
+    """
     result = research_agent.invoke({"messages": [HumanMessage(content=prompt)]})
     return result["messages"][-1].content  # pragma: no cover

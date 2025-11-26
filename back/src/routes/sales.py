@@ -1,7 +1,6 @@
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from flask import Flask, jsonify, request
+from flask import jsonify, request
 
 from ..database.sales import fetch_sales_data
 from ..extensions import db
@@ -10,6 +9,9 @@ from ..index import app
 
 @app.get("/api/sales-data")
 def get_sales_data():
+    """
+    Fetches sales data for the desired period.
+    """
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
 

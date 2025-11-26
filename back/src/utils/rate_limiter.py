@@ -14,7 +14,7 @@ class RateLimiter:
 
     def check(self):
         """
-        check if a new call can be made, raises RuntimeError if limit is exceeded
+        Check if a new call can be made, raises RuntimeError if limit is exceeded.
         """
         now = time.time()
         while self.call_times and now - self.call_times[0] > self.interval:

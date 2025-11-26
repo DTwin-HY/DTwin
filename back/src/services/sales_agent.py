@@ -78,7 +78,9 @@ class SalesTool:
         end_date: str | None = None,
         group_by: str = "month",
     ):
-        """Return key sales metrics: total revenue, total items sold, best-selling product."""
+        """
+        Return key sales metrics: total revenue, total items sold, best-selling product.
+        """
         if start_date and not end_date:
             end_date = start_date
 
@@ -132,6 +134,9 @@ class SalesTool:
         }
 
     def create_sales_graph(self, month: str, graph_type: str = "line"):
+        """
+        Creates sales graph for the chosen month displaying the revenue change.
+        """
         sales_data = self._fetch_sales_data(month)
         if sales_data.empty:
             return {"status": "error", "message": f"No sales data for {month}"}

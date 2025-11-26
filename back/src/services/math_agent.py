@@ -13,24 +13,31 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 class MathState(AgentState):
-    """A customized State for the math agent subgraph."""
-
+    """
+    A customized State for the math agent subgraph.
+    """
     testing_value: str
 
 
 def multiply(a: float, b: float):
-    """Multiply two numbers."""
+    """
+    Multiply two numbers.
+    """
     return a * b
 
 
 def divide(a: float, b: float):
-    """Divide two numbers."""
+    """
+    Divide two numbers.
+    """
     return a / b
 
 
 @tool
 def add(a: float, b: float, runtime: ToolRuntime[MathState]) -> Command:
-    """Tool to add numbers and update testing_value in the state."""
+    """
+    Tool to add numbers and update testing_value in the state.
+    """
     result = a + b
 
     # Command updates the math agent state (runtime is from the math agent)
@@ -63,7 +70,9 @@ math_agent = create_agent(
 
 @tool
 def math_agent_tool(prompt: str, runtime: ToolRuntime) -> Command:
-    """Wraps math_agent as a tool."""
+    """
+    Wraps math_agent as a tool.
+    """
     # Runtime refers to the parent graph (caller) runtime.
     # Parent state value is passed down to the subgraph agent through runtime.state
     result = math_agent.invoke(

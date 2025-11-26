@@ -41,7 +41,9 @@ def _get_tool(tools, name: str):
 
 
 def list_tables(_state: MessagesState) -> Dict[str, Any]:
-    """Simuloi tool-kutsun viestivirtaa ja palauttaa MessagesState-muotoisen dictin."""
+    """
+    Simulates tool-call messagestream and returns MessagesState-form dictionary.
+    """
     toolkit = _make_toolkit()
     list_tables_tool = _get_tool(toolkit.get_tools(), "sql_db_list_tables")
 
@@ -120,13 +122,15 @@ def check_query(state: MessagesState) -> Dict[str, Any]:
         [{"role": "system", "content": check_query_system_prompt}, user_message]
     )
 
-    # varmista, että tool-call id linjassa
+    # make sure that the tool-call id is in line
     response.id = state["messages"][-1].id
     return {"messages": [response]}
 
 
 def analyze_results(state: MessagesState) -> Dict[str, Any]:
-    """Analysoi query-tulokset ja muodosta lopullinen vastaus."""
+    """
+    Analyzes query results and forms the final answer.
+    """
     llm = _make_llm()
 
     system_prompt = """
@@ -146,20 +150,24 @@ def analyze_results(state: MessagesState) -> Dict[str, Any]:
 def should_continue_after_generate(
     state: MessagesState,
 ) -> Literal["check_query", "analyze_results"]:
-    """Päätä pitääkö kysely ajaa vai onko jo tuloksia analysoitavana."""
+    """
+    Decides if a query needs to be run or if there is results for analysis.
+    """
     last_message = state["messages"][-1]
 
-    # Jos LLM haluaa ajaa queryn, mene check_query:yn
+    # If LLM wants to run query, go to check_query
     if getattr(last_message, "tool_calls", None):
         return "check_query"
 
-    # Jos ei tool_calls:eja, siirry analyysiin
+    # If no tool calls, go to analysis
     return "analyze_results"
 
 
 def should_retry_query(state: MessagesState) -> Literal["generate_query", "analyze_results"]:
-    """Päätä pitääkö query ajaa uudelleen vai siirtyä analyysiin."""
-    # Laske kuinka monta kertaa query on ajettu
+    """
+    Decides if query needs to run again or move to analysis.
+    """
+    # Count how many times query has been ran
     query_count = sum(
         1
         for msg in state["messages"]
@@ -169,24 +177,26 @@ def should_retry_query(state: MessagesState) -> Literal["generate_query", "analy
     if query_count >= 2:
         return "analyze_results"
 
-    # Tarkista oliko virheitä viimeisimmässä tool-vastauksessa
+    # Check last tool-response for errors
     last_tool_message = None
     for msg in reversed(state["messages"]):
         if hasattr(msg, "type") and msg.type == "tool":
             last_tool_message = msg
             break
 
-    # Jos virheilmoitus, yritä uudelleen (max 2 kertaa)
+    # If errors, try again (max 2 times)
     if last_tool_message and "error" in str(last_tool_message.content).lower():
         return "generate_query"
 
-    # Muuten siirry analyysiin
+    # Unless move to analysis
     return "analyze_results"
 
 
 @lru_cache(maxsize=1)
 def build_sql_agent_graph():
-    """Rakenna ja käännä graafi täsmälleen kerran per prosessi."""
+    """
+    Build graph only once per process.
+    """
     toolkit = _make_toolkit()
     tools = toolkit.get_tools()
 
@@ -202,13 +212,13 @@ def build_sql_agent_graph():
     builder.add_node("run_query", run_query_node)
     builder.add_node("analyze_results", analyze_results)
 
-    # Lineaarinen polku alkuun
+    # Linear path to the start
     builder.add_edge(START, "list_tables")
     builder.add_edge("list_tables", "call_get_schema")
     builder.add_edge("call_get_schema", "get_schema")
     builder.add_edge("get_schema", "generate_query")
 
-    # Päätös: aja query vai analysoi tulokset?
+    # Decision: run query or analyse results
     builder.add_conditional_edges(
         "generate_query",
         should_continue_after_generate,
@@ -217,14 +227,14 @@ def build_sql_agent_graph():
 
     builder.add_edge("check_query", "run_query")
 
-    # Päätös query-ajon jälkeen: yritä uudelleen vai analysoi?
+    # Decision after query: try again or analyse
     builder.add_conditional_edges(
         "run_query",
         should_retry_query,
         {"generate_query": "generate_query", "analyze_results": "analyze_results"},
     )
 
-    # Analyysi päättyy aina
+    # Analysis ends the process
     builder.add_edge("analyze_results", END)
 
     return builder.compile()
