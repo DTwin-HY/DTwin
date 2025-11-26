@@ -47,7 +47,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
                 storage_agent_tool,
                 sales_agent_tool,
                 dataframe_agent_tool,
-                csv_dataframe_test_tool,
+                # csv_dataframe_test_tool,
                 counterfactual_analysis_tool,
                 simulation_agent_tool,
             ],

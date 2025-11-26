@@ -46,11 +46,7 @@ class SalesTool:
         Fetch only the required subset of sales data from the database.
         """
         query = db.session.query(
-<<<<<<< HEAD
             Sale.date.label("date"),
-=======
-            Sale.timestamp.label("date"),
->>>>>>> 6c89492 (fix llm prompts)
             Sale.product_id.label("product"),
             Sale.quantity.label("items_sold"),
             Sale.amount.label("revenue"),

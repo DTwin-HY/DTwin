@@ -11,8 +11,6 @@ from ..utils.csv_to_pd import csv_to_pd  # temp
 from .sql_agent import sql_agent_tool
 from .mcp_client import mcp_agent_tool
 
-
-
 @tool
 def create_dataframe_tool(
     sales_data: str,
@@ -91,9 +89,8 @@ dataframe_agent = create_agent(
         "1. First, use sql_agent_tool to fetch the required data from the database. "
         "   Ask the SQL agent to return data as JSON."
         "   Give the prompt in natural language to the sql agent, it will generate the query"
-        "2. If user asks for weather data, fetch it from weather_tool as JSON."
-        "3. Then, pass the JSON result to create_dataframe_tool to save it as a CSV file. If weather data is needed butnot provided, give \"MOCK_WEATHER\" as weather_json parameter."
-        "4. Return the file path to the user."
+        "2. If user asks for weather data, fetch it from mcp_agent_tool."
+        "3. Return the file path to the user."
         " DO NOT MAKE UP ANY DATA YOURSELF"
     ),
 )
