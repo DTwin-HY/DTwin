@@ -70,7 +70,7 @@ def generate_sales_data(num_days: int, output_path: Path):
                     "transaction_id": str(uuid.uuid4()),
                     "product_id": product_id,
                     "quantity": items_sold,
-                    "timestamp": datetime.combine(date, datetime.min.time()),
+                    "date": datetime.combine(date, datetime.min.time()),
                     "amount": revenue,
                 }
             )
@@ -94,7 +94,7 @@ def generate_sales_data(num_days: int, output_path: Path):
     sales_df = pd.DataFrame(
         [
             {
-                "date": record["timestamp"].date(),
+                "date": record["date"].date(),
                 "product": record["product_id"],
                 "items_sold": record["quantity"],
                 "unit_price": float(prices[record["product_id"]]),

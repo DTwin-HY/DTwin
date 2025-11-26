@@ -46,7 +46,7 @@ class SalesTool:
         Fetch only the required subset of sales data from the database.
         """
         query = db.session.query(
-            Sale.timestamp.label("date"),
+            Sale.date.label("date"),
             Sale.product_id.label("product"),
             Sale.quantity.label("items_sold"),
             Sale.amount.label("revenue"),
@@ -54,11 +54,11 @@ class SalesTool:
 
         if start_date:
             start_date = pd.to_datetime(start_date)
-            query = query.filter(Sale.timestamp >= start_date)
+            query = query.filter(Sale.date >= start_date)
 
         if end_date:
             end_date = pd.to_datetime(end_date) + timedelta(days=1) - timedelta(seconds=1)
-            query = query.filter(Sale.timestamp <= end_date)
+            query = query.filter(Sale.date <= end_date)
 
         if product:
             query = query.filter(Sale.product_id == product)

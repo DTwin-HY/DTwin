@@ -261,7 +261,7 @@ class CounterfactualAgent:
             "status": "success",
             "scenario_id": cf_scenario["scenario_id"],
             "scenario_name": cf_scenario["metadata"]["name"],
-            "timestamp": datetime.now().isoformat(),
+            "date": datetime.now().isoformat(),
             "real_data": {
                 "summary": real_metrics,
                 "full_data_reference": "cached_real_data"
