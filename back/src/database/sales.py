@@ -61,12 +61,12 @@ def query_sales(start,end):
             db.session.rollback()
             raise
 
-def query_weekly_sales(start, end):
+def query_timeperiod_sales(start, end, time):
         
         sql = text(
                 """
                 SELECT 
-	                date_part('week', timestamp) as week,
+	                date_part(:time_interval, timestamp) as timeperiod,
 	                SUM(quantity) as quantity,
 	                SUM(amount)  as revenue 
                 FROM 
@@ -74,13 +74,13 @@ def query_weekly_sales(start, end):
                 WHERE 
 	                timestamp BETWEEN :start_date AND :end_date
                 GROUP BY 
-	                week
+	                timeperiod
                 ORDER BY
-                	week; 
+                	timeperiod; 
                 """
         )
         try:
-            result = db.session.execute(sql, {"start_date":start, "end_date":end}).fetchall()
+            result = db.session.execute(sql, {"start_date":start, "end_date":end, 'time_interval':time}).fetchall()
 
             return result
 
@@ -113,24 +113,24 @@ def query_transactions(start, end):
             db.session.rollback()
             raise
         
-def query_weekly_transactions(start, end):
+def query_timeperiod_transactions(start, end, time):
         sql = text(
                 """
                 SELECT 
-                        date_part('week', timestamp) as week, 
+                        date_part(:time_interval, timestamp) as timeperiod, 
                         COUNT(transaction_id) as transactions
                 FROM 
                         sales 
                 WHERE 
                         timestamp BETWEEN :start_date AND :end_date 
                 GROUP BY 
-                        week 
+                        timeperiod 
                 ORDER BY 
-                        week;
+                        timeperiod;
                 """
                 )
         try:
-            result = db.session.execute(sql, {"start_date":start, "end_date":end}).fetchall()
+            result = db.session.execute(sql, {"start_date":start, "end_date":end, 'time_interval': time}).fetchall()
             return result
 
         except Exception:

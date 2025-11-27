@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from ..index import app
-from ..database.sales import query_transactions, query_sales, query_weekly_sales, query_weekly_transactions
+from ..database.sales import query_transactions, query_sales, query_timeperiod_sales, query_timeperiod_transactions
 
 
 SALES_GRAPH_DATA = {
@@ -95,16 +95,15 @@ def get_quarter_dates() -> dict:
         'previous_previous': (previous_previous_start.strftime('%Y-%m-%d'), previous_previous_end.strftime('%Y-%m-%d'))
     }
 
-def create_raw_graph_data(start, end, type) -> list:
+def create_weekly_graph_data(start, end, type, time_interval) -> list:
         graph_data = []
         if type == 'transactions':
-                query_data = query_weekly_transactions(start, end)
+                query_data = query_timeperiod_transactions(start, end, time_interval)
         else:
-                query_data = query_weekly_sales(start, end)
+                query_data = query_timeperiod_sales(start, end, time_interval)
 
         for row in query_data:
                 graph_data.append(getattr(row, type))
-
 
         return graph_data
 
@@ -136,9 +135,9 @@ def build_dataset(df:pd.DataFrame, type: str):
         ytd_growth = round((this_year_total / last_year_total) -1,2)
 
         #Create graph data
-        current_graph_data = create_raw_graph_data(quarters['current'][0], quarters['current'][1], type)
-        previous_graph_data = create_raw_graph_data(quarters['previous'][0], quarters['previous'][1], type)
-        ytd_graph_data = create_raw_graph_data(str(today.year) +'-01-01', todays_date, type)
+        current_graph_data = create_weekly_graph_data(quarters['current'][0], quarters['current'][1], type, 'week')
+        previous_graph_data = create_weekly_graph_data(quarters['previous'][0], quarters['previous'][1], type, 'week')
+        ytd_graph_data = create_weekly_graph_data(str(today.year) +'-01-01', todays_date, type, 'month')
 
 
 
