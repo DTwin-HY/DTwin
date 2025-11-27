@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -9,30 +7,19 @@ class WeatherData(BaseModel):
     Handles multiple possible field names from different MCP implementations.
     """
 
+    date: str = Field(..., description="Date in dd-mm-YYYY format")
     location: str = Field(..., description="Location name or city")
-    temperature: float = Field(..., description="Temperature in Celsius")
-    humidity: Optional[float] = Field(None, description="Relative humidity percentage")
-    condition: Optional[str] = Field(None, description="Weather description (e.g., 'light snow')")
+    sunny: bool = Field(..., description="Whether the day is considered sunny")
 
     @model_validator(mode="before")
     def normalize_fields(cls, values):
-        # Normalize alternative MCP field names
         if "city" in values and "location" not in values:
             values["location"] = values.pop("city")
-        if "temperature_celsius" in values and "temperature" not in values:
-            values["temperature"] = values.pop("temperature_celsius")
-        if "humidity_percent" in values and "humidity" not in values:
-            values["humidity"] = values.pop("humidity_percent")
-        if "description" in values and "condition" not in values:
-            values["condition"] = values.pop("description")
+        if "sunny" in values and isinstance(values["sunny"], str):
+            values["sunny"] = values["sunny"].lower() in ("true", "1", "yes")
         return values
 
     class Config:
         json_schema_extra = {
-            "example": {
-                "location": "Helsinki",
-                "temperature": -2.5,
-                "humidity": 85,
-                "condition": "light snow",
-            }
+            "example": {"date": "25-11-2025", "location": "Helsinki", "sunny": False}
         }
