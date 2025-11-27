@@ -1,6 +1,6 @@
 from flask import jsonify
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 
 from ..index import app
@@ -114,25 +114,41 @@ def build_dataset(df:pd.DataFrame, type: str):
         todays_date = today.strftime('%Y-%m-%d')
         end_of_previous_year = str(today.year-1) + '-12-31'
 
-        # Set time slices
+        #Calculate a comparable time slice of the previous quarter for growth % comparison
+        time_into_quarter = (today - datetime.strptime(quarters['current'][0], '%Y-%m-%d')).days        
+        prev_q_comparable_length = datetime.strftime((datetime.strptime(quarters['previous'][0],'%Y-%m-%d') + timedelta(days=time_into_quarter)), '%Y-%m-%d')
+
+        #Calculate a comparable time slice of the previous year for ytd growth % comparison data
+        time_into_year = (today - datetime(today.year, 1, 1)).days
+        prev_year_comp_length = datetime.strftime(datetime(today.year-1, 1, 1)+timedelta(days=time_into_year), '%Y-%m-%d')
+
+        # Create timeslices from dataframe
         current_quarter = df[(df.timestamp >= quarters['current'][0]) & (df.timestamp <=quarters['current'][1])]
+        
+        prev_q_comparable = df[(df.timestamp >= quarters['previous'][0]) & (df.timestamp <= prev_q_comparable_length)]
         previous_quarter = df[(df.timestamp >= quarters['previous'][0]) & (df.timestamp <=quarters['previous'][1])]
+        
         previous_previous_quarter = df[(df.timestamp >= quarters['previous_previous'][0]) & (df.timestamp <=quarters['previous_previous'][1])]
         
         this_year = df[(df.timestamp > end_of_previous_year)]
+
+        last_year_comparable = df[df.timestamp <= prev_year_comp_length]
         last_year = df[(df.timestamp <= end_of_previous_year)]
 
-        # Calc total revenues per time period
+        # Calc totals for type per time period
         current_q_total = int(current_quarter[type].sum())
+        prev_q_comparable_total = int(prev_q_comparable[type].sum()) #Just used for current period growth % calc
+
         previous_q_total = int(previous_quarter[type].sum())
         previous_previous_q_total = int(previous_previous_quarter[type].sum())
+
         this_year_total = int(this_year[type].sum())
-        last_year_total = int(last_year[type].sum())
+        last_year_comparable_total = int(last_year_comparable[type].sum())
 
         #total growth per time period
-        qurrent_q_r_growth = round((current_q_total / previous_q_total)-1,2)
+        qurrent_q_r_growth = round((current_q_total / prev_q_comparable_total)-1,2)
         previous_q_r_growth = round((previous_q_total / previous_previous_q_total)-1,2)
-        ytd_growth = round((this_year_total / last_year_total) -1,2)
+        ytd_growth = round((this_year_total / last_year_comparable_total) -1,2)
 
         #Create graph data
         current_graph_data = create_weekly_graph_data(quarters['current'][0], quarters['current'][1], type, 'week')
