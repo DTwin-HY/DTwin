@@ -78,16 +78,37 @@ const Dashboard = () => {
         </div>
 
         <div
-          className={`
-            grid gap-4 transition-all duration-300 ease-in-out
-            ${animatingCompact ? 'opacity-0' : 'opacity-100'}
-            ${isCollapsed ? 'max-h-0 p-0 opacity-0' : 'max-h-[900px] p-4'}
-            ${stageCompact ? 'grid-cols-1 md:grid-cols-3' : 'md:grid-cols-3'}
-          `}
+          className={`grid gap-4 p-4 ${stageCompact ? 'grid-cols-1 md:grid-cols-3' : 'md:grid-cols-3'}`}
+          style={{
+            maxHeight: isCollapsed ? '0' : '1000px',
+            opacity: isCollapsed ? 0 : 1,
+            overflow: 'hidden',
+            transition: 'max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease',
+            paddingTop: isCollapsed ? '0' : '1rem',
+            paddingBottom: isCollapsed ? '0' : '1rem',
+          }}
         >
-          <MetricCard title="Sales" metric={sales} compact={stageCompact} color="hsl(220 90% 56%)" dotOutlineColor="#1E3A8A"/>
-          <MetricCard title="Transactions" metric={transactions} compact={stageCompact} color="hsl(140 60% 40%)" dotOutlineColor="#166534" />
-          <MetricCard title="Revenue" metric={revenue} compact={stageCompact} color="hsl(30 90% 50%)" dotOutlineColor="#9A3412"/>
+          <MetricCard
+            title="Sales"
+            metric={sales}
+            compact={stageCompact}
+            color="hsl(220 90% 56%)"
+            dotOutlineColor="#3a5cb8ff"
+          />
+          <MetricCard
+            title="Transactions"
+            metric={transactions}
+            compact={stageCompact}
+            color="hsl(140 60% 40%)"
+            dotOutlineColor="#0d893dff"
+          />
+          <MetricCard
+            title="Revenue"
+            metric={revenue}
+            compact={stageCompact}
+            color="hsl(30 90% 50%)"
+            dotOutlineColor="#c96717ff"
+          />
         </div>
       </div>
     </div>
