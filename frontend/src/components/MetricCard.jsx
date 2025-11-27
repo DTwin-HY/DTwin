@@ -125,38 +125,46 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                 </div>
 
                 <div style={{ height: 140 }} className="mt-3 relative">
-                  {seriesArr ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={seriesArr} margin={{ top: 8, right: 16, left: -20, bottom: 8 }}>
-                        <defs>
-                          <linearGradient id={`gradient-${title}-${i}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={color} stopOpacity={0.3} />
-                            <stop offset="100%" stopColor={color} stopOpacity={0.02} />
-                          </linearGradient>
-                        </defs>
-
-                        <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.08)" vertical={true} />
-                        <XAxis dataKey="name" tick={{ fontSize: 12 }} tickLine={false} />
-                        <YAxis tick={{ fontSize: 12 }} tickLine={false} domain={['auto', 'auto']} />
-
-                        <Tooltip
-                          content={<FixedTooltipInside />}
-                          cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '4 4' }}
-                        />
-
-                        <Line
-                          type="monotone"
-                          dataKey="value"
-                          stroke={color}
-                          strokeWidth={2.5}
-                          fill={`url(#gradient-${title}-${i})`}
-                          dot={{ r: 0.8, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
-                          activeDot={{ r: 4, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
-                          isAnimationActive={true}
-                        />
-                      </LineChart>
+                  {seriesWithXPos && (
+                    <ResponsiveContainer width="100%" height={140}>
+                      {r.label === 'YTD' ? (
+                        <BarChart data={seriesWithXPos} margin={{ top: 20, right: 7, left: 7, bottom: 1 }}>
+                          <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.08)" vertical />
+                          <XAxis dataKey="xPos" tick={{ fontSize: 12 }} tickLine={false} tickFormatter={(val, idx) => ytdMonths[idx] || ''} />
+                          <YAxis hide={false} tick={false} axisLine={false} tickLine={false} domain={computeCenteredDomain(seriesArr.map(d => d.value))} />
+                          <Tooltip content={<FixedTooltipInside />} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
+                          <Bar dataKey="value" fill={color} />
+                        </BarChart>
+                      ) : (
+                        <LineChart data={seriesWithXPos} margin={{ top: 50, right: 7, left: 7, bottom: 1 }}>
+                          <defs>
+                            <linearGradient id={`gradient-${title}-${i}`} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+                              <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.08)" vertical />
+                          <XAxis
+                            dataKey="xPos" tick={{ fontSize: 12 }} tickLine={false}
+                            tickFormatter={(val, idx) => {
+                              if (!quarterMonths) return MONTHS[idx % 12];
+                              const monthIndex = Math.floor(idx / (seriesArr.length / quarterMonths.length));
+                              return idx % Math.ceil(seriesArr.length / quarterMonths.length) === 0 ? quarterMonths[monthIndex] : '';
+                            }}
+                          />
+                          <YAxis hide={false} tick={false} axisLine={false} tickLine={false} domain={computeCenteredDomain(seriesArr.map(d => d.value))} />
+                          <Tooltip content={<FixedTooltipInside />} cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '4 4' }} />
+                          <Line
+                            type="monotone" dataKey="value" stroke={color} strokeWidth={2.5}
+                            fill={`url(#gradient-${title}-${i})`}
+                            dot={{ r: 0.8, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
+                            activeDot={{ r: 4, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
+                            isAnimationActive
+                          />
+                        </LineChart>
+                      )}
                     </ResponsiveContainer>
-                  ) : null}
+                  )}
                 </div>
               </div>
             );
