@@ -1,123 +1,71 @@
-import React from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar } from 'recharts';
 
 const formatNumber = (num) => {
-  if (num === null || num === undefined) return '—';
-  if (Math.abs(num) >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-  if (Math.abs(num) >= 1000) return `${(num / 1000).toFixed(1)}k`;
+  if (num == null) return '—';
+  if (Math.abs(num) >= 1e6) return `${(num / 1e6).toFixed(1)}M`;
+  if (Math.abs(num) >= 1e3) return `${(num / 1e3).toFixed(1)}k`;
   return String(num);
 };
 
 const buildRowsFromMetric = (metric) => {
   if (!metric) return [];
+  const { current_quarter, previous_quarter, ytd, raw_graph_data } = metric;
   return [
-    {
-      label: 'Current quarter',
-      amount: metric.current_quarter?.amount,
-      growth: metric.current_quarter?.growth,
-      series: metric.raw_graph_data ? metric.raw_graph_data.current_quarter : null,
-    },
-    {
-      label: 'Previous quarter',
-      amount: metric.previous_quarter?.amount,
-      growth: metric.previous_quarter?.growth,
-      series: metric.raw_graph_data ? metric.raw_graph_data.previous_quarter : null,
-    },
-    {
-      label: 'YTD',
-      amount: metric.ytd?.amount,
-      growth: metric.ytd?.growth,
-      series: metric.raw_graph_data ? metric.raw_graph_data.ytd : null,
-    },
+    { label: 'Current quarter', amount: current_quarter?.amount, growth: current_quarter?.growth, series: raw_graph_data?.current_quarter },
+    { label: 'Previous quarter', amount: previous_quarter?.amount, growth: previous_quarter?.growth, series: raw_graph_data?.previous_quarter },
+    { label: 'YTD', amount: ytd?.amount, growth: ytd?.growth, series: raw_graph_data?.ytd },
   ];
 };
 
-const buildCombinedSeries = (raw_graph_data) => {
-  if (!raw_graph_data) return null;
-  const idxs = Array.from(
-    new Set([
-      ...Object.keys(raw_graph_data?.current_quarter || {}),
-      ...Object.keys(raw_graph_data?.previous_quarter || {}),
-      ...Object.keys(raw_graph_data?.ytd || {}),
-    ])
-  ).sort((a, b) => Number(a) - Number(b));
+const seriesObjToArray = (obj) => 
+  obj ? Object.keys(obj).sort((a, b) => +a - +b).map(k => ({ name: k, value: obj[k] })) : null;
 
-  return idxs.map((k) => ({
-    name: String(k),
-    current: raw_graph_data.current_quarter?.[k] ?? null,
-    previous: raw_graph_data.previous_quarter?.[k] ?? null,
-    ytd: raw_graph_data.ytd?.[k] ?? null,
-  }));
-};
-
-const seriesObjToArray = (obj) => {
-  if (!obj) return null;
-  return Object.keys(obj)
-    .sort((a, b) => Number(a) - Number(b))
-    .map((k) => ({ name: k, value: obj[k] }));
+const computeCenteredDomain = (values) => {
+  const nums = (values || []).filter(v => typeof v === 'number' && isFinite(v));
+  if (!nums.length) return ['auto', 'auto'];
+  const min = Math.min(...nums), max = Math.max(...nums);
+  if (min === max) {
+    const pad = Math.abs(min) * 0.25 || 1;
+    return [min - pad, max + pad];
+  }
+  const padding = Math.max((max - min) * 0.1, 4);
+  return [min - padding, max + padding];
 };
 
 const FixedTooltipInside = ({ active, payload, coordinate }) => {
-  if (!active || !payload || !payload.length) return null;
-  if (!coordinate) return null;
-
-  const { x, y } = coordinate;
-
+  if (!active || !payload?.[0] || !coordinate) return null;
   return (
-    <div
-      style={{
-        position: 'absolute',
-        left: x + 5,
-        top: y - 30,
-        background: 'rgba(255,255,255,0.9)',
-        padding: '2px 6px',
-        borderRadius: 4,
-        fontSize: 12,
-        pointerEvents: 'none',
-        border: '1px solid rgba(0,0,0,0.1)',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      }}
-    >
+    <div style={{
+      position: 'absolute', left: coordinate.x + 5, top: coordinate.y - 30,
+      background: 'rgba(255,255,255,0.9)', padding: '2px 6px', borderRadius: 4,
+      fontSize: 12, pointerEvents: 'none', border: '1px solid rgba(0,0,0,0.1)',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    }}>
       {payload[0].value}
     </div>
   );
 };
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const MiniSpark = ({ values = [], stroke }) => {
+  if (!values.length) return null;
+  const w = 40, h = 12, min = Math.min(...values), max = Math.max(...values), range = max - min || 1;
+  const points = values.map((v, i) => `${(i / (values.length - 1 || 1)) * w},${h - ((v - min) / range) * h}`).join(' ');
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      <polyline fill="none" stroke={stroke} strokeWidth="1.5" points={points} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+};
+
 export const MetricCard = ({ title, metric = null, compact = false, color = '#3b82f6', dotOutlineColor = '#1E3A8A' }) => {
-  const rows = metric ? buildRowsFromMetric(metric) : [];
-  const combined = metric?.raw_graph_data ? buildCombinedSeries(metric.raw_graph_data) : null;
-
   if (compact) {
-    const pct = metric?.current_quarter?.growth != null ? `${(metric.current_quarter.growth * 100).toFixed(1)}%` : '—';
-    const sparkVals = combined ? combined.map((d) => d.current) : null;
-    const isPositive = metric?.current_quarter?.growth != null ? metric.current_quarter.growth >= 0 : null;
-
-    const MiniSpark = ({ values = [], stroke = color }) => {
-      if (!values || values.length === 0) return null;
-      const w = 40;
-      const h = 12;
-      const min = Math.min(...values);
-      const max = Math.max(...values);
-      const range = max - min || 1;
-      const points = values.map((v, i) => {
-        const x = (i / (values.length - 1 || 1)) * w;
-        const y = h - ((v - min) / range) * h;
-        return `${x},${y}`;
-      });
-      return (
-        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} xmlns="http://www.w3.org/2000/svg">
-          <polyline
-            fill="none"
-            stroke={stroke}
-            strokeWidth="1.5"
-            points={points.join(' ')}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-    };
+    const combined = Object.values(metric?.raw_graph_data?.current_quarter || {});
+    const growth = metric?.current_quarter?.growth;
+    const pct = growth != null ? `${(growth * 100).toFixed(1)}%` : '—';
+    const isPositive = growth != null ? growth >= 0 : null;
 
     return (
       <div className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md transition-all flex items-center justify-between gap-3 overflow-hidden">
@@ -125,15 +73,9 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
           <div className="text-sm font-semibold text-gray-700 truncate">{title}</div>
         </div>
         <div className="flex items-center gap-3">
-          <div>
-            <MiniSpark values={sparkVals} stroke={color} />
-          </div>
-          <div className="flex items-center gap-1 text-sm font-semibold">
-            {isPositive === true ? (
-              <TrendingUp className="w-4 h-4 text-green-600" />
-            ) : isPositive === false ? (
-              <TrendingDown className="w-4 h-4 text-red-600" />
-            ) : null}
+          <MiniSpark values={combined} stroke={color} />
+          <div className={`flex items-center gap-1 text-sm font-semibold ${isPositive ? 'text-green-700' : 'text-red-700'}`}>
+            {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
             <span>{pct}</span>
           </div>
         </div>
@@ -141,12 +83,12 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
     );
   }
 
+  const rows = buildRowsFromMetric(metric);
+  const now = new Date(), currentMonth = now.getMonth();
+
   return (
-    <div
-      className="p-5 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all"
-      style={{ animation: 'fadeInUp 0.5s ease-out' }}
-    >
-      <div className="mb-4 pb-4 border-b border-gray-100" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+    <div className="p-5 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all">
+      <div className="mb-4 pb-4 border-b border-gray-100">
         <p className="text-lg font-bold text-gray-800">{title}</p>
       </div>
 
@@ -154,28 +96,29 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
         <div className="space-y-4">
           {rows.map((r, i) => {
             const change = r.growth != null ? (r.growth * 100).toFixed(1) + '%' : '—';
-            const isPositive = typeof change === 'string' && !change.startsWith('-') && change !== '—';
+            const isPositive = change !== '—' && !change.startsWith('-');
             const seriesArr = seriesObjToArray(r.series);
+            
+            let quarterMonths = null;
+            if (r.label === 'Current quarter') {
+              const start = currentMonth - (currentMonth % 3);
+              quarterMonths = MONTHS.slice(start, start + 3);
+            } else if (r.label === 'Previous quarter') {
+              const start = currentMonth - (currentMonth % 3) - 3;
+              quarterMonths = MONTHS.slice(start, start + 3);
+            }
+
+            const seriesWithXPos = seriesArr?.map((d, idx) => ({ ...d, xPos: idx }));
+            const ytdMonths = MONTHS.slice(0, currentMonth + 1);
 
             return (
-              <div
-                key={i}
-                className="metric-row"
-                style={{
-                  opacity: 0,
-                  animation: `fadeInUp 0.5s ease-out ${i * 80}ms forwards`,
-                }}
-              >
+              <div key={i} style={{ opacity: 0, animation: `fadeInUp 0.5s ease-out ${i * 80}ms forwards` }}>
                 <div className="flex items-center justify-between pb-3">
                   <div>
                     <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">{r.label}</div>
                     <div className="text-xl font-bold text-gray-900 mt-1">{formatNumber(r.amount)}</div>
                   </div>
-                  <div
-                    className={`text-sm font-semibold flex items-center gap-1 px-2 py-1 rounded-full ${
-                      isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-                    }`}
-                  >
+                  <div className={`text-sm font-semibold flex items-center gap-1 px-2 py-1 rounded-full ${isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                     {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                     {change}
                   </div>
