@@ -39,17 +39,44 @@ def query_sales(start,end):
         sql = text(
                 """
                 SELECT 
-	                s.timestamp,
-	                SUM(s.quantity) as quantity,
-	                SUM(s.amount)  as revenue 
+	                timestamp,
+	                SUM(quantity) as quantity,
+	                SUM(amount)  as revenue 
                 FROM 
-	                sales as s 
+	                sales
                 WHERE 
 	                timestamp BETWEEN :start_date AND :end_date
                 GROUP BY 
-	                s.timestamp
+	                timestamp
                 ORDER BY
-                	s.timestamp; 
+                	timestamp; 
+                """
+        )
+        try:
+            result = db.session.execute(sql, {"start_date":start, "end_date":end}).fetchall()
+
+            return result
+
+        except Exception:
+            db.session.rollback()
+            raise
+
+def query_weekly_sales(start, end):
+        
+        sql = text(
+                """
+                SELECT 
+	                date_part('week', timestamp) as week,
+	                SUM(quantity) as quantity,
+	                SUM(amount)  as revenue 
+                FROM 
+	                sales
+                WHERE 
+	                timestamp BETWEEN :start_date AND :end_date
+                GROUP BY 
+	                week
+                ORDER BY
+                	week; 
                 """
         )
         try:
@@ -86,5 +113,26 @@ def query_transactions(start, end):
             db.session.rollback()
             raise
         
+def query_weekly_transactions(start, end):
+        sql = text(
+                """
+                SELECT 
+                        date_part('week', timestamp) as week, 
+                        COUNT(transaction_id) as transactions
+                FROM 
+                        sales 
+                WHERE 
+                        timestamp BETWEEN :start_date AND :end_date 
+                GROUP BY 
+                        week 
+                ORDER BY 
+                        week;
+                """
+                )
+        try:
+            result = db.session.execute(sql, {"start_date":start, "end_date":end}).fetchall()
+            return result
 
-        
+        except Exception:
+            db.session.rollback()
+            raise
