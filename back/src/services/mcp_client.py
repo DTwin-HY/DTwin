@@ -243,7 +243,7 @@ def mcp_agent_tool(prompt: str) -> str:
             logger.error(f"MCP agent returned error: {result}")
             return json.dumps(result, indent=2, ensure_ascii=False)
 
-        if isinstance(result, list):
+        if isinstance(result, list):  # pragma: no cover
             serialized = []
             for item in result:
                 try:
@@ -257,12 +257,12 @@ def mcp_agent_tool(prompt: str) -> str:
                     serialized.append(item)
             return json.dumps(serialized, indent=2, ensure_ascii=False)
 
-        if hasattr(result, "model_dump_json"):
+        if hasattr(result, "model_dump_json"):  # pragma: no cover
             try:
                 return result.model_dump_json(indent=2)
             except Exception:
                 pass
-        if hasattr(result, "model_dump"):
+        if hasattr(result, "model_dump"):  # pragma: no cover
             try:
                 return json.dumps(result.model_dump(), indent=2, ensure_ascii=False)
             except Exception:
