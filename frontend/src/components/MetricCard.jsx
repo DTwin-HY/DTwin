@@ -70,7 +70,7 @@ const FixedTooltipInside = ({ active, payload, coordinate }) => {
       border: '1px solid rgba(0,0,0,0.1)',
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     }}>
-      {payload[0].value}
+      {formatNumber(payload[0].value)}
     </div>
   );
 };
@@ -155,7 +155,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                   {seriesArr && (
                     <ResponsiveContainer width="100%" height={140}>
                       {r.label === 'YTD' ? (
-                        <BarChart data={seriesArr} margin={{ top: 20, right: 7, left: 7, bottom: 1 }}>
+                        <BarChart data={seriesArr} margin={{ top: 5, right: 0, left: -55, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.08)" vertical />
                           <XAxis
                             dataKey="week"
@@ -173,7 +173,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                           <Bar dataKey="value" fill={color} />
                         </BarChart>
                       ) : (
-                        <LineChart data={seriesArr} margin={{ top: 50, right: 7, left: 7, bottom: 1 }}>
+                        <LineChart data={seriesArr} margin={{ top: 30, right: 10, left: -30, bottom: 0 }}>
                           <defs>
                             <linearGradient id={`gradient-${title}-${i}`} x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor={color} stopOpacity={0.3} />
