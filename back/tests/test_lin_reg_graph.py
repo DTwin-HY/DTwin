@@ -2,9 +2,6 @@ from ..src.services.simulation.lin_reg_graph import build_lin_reg_graph, validat
 
 #Kovakoodattuna tai voidaan käyttää sitä dataskriptiä...?
 TEST_DATA_DICT = {
-    'Unnamed: 0':{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 
-            10: 10, 11: 11, 12: 12, 13: 13, 14: 14, 15: 15, 16: 16, 17: 17, 18: 18, 19: 19, 
-            20: 20, 21: 21, 22: 22, 23: 23, 24: 24, 25: 25, 26: 26, 27: 27, 28: 28, 29: 29},
      'sales': {0: 172, 1: 162, 2: 84, 3: 176, 4: 141, 5: 90, 6: 172, 7: 191, 8: 144, 9: 157,
             10: 186, 11: 169, 12: 173, 13: 122, 14: 71, 15: 157, 16: 107, 17: 199, 18: 90, 19: 127, 
             20: 91, 21: 158, 22: 118, 23: 128, 24: 84, 25: 120, 26: 177, 27: 124, 28: 133, 29: 120},
@@ -23,7 +20,7 @@ CORRECT_OUTPUT = {"price":1.40, "sunny":10.75, "customers":0.44, "intercept":86.
 
 def test_lin_graph_outputs_correct_values():
     graph = build_lin_reg_graph()
-    graph_ran = graph.invoke({"df":TEST_DATA_DICT})
+    graph_ran = graph.invoke({"df":TEST_DATA_DICT, 'y_value':'sales'})
 
     results = graph_ran["results"]
 
