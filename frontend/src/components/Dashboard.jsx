@@ -43,8 +43,10 @@ const Dashboard = () => {
         isPinned ? 'sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-md' : ''
       }`}
     >
-      <div className="bg-gradient-to-r from-slate-50 to-blue-50 border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+      <div className={`bg-gradient-to-r from-slate-50 to-blue-50 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 ${
+        isPinned ? 'bg-white/95 backdrop-blur-sm shadow-lg' : ''
+      }`}>
+        <div className="p-4 border-b border-gray-100 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold text-gray-800">Analytics Dashboard</h2>
             <p className="text-sm text-gray-500 mt-1">Real-time performance metrics</p>
@@ -53,7 +55,9 @@ const Dashboard = () => {
           <div className="flex items-center gap-1">
             <button
               aria-label="pin dashboard"
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+              className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${
+                isPinned ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900'
+              }`}
               onClick={() => setIsPinned((s) => !s)}
             >
               {isPinned ? <PinOff className="w-5 h-5" /> : <Pin className="w-5 h-5" />}

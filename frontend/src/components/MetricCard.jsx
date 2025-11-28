@@ -18,8 +18,30 @@ const buildRowsFromMetric = (metric) => {
   ];
 };
 
-const seriesObjToArray = (obj) => 
-  obj ? Object.keys(obj).sort((a, b) => +a - +b).map(k => ({ name: k, value: obj[k] })) : null;
+const seriesObjToArray = (obj, isCurrentQuarter = false, totalWeeksInQuarter = 13) => {
+  if (!obj) return null;
+  
+  let dataArray;
+  if (Array.isArray(obj)) {
+    dataArray = obj.map((value, idx) => ({ 
+      week: idx, 
+      value: typeof value === 'string' ? parseFloat(value) : value 
+    }));
+  } else {
+    dataArray = Object.keys(obj)
+      .sort((a, b) => +a - +b)
+      .map(k => ({ week: +k, value: obj[k] }));
+  }
+  
+  if (isCurrentQuarter && dataArray.length < totalWeeksInQuarter) {
+    const lastWeek = dataArray[dataArray.length - 1].week;
+    for (let i = dataArray.length; i < totalWeeksInQuarter; i++) {
+      dataArray.push({ week: lastWeek + (i - dataArray.length + 1), value: null });
+    }
+  }
+  
+  return dataArray;
+};
 
 const computeCenteredDomain = (values) => {
   const nums = (values || []).filter(v => typeof v === 'number' && isFinite(v));
@@ -37,9 +59,15 @@ const FixedTooltipInside = ({ active, payload, coordinate }) => {
   if (!active || !payload?.[0] || !coordinate) return null;
   return (
     <div style={{
-      position: 'absolute', left: coordinate.x + 5, top: coordinate.y - 30,
-      background: 'rgba(255,255,255,0.9)', padding: '2px 6px', borderRadius: 4,
-      fontSize: 12, pointerEvents: 'none', border: '1px solid rgba(0,0,0,0.1)',
+      position: 'absolute',
+      left: coordinate.x + 5,
+      top: coordinate.y - 30,
+      background: 'rgba(255,255,255,0.9)',
+      padding: '2px 6px',
+      borderRadius: 4,
+      fontSize: 12,
+      pointerEvents: 'none',
+      border: '1px solid rgba(0,0,0,0.1)',
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     }}>
       {payload[0].value}
@@ -60,17 +88,16 @@ const MiniSpark = ({ values = [], stroke }) => {
   );
 };
 
-export const MetricCard = ({ title, metric = null, compact = false, color = '#3b82f6', dotOutlineColor = '#1E3A8A' }) => {
+export const MetricCard = ({ title, metric = null, compact = false, color = '#3b82f6', dotOutlineColor = '#1E3A8A', currentMonth = new Date().getMonth() }) => {
   if (compact) {
     const combined = Object.values(metric?.raw_graph_data?.current_quarter || {});
     const growth = metric?.current_quarter?.growth;
     const pct = growth != null ? `${(growth * 100).toFixed(1)}%` : '—';
     const isPositive = growth != null ? growth >= 0 : null;
-
     return (
       <div className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md transition-all flex items-center justify-between gap-3 overflow-hidden">
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold text-gray-700 truncate">{title}</div>
+          <div className="text-lg font-semibold text-gray-700 truncate">{title}</div>
         </div>
         <div className="flex items-center gap-3">
           <MiniSpark values={combined} stroke={color} />
@@ -84,32 +111,33 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
   }
 
   const rows = buildRowsFromMetric(metric);
-  const now = new Date(), currentMonth = now.getMonth();
 
   return (
     <div className="p-5 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all">
       <div className="mb-4 pb-4 border-b border-gray-100">
         <p className="text-lg font-bold text-gray-800">{title}</p>
       </div>
-
       <div className="grid grid-cols-1 gap-3">
         <div className="space-y-4">
           {rows.map((r, i) => {
             const change = r.growth != null ? (r.growth * 100).toFixed(1) + '%' : '—';
             const isPositive = change !== '—' && !change.startsWith('-');
-            const seriesArr = seriesObjToArray(r.series);
             
-            let quarterMonths = null;
+            let monthLabels = [];
+            let isCurrentQuarter = false;
+            
             if (r.label === 'Current quarter') {
-              const start = currentMonth - (currentMonth % 3);
-              quarterMonths = MONTHS.slice(start, start + 3);
+              const quarterStart = currentMonth - (currentMonth % 3);
+              monthLabels = MONTHS.slice(quarterStart, quarterStart + 3);
+              isCurrentQuarter = true;
             } else if (r.label === 'Previous quarter') {
-              const start = currentMonth - (currentMonth % 3) - 3;
-              quarterMonths = MONTHS.slice(start, start + 3);
+              const prevQuarterStart = currentMonth - (currentMonth % 3) - 3;
+              monthLabels = MONTHS.slice(prevQuarterStart, prevQuarterStart + 3);
+            } else if (r.label === 'YTD') {
+              monthLabels = MONTHS.slice(0, currentMonth + 1);
             }
-
-            const seriesWithXPos = seriesArr?.map((d, idx) => ({ ...d, xPos: idx }));
-            const ytdMonths = MONTHS.slice(0, currentMonth + 1);
+            
+            const seriesArr = seriesObjToArray(r.series, isCurrentQuarter, 13);
 
             return (
               <div key={i} style={{ opacity: 0, animation: `fadeInUp 0.5s ease-out ${i * 80}ms forwards` }}>
@@ -123,20 +151,29 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                     {change}
                   </div>
                 </div>
-
                 <div style={{ height: 140 }} className="mt-3 relative">
-                  {seriesWithXPos && (
+                  {seriesArr && (
                     <ResponsiveContainer width="100%" height={140}>
                       {r.label === 'YTD' ? (
-                        <BarChart data={seriesWithXPos} margin={{ top: 20, right: 7, left: 7, bottom: 1 }}>
+                        <BarChart data={seriesArr} margin={{ top: 20, right: 7, left: 7, bottom: 1 }}>
                           <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.08)" vertical />
-                          <XAxis dataKey="xPos" tick={{ fontSize: 12 }} tickLine={false} tickFormatter={(val, idx) => ytdMonths[idx] || ''} />
+                          <XAxis
+                            dataKey="week"
+                            tick={{ fontSize: 12 }}
+                            tickLine={false}
+                            ticks={seriesArr.map(d => d.week)}
+                            tickFormatter={(week) => {
+                              const weeksPerMonth = Math.ceil(seriesArr.length / monthLabels.length);
+                              const monthIndex = Math.floor(week / weeksPerMonth);
+                              return monthLabels[monthIndex] || '';
+                            }}
+                          />
                           <YAxis hide={false} tick={false} axisLine={false} tickLine={false} domain={computeCenteredDomain(seriesArr.map(d => d.value))} />
                           <Tooltip content={<FixedTooltipInside />} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
                           <Bar dataKey="value" fill={color} />
                         </BarChart>
                       ) : (
-                        <LineChart data={seriesWithXPos} margin={{ top: 50, right: 7, left: 7, bottom: 1 }}>
+                        <LineChart data={seriesArr} margin={{ top: 50, right: 7, left: 7, bottom: 1 }}>
                           <defs>
                             <linearGradient id={`gradient-${title}-${i}`} x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor={color} stopOpacity={0.3} />
@@ -144,21 +181,43 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.08)" vertical />
-                          <XAxis
-                            dataKey="xPos" tick={{ fontSize: 12 }} tickLine={false}
-                            tickFormatter={(val, idx) => {
-                              if (!quarterMonths) return MONTHS[idx % 12];
-                              const monthIndex = Math.floor(idx / (seriesArr.length / quarterMonths.length));
-                              return idx % Math.ceil(seriesArr.length / quarterMonths.length) === 0 ? quarterMonths[monthIndex] : '';
+                          <XAxis 
+                            dataKey="week"
+                            type="number"
+                            domain={[0, isCurrentQuarter ? 12 : 'dataMax']}
+                            tick={{ fontSize: 12 }}
+                            tickLine={false}
+                            ticks={isCurrentQuarter ? [0, 5, 9] : seriesArr.map(d => d.week)} 
+                            tickFormatter={(week) => {
+                              if (isCurrentQuarter) {
+                                switch(week) {
+                                  case 0:
+                                    return monthLabels[0] || '';
+                                  case 5:
+                                    return monthLabels[1] || '';
+                                  case 9:
+                                    return monthLabels[2] || '';
+                                  default:
+                                    return '';
+                                }
+                              }
+                              const weeksPerMonth = Math.ceil(seriesArr.filter(d => d.value !== null).length / monthLabels.length);
+                              const monthIndex = Math.floor((week - seriesArr[0].week) / weeksPerMonth);
+                              const isFirstWeekOfMonth = (week - seriesArr[0].week) % weeksPerMonth === 0;
+                              return isFirstWeekOfMonth ? (monthLabels[monthIndex] || '') : '';
                             }}
                           />
                           <YAxis hide={false} tick={false} axisLine={false} tickLine={false} domain={computeCenteredDomain(seriesArr.map(d => d.value))} />
                           <Tooltip content={<FixedTooltipInside />} cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '4 4' }} />
-                          <Line
-                            type="monotone" dataKey="value" stroke={color} strokeWidth={2.5}
+                          <Line 
+                            type="monotone" 
+                            dataKey="value" 
+                            stroke={color} 
+                            strokeWidth={2.5} 
                             fill={`url(#gradient-${title}-${i})`}
-                            dot={{ r: 0.8, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
+                            dot={ false }
                             activeDot={{ r: 4, fill: color, stroke: dotOutlineColor, strokeWidth: 3 }}
+                            connectNulls={false}
                             isAnimationActive
                           />
                         </LineChart>
@@ -171,6 +230,18 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
           })}
         </div>
       </div>
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };
