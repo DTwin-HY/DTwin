@@ -58,8 +58,8 @@ const Chatbot = () => {
       console.log('Last message and steps:', last, steps);
 
       setChats((prevChats) => [
+        { role: 'supervisor', steps, finalMessage: last.body },
         ...(prevChats || []),
-        { role: 'supervisor', finalMessage: last.body, steps },
       ]);
       console.log('Updated chats:', chats);
       return steps;
@@ -148,6 +148,21 @@ const Chatbot = () => {
     <div className="w-full max-w-full p-6">
       <div className="rounded-xl bg-white p-6 shadow-md">
         <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the DTwin assistant</h3>
+          <ListMessages messages={chats} />
+          {loading &&
+          responses.length > 0 &&
+          (() => {
+            const last = responses[responses.length - 1];
+            return last ? (
+              <StepCard
+                key={responses.length - 1}
+                title={last.title}
+                content={last.body}
+                imageData={last.imageData}
+              />
+            ) : null;
+          })()}
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <textarea
             value={inputValue}
@@ -182,19 +197,7 @@ const Chatbot = () => {
           </div>
         )}
 
-        {loading &&
-          responses.length > 0 &&
-          (() => {
-            const last = responses[responses.length - 1];
-            return last ? (
-              <StepCard
-                key={responses.length - 1}
-                title={last.title}
-                content={last.body}
-                imageData={last.imageData}
-              />
-            ) : null;
-          })()}
+
 
         {successMessage && !loading && !errorMessage && (
           <div className="mt-4 flex justify-center">
@@ -220,7 +223,7 @@ const Chatbot = () => {
           </div>
         )}
 
-        <ListMessages messages={chats} />
+
       </div>
     </div>
   );
