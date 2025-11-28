@@ -43,13 +43,13 @@ def stream_process(prompt: str, thread_id: str = "3"):
         supervisor = create_agent(
             model="openai:gpt-4.1",
             tools=[
-                # research_agent_tool,
-                # storage_agent_tool,
-                # sales_agent_tool,
+                research_agent_tool,
+                storage_agent_tool,
+                sales_agent_tool,
                 dataframe_agent_tool,
-                # csv_dataframe_test_tool,
+                csv_dataframe_test_tool,
                 counterfactual_analysis_tool,
-                # simulation_agent_tool,
+                simulation_agent_tool,
             ],
             system_prompt=supervisor_prompt,
             state_schema=MainState,

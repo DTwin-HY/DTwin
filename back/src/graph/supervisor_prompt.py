@@ -13,8 +13,7 @@ Always follow below instruction:-
 
 ROUTING RULES:
   a. NEVER route same question to same agent more than once,
-  you can do this by check the message,
-  check the last message and the name of the agent
+  you can do this by cheking the last message and the name of the agent
   b. If an agent requests for more information,
   DO NOT route back to same agent UNLESS you have requested information
   c. If you need to route to multiple agents,
