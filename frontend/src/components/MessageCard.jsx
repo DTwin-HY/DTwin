@@ -19,7 +19,7 @@ const MessageCard = ({ finalMessage, steps, defaultOpen = false }) => {
         className="group flex w-full cursor-pointer items-start justify-between px-0 py-3 text-left"
       >
         <div>
-          <p className="mb-1 text-gray-800">Supervisor:</p>
+          <p className="mb-1 text-gray-800 font-semibold">DTwin Assistant:</p>
           <p className="cursor-text whitespace-pre-wrap text-gray-700 select-text">
             {finalMessage}
           </p>
