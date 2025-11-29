@@ -144,24 +144,52 @@ const Chatbot = () => {
     }
   };
 
-  return (
-    <div className="w-full max-w-full p-6">
-      <div className="rounded-xl bg-white p-6 shadow-md">
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the DTwin assistant</h3>
-          <ListMessages messages={chats} />
-          {loading &&
-          responses.length > 0 &&
-          (() => {
-            const last = responses[responses.length - 1];
-            return last ? (
-              <StepCard
-                key={responses.length - 1}
-                title={last.title}
-                content={last.body}
-                imageData={last.imageData}
-              />
-            ) : null;
-          })()}
+return (
+  <div className="w-full max-w-full p-1">
+    <div className="rounded-xl bg-white p-6 shadow-md relative">
+      <div className="absolute top-6 right-6 group">
+        <button
+          type="button"
+          onClick={handleNewChat}
+          disabled={loading || userId === null}
+          className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-gray-700 transition-colors duration-200 hover:bg-gray-100 disabled:opacity-50"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <circle cx="18" cy="6" r="5" fill="white" stroke="currentColor" strokeWidth={1.8}/>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18 3.5v5M15.5 6h5" stroke="currentColor" strokeWidth={1.5}/>
+          </svg>
+        </button>
+
+        <div className="absolute right-0 bottom-full mb-2 whitespace-nowrap rounded bg-gray-800 px-3 py-1.5 text-lg text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 pointer-events-none">
+          Start a new chat
+        </div>
+      </div>
+
+      <h3 className="mb-6 text-center text-3xl font-semibold text-gray-800">Your Digital Twin Assistant</h3>
+
+      <ListMessages messages={chats} />
+
+      {loading && responses.length === 0 && (
+        <div className="mt-4 flex justify-center">
+          <div className="w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
+            <p className="font-medium">Streaming response...</p>
+          </div>
+        </div>
+      )}
+      {loading && responses.length > 0 &&
+        (() => {
+          const last = responses[responses.length - 1];
+          return last ? (
+            <StepCard
+              key={responses.length - 1}
+              title={last.title}
+              content={last.body}
+              imageData={last.imageData}
+            />
+          ) : null;
+        })()
+      }
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <textarea
