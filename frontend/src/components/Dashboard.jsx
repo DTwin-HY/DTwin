@@ -41,8 +41,8 @@ const Dashboard = () => {
       <div className="bg-gradient-to-r from-slate-50 to-blue-50 border border-gray-200 rounded-lg shadow-sm transition-all duration-300">
         <div className="p-4 border-b border-gray-100 flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">Analytics Dashboard</h2>
-            <p className="text-sm text-gray-500 mt-1">Real-time performance metrics</p>
+            <h2 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h2>
+            <p className="text-lg text-gray-500 mt-1">Real-time performance metrics</p>
           </div>
 
           <div className="flex items-center gap-1">
@@ -56,7 +56,7 @@ const Dashboard = () => {
 
             <button
               aria-label="toggle compact"
-              className="px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium text-gray-600 hover:text-gray-900"
+              className="px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-lg font-medium text-gray-600 hover:text-gray-900"
               onClick={toggleCompact}
             >
               {stageCompact ? 'Full' : 'Compact'}
