@@ -132,7 +132,6 @@ const Chatbot = () => {
           });
         },
       );
-      setSuccessMessage('Prompt and response saved to database!');
       setInputValue('');
     } catch (err) {
       console.error(err);
