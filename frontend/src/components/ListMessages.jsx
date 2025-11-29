@@ -1,11 +1,18 @@
+import { useEffect, useRef } from 'react';
 import MessageCard from './MessageCard';
 
 const ListMessages = ({ messages }) => {
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   console.log('ListMessages received messages:', messages);
   if (!Array.isArray(messages) || messages.length === 0) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-y-auto">
       {messages
         .slice()
         .reverse()
@@ -25,7 +32,7 @@ const ListMessages = ({ messages }) => {
                 key={`msg-${idx}`}
                 className="mt-6 rounded-lg border-l-4 border-teal-400 bg-teal-50 p-4"
               >
-                <p className="text-black-800 mb-1">Your message:</p>
+                <p className="text-black-800 mb-1">You:</p>
                 <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
               </div>
             );
@@ -33,6 +40,8 @@ const ListMessages = ({ messages }) => {
 
           return null;
         })}
+
+      <div ref={bottomRef} />
     </div>
   );
 };
