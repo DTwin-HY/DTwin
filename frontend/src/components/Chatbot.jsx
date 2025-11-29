@@ -90,7 +90,7 @@ const Chatbot = () => {
     setSuccessMessage('');
     setErrorMessage('');
     setResponses([]);
-    setChats((prevChats) => [...(prevChats || []), { role: 'user', message: inputValue }]);
+    setChats((prevChats) => [{ role: 'user', message: inputValue }, ...(prevChats || [])]);
 
     try {
       await streamMessage(
