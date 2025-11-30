@@ -33,7 +33,7 @@ const ListMessages = ({ messages }) => {
                 className="mt-6 rounded-lg border-l-4 border-teal-400 bg-teal-50 p-4"
               >
                 <p className="text-black-800 mb-1">You:</p>
-                <p className="whitespace-pre-wrap text-gray-700">{userMessage}</p>
+                <p className="whitespace-pre-wrap text-gray-700 text-lg">{userMessage}</p>
               </div>
             );
           }
