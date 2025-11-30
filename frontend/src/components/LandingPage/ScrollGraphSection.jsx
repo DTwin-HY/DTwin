@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion as Motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import Graph from './Graph';
 import { STEPS, SCENARIO_STEPS } from './stepsData';
 
@@ -83,7 +83,7 @@ const ScrollGraphSection = () => {
 
   return (
     <section className="bg-bg text-text min-h-[70vh] py-28">
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -95,7 +95,7 @@ const ScrollGraphSection = () => {
           Scroll to understand each agent, then run a pricing scenario to see how the graph behaves
           and jump into the sandbox to try it yourself.
         </p>
-      </motion.div>
+      </Motion.div>
 
       <div className="mx-auto max-w-7xl gap-16 px-6 lg:grid lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         {/* Left side, scrollable */}

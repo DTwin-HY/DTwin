@@ -4,7 +4,7 @@ const DemoAdSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="flex min-h-[85vh] items-center justify-center">
+    <section className="flex min-h-[90vh] items-center justify-center">
       <div className="max-w-2xl px-6 text-center">
         <h3 className="mb-6 text-4xl font-semibold md:text-5xl">Try it yourself in the demo app</h3>
 

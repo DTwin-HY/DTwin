@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion as Motion, useScroll, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowDown } from 'lucide-react';
 
@@ -12,9 +12,9 @@ const HeroSection = () => {
   return (
     <div>
       <section className="min-h-screen">
-        <motion.div style={{ opacity: heroOpacity, y: heroY }}>
+        <Motion.div style={{ opacity: heroOpacity, y: heroY }}>
           <div className="mx-auto max-w-5xl py-44 text-center">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -24,18 +24,18 @@ const HeroSection = () => {
               <span className="text-sm font-medium">
                 Research Project • LangGraph Multi-Agent System
               </span>
-            </motion.div>
+            </Motion.div>
 
-            <motion.h1
+            <Motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.3 }}
               className="mb-8 text-6xl leading-tight font-black tracking-tight md:text-7xl lg:text-8xl"
             >
               <span className="text-gradient">Multi-Agent Business Simulation</span>
-            </motion.h1>
+            </Motion.h1>
 
-            <motion.p
+            <Motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.4 }}
@@ -43,9 +43,9 @@ const HeroSection = () => {
             >
               A student-built prototype that demonstrates how autonomous agents can model company
               dynamics, simulate strategic choices, and visualize their results in real time.
-            </motion.p>
+            </Motion.p>
 
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.5 }}
@@ -57,24 +57,24 @@ const HeroSection = () => {
               >
                 Explore Demo
               </button>
-            </motion.div>
+            </Motion.div>
 
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 1 }}
               className="mt-16 flex flex-col items-center text-gray-200"
             >
               <span className="mb-3 text-sm uppercase">Agent Architecture</span>
-              <motion.div
+              <Motion.div
                 animate={{ y: [0, 8, 0] }}
                 transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
               >
                 <ArrowDown className="h-5 w-5" />
-              </motion.div>
-            </motion.div>
+              </Motion.div>
+            </Motion.div>
           </div>
-        </motion.div>
+        </Motion.div>
       </section>
     </div>
   );
