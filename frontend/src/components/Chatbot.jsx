@@ -85,16 +85,20 @@ const Chatbot = () => {
       setErrorMessage('Input cannot be empty');
       return;
     }
+
+    const messageToSend = inputValue;
+    setInputValue('');
+
     finalizedRef.current = false;
     setLoading(true);
     setSuccessMessage('');
     setErrorMessage('');
     setResponses([]);
-    setChats((prevChats) => [{ role: 'user', message: inputValue }, ...(prevChats || [])]);
+    setChats((prevChats) => [{ role: 'user', message: messageToSend }, ...(prevChats || [])]);
 
     try {
       await streamMessage(
-        inputValue,
+        messageToSend,
         threadId,
         (chunk) => {
           console.log('Received chunk:', chunk);
@@ -130,9 +134,8 @@ const Chatbot = () => {
             }
             return effective;
           });
-        },
+        }
       );
-      setInputValue('');
     } catch (err) {
       console.error(err);
       setErrorMessage(`Error in backend/database${err?.message ? `: ${err.message}` : ''}`);
@@ -142,6 +145,7 @@ const Chatbot = () => {
       finalizeLastResponse();
     }
   };
+
 
   return (
     <div className="w-full max-w-full p-1">
