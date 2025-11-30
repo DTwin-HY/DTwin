@@ -1,0 +1,13 @@
+@import 'tailwindcss/utilities';
+
+/* Text gradient utility */
+.text-gradient {
+  background-image: linear-gradient(
+    to right,
+    hsl(var(--violet-light)),
+    hsl(291 95% 75%),
+    hsl(var(--cyan-light))
+  );
+  -webkit-background-clip: text;
+  color: transparent;
+}
