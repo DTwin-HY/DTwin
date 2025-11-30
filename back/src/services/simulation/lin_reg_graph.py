@@ -13,6 +13,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 class ToolState(TypedDict, total=False):
     df: dict
+    y_value: str
     results: Dict[str, Any]
     errors: list[str]
 
@@ -37,8 +38,9 @@ def analysis_node(state: ToolState) -> ToolState:
     df = pd.DataFrame(state["df"])
 
     # How much price, weather and customer count affect sales
-    X = df[["price", "sunny", "customers"]]
-    y = df["sales"]
+    X = df.loc[:, df.columns != state['y_value']]
+    y = df[state['y_value']]
+
     model = LinearRegression().fit(X, y)
 
     state["results"] = {
