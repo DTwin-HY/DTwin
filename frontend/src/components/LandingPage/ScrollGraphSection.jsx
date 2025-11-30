@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, useScroll, useMotionValueEvent } from 'motion/react';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import Graph from './Graph';
 import { STEPS, SCENARIO_STEPS } from './stepsData';
 
