@@ -20,7 +20,7 @@ const MessageCard = ({ finalMessage, steps, defaultOpen = false }) => {
       >
         <div>
           <p className="mb-1 text-gray-800 font-semibold">DTwin Assistant:</p>
-          <p className="cursor-text whitespace-pre-wrap text-gray-700 select-text">
+          <p className="cursor-text whitespace-pre-wrap text-gray-700 select-text text-lg">
             {finalMessage}
           </p>
         </div>
