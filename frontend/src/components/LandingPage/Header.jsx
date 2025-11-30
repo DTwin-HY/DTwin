@@ -16,12 +16,14 @@ const Header = () => {
           <span className="text-lg font-bold hover:cursor-pointer">DTwin</span>
         </motion.div>
 
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="rounded-lg font-medium hover:cursor-pointer"
-        >
-          Explore Demo
-        </button>
+        <motion.div whileHover={{ scale: 1.05 }}>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="rounded-lg font-medium hover:cursor-pointer"
+          >
+            Explore Demo
+          </button>
+        </motion.div>
       </div>
     </motion.header>
   );
