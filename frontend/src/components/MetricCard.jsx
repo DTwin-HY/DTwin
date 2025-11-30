@@ -2,7 +2,6 @@ import { TrendingUp, TrendingDown } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar } from 'recharts';
 
 const formatNumber = (num) => {
-  if (num == null) return '—';
   if (Math.abs(num) >= 1e6) return `${(num / 1e6).toFixed(1)}M`;
   if (Math.abs(num) >= 1e3) return `${(num / 1e3).toFixed(1)}k`;
   return String(num);
@@ -21,17 +20,9 @@ const buildRowsFromMetric = (metric) => {
 const seriesObjToArray = (obj, isCurrentQuarter = false, totalWeeksInQuarter = 13) => {
   if (!obj) return null;
   
-  let dataArray;
-  if (Array.isArray(obj)) {
-    dataArray = obj.map((value, idx) => ({ 
-      week: idx, 
-      value: typeof value === 'string' ? parseFloat(value) : value 
-    }));
-  } else {
-    dataArray = Object.keys(obj)
-      .sort((a, b) => +a - +b)
-      .map(k => ({ week: +k, value: obj[k] }));
-  }
+const dataArray = Array.isArray(obj)
+  ? obj.map((v, i) => ({ week: i, value: +v }))
+  : Object.keys(obj).sort((a,b)=>a-b).map(k => ({ week: +k, value: obj[k] }));
   
   if (isCurrentQuarter && dataArray.length < totalWeeksInQuarter) {
     const lastWeek = dataArray[dataArray.length - 1].week;
@@ -41,18 +32,6 @@ const seriesObjToArray = (obj, isCurrentQuarter = false, totalWeeksInQuarter = 1
   }
   
   return dataArray;
-};
-
-const computeCenteredDomain = (values) => {
-  const nums = (values || []).filter(v => typeof v === 'number' && isFinite(v));
-  if (!nums.length) return ['auto', 'auto'];
-  const min = Math.min(...nums), max = Math.max(...nums);
-  if (min === max) {
-    const pad = Math.abs(min) * 0.25 || 1;
-    return [min - pad, max + pad];
-  }
-  const padding = Math.max((max - min) * 0.1, 4);
-  return [min - padding, max + padding];
 };
 
 const FixedTooltipInside = ({ active, payload, coordinate }) => {
@@ -168,7 +147,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                               return monthLabels[monthIndex] || '';
                             }}
                           />
-                          <YAxis hide={false} tick={false} axisLine={false} tickLine={false} domain={computeCenteredDomain(seriesArr.map(d => d.value))} />
+                          <YAxis hide={false} tick={false} axisLine={false} tickLine={false} domain={[0, 'auto']} />
                           <Tooltip content={<FixedTooltipInside />} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
                           <Bar dataKey="value" fill={color} />
                         </BarChart>
@@ -207,7 +186,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                               return isFirstWeekOfMonth ? (monthLabels[monthIndex] || '') : '';
                             }}
                           />
-                          <YAxis hide={false} tick={false} axisLine={false} tickLine={false} domain={computeCenteredDomain(seriesArr.map(d => d.value))} />
+                          <YAxis hide={false} tick={false} axisLine={false} tickLine={false} domain={[0, 'auto']} />
                           <Tooltip content={<FixedTooltipInside />} cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '4 4' }} />
                           <Line 
                             type="monotone" 
