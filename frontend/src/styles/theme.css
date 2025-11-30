@@ -1,0 +1,18 @@
+@import 'tailwindcss/theme' theme;
+
+.landing-page-theme {
+  --background: 222 47% 5%;
+  --foreground: 210 40% 98%;
+
+  --accent: 263 70% 60%;
+  --accent-foreground: 210 40% 98%;
+
+  --violet: 263 70% 60%;
+  --violet-light: 270 80% 70%;
+
+  --cyan: 187 85% 45%;
+  --cyan-light: 187 85% 55%;
+
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
