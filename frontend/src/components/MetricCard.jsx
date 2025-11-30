@@ -94,7 +94,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
   return (
     <div className="p-5 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all">
       <div className="mb-4 pb-4 border-b border-gray-100">
-        <p className="text-lg font-bold text-gray-800">{title}</p>
+        <p className="text-xl font-bold text-gray-800">{title}</p>
       </div>
       <div className="grid grid-cols-1 gap-3">
         <div className="space-y-4">
@@ -122,7 +122,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
               <div key={i} style={{ opacity: 0, animation: `fadeInUp 0.5s ease-out ${i * 80}ms forwards` }}>
                 <div className="flex items-center justify-between pb-3">
                   <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">{r.label}</div>
+                    <div className="text-[15px] font-medium text-gray-500 uppercase tracking-wide">{r.label}</div>
                     <div className="text-xl font-bold text-gray-900 mt-1">{formatNumber(r.amount)}</div>
                   </div>
                   <div className={`text-sm font-semibold flex items-center gap-1 px-2 py-1 rounded-full ${isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
