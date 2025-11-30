@@ -138,7 +138,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                           <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.08)" vertical />
                           <XAxis
                             dataKey="week"
-                            tick={{ fontSize: 12 }}
+                            tick={{ fontSize: 14.5 }}
                             tickLine={false}
                             ticks={seriesArr.map(d => d.week)}
                             tickFormatter={(week) => {
@@ -152,7 +152,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                           <Bar dataKey="value" fill={color} />
                         </BarChart>
                       ) : (
-                        <LineChart data={seriesArr} margin={{ top: 30, right: 10, left: -30, bottom: 0 }}>
+                        <LineChart data={seriesArr} margin={{ top: 30, right: 10, left: -45, bottom: 0 }}>
                           <defs>
                             <linearGradient id={`gradient-${title}-${i}`} x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor={color} stopOpacity={0.3} />
@@ -164,7 +164,7 @@ export const MetricCard = ({ title, metric = null, compact = false, color = '#3b
                             dataKey="week"
                             type="number"
                             domain={[0, isCurrentQuarter ? 12 : 'dataMax']}
-                            tick={{ fontSize: 12 }}
+                            tick={{ fontSize: 14.5 }}
                             tickLine={false}
                             ticks={isCurrentQuarter ? [0, 5, 9] : seriesArr.map(d => d.week)} 
                             tickFormatter={(week) => {
