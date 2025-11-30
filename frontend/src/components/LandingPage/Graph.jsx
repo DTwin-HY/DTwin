@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 const Graph = ({ activeNodeId }) => {
   const nodes = [
@@ -99,7 +99,7 @@ const Graph = ({ activeNodeId }) => {
         }
 
         return (
-          <motion.div
+          <Motion.div
             key={node.id}
             className={[
               'absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border text-[10px] font-medium',
@@ -125,13 +125,13 @@ const Graph = ({ activeNodeId }) => {
             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
           >
             {node.label}
-          </motion.div>
+          </Motion.div>
         );
       })}
 
       {/* New/ghost nodes) */}
       {newAgentNodes.map((node) => (
-        <motion.div
+        <Motion.div
           key={node.id}
           className="absolute flex h-12 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border bg-slate-900/60 text-[9px] font-medium md:h-14 md:w-14"
           style={{ left: `${node.x}%`, top: `${node.y}%` }}
@@ -143,7 +143,7 @@ const Graph = ({ activeNodeId }) => {
         >
           <span className="text-base leading-none">+</span>
           <span className="mt-0.5">New agent</span>
-        </motion.div>
+        </Motion.div>
       ))}
     </div>
   );
