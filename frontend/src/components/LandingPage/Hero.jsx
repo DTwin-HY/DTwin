@@ -63,7 +63,7 @@ const HeroSection = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 1 }}
-              className="mt-16 flex flex-col items-center text-gray-200"
+              className="mt-28 flex flex-col items-center text-gray-200"
             >
               <span className="mb-3 text-sm uppercase">Agent Architecture</span>
               <Motion.div
