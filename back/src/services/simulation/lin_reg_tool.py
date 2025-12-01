@@ -13,7 +13,7 @@ def csv_fetch(dataframe_path: str) -> dict:
     dataframe_path: str : path to the dataframe csv file.
     """
     path = dataframe_path
-    dataframe = pd.read_csv(path).to_dict()
+    dataframe = pd.read_csv(path, sep=";").to_dict()
 
     return dataframe
 
