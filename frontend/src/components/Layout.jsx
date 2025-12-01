@@ -8,9 +8,9 @@ const Layout = () => {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between px-6 py-4 text-white shadow">
+      <header className="flex items-center justify-between px-6 py-4 shadow">
         <h1
-          className="text-xl font-bold text-black hover:cursor-pointer"
+          className="text-gradient text-xl font-bold hover:cursor-pointer hover:opacity-70"
           onClick={() => navigate('/')}
         >
           DTwin
@@ -19,7 +19,7 @@ const Layout = () => {
           <div className="flex gap-4">
             <button
               onClick={logout}
-              className="rounded-lg border px-4 py-2 text-black transition-colors hover:cursor-pointer hover:bg-black hover:text-white"
+              className="rounded-lg border border-[hsl(var(--accent))] px-4 py-2 transition-colors hover:cursor-pointer hover:bg-black hover:opacity-70"
             >
               Logout
             </button>
