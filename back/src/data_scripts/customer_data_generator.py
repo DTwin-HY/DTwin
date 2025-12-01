@@ -7,6 +7,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
+
 from ..models import models
 
 load_dotenv()
@@ -28,8 +29,6 @@ def generate_customers_data(num_days: int):
 
     customer_records = []
     for date in dates:
-<<<<<<< HEAD
-<<<<<<< HEAD
         # for _ in range(num_days):
         prop = random.uniform(0, 100)
 
@@ -48,13 +47,7 @@ def generate_customers_data(num_days: int):
                 "date": datetime.combine(date, datetime.min.time()),
             }
         )
-=======
-        for _ in range(num_days):
-            prop = random.uniform(0, 100)
-=======
-        # for _ in range(num_days):
         prop = random.uniform(0, 100)
->>>>>>> 6dd4d40 (Change amount -> customer daily amount)
 
         if prop > 75:
             customer_count = random.randint(12, 25)
@@ -65,22 +58,19 @@ def generate_customers_data(num_days: int):
         else:
             customer_count = random.randint(75, 100)
 
-<<<<<<< HEAD
             customer_records.append(
                 {
                     "amount": customer_count,
                     "date": datetime.combine(date, datetime.min.time()),
                 }
             )
->>>>>>> 5999f71 (Add customer generating tool, and customer table. Change supervisor and dataframe prompts)
-=======
+
         customer_records.append(
             {
                 "daily_customer_amount": customer_count,
                 "date": datetime.combine(date, datetime.min.time()),
             }
         )
->>>>>>> 6dd4d40 (Change amount -> customer daily amount)
 
     engine = create_engine(CONNECTION_STRING)
 
@@ -101,20 +91,8 @@ def generate_customers_data(num_days: int):
     customer_df = pd.DataFrame(
         [
             {
-<<<<<<< HEAD
-<<<<<<< HEAD
                 "daily_customer_amount": record["daily_customer_amount"],
-<<<<<<< HEAD
-=======
-                "amount": record["amount"],
->>>>>>> 5999f71 (Add customer generating tool, and customer table. Change supervisor and dataframe prompts)
-=======
-                "daily_customer_amount": record["daily_customer_amount"],
->>>>>>> 6dd4d40 (Change amount -> customer daily amount)
-                "date": record["date"].date()
-=======
                 "date": record["date"].date(),
->>>>>>> 9b54bbc (Hotfixes for tests, lint fixes and coverage omitting)
             }
             for record in customer_records
         ]
