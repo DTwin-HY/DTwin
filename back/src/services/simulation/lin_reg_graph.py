@@ -24,11 +24,6 @@ def validation_node(state: ToolState) -> ToolState:
         state["errors"] = ["No data provided."]
         return state
 
-    expected_data = {"sales", "price", "customers", "sunny"}
-    missing_data = expected_data - set(df.columns)
-
-    if missing_data:
-        state["errors"] = [f"Missing columns: {missing_data}"]
     return state
 
 
@@ -37,9 +32,20 @@ def analysis_node(state: ToolState) -> ToolState:
         return state
     df = pd.DataFrame(state["df"])
 
-    # How much price, weather and customer count affect sales
-    X = df.loc[:, df.columns != state['y_value']]
-    y = df[state['y_value']]
+    y_col = state.get("y_value")
+
+    numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
+
+    if not y_col:
+        if not numeric_cols:
+            state["errors"] = ["No numeric columns available for analysis"]
+            return state
+        if not y_col:
+            y_col = numeric_cols[0]
+    feature_cols = [c for c in numeric_cols if c != y_col]
+
+    X = df.loc[:, feature_cols].astype(float)
+    y = df.loc[:, y_col].astype(float)
 
     model = LinearRegression().fit(X, y)
 
