@@ -7,15 +7,16 @@ from langchain.agents.middleware import AgentState
 from langchain.messages import RemoveMessage
 from langgraph.checkpoint.postgres import PostgresSaver
 
-from ..services.dataframe_creation import dataframe_agent_tool, csv_dataframe_test_tool
+from ..services.counterfactual_agent import counterfactual_analysis_tool
+from ..services.dataframe_creation import csv_dataframe_test_tool, dataframe_agent_tool
 from ..services.research_agent import research_agent_tool
 from ..services.sales_agent import sales_agent_tool
-from ..services.storage_agent import storage_agent_tool
-from ..services.counterfactual_agent import counterfactual_analysis_tool
-from ..utils.format import format_chunk
-from ..utils.check_pending_tool_call import check_pending_tool_call
-from .supervisor_prompt import supervisor_prompt
 from ..services.simulation.sim_agent import simulation_agent_tool
+from ..services.storage_agent import storage_agent_tool
+from ..utils.check_pending_tool_call import check_pending_tool_call
+from ..utils.format import format_chunk
+from .supervisor_prompt import supervisor_prompt
+
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -59,11 +60,8 @@ def stream_process(prompt: str, thread_id: str = "3"):
         # Remove the last message if there is a pending tool call
         while check_pending_tool_call(supervisor.get_state(config)):
             print("detected pending tool call, removing the last message")
-            messages = supervisor.get_state(config).values['messages']
-            supervisor.update_state(
-                config,
-                {"messages": [RemoveMessage(id=messages[-1].id)]}
-            )
+            messages = supervisor.get_state(config).values["messages"]
+            supervisor.update_state(config, {"messages": [RemoveMessage(id=messages[-1].id)]})
 
         try:
             for chunk in supervisor.stream(
@@ -73,5 +71,5 @@ def stream_process(prompt: str, thread_id: str = "3"):
             ):
                 output = format_chunk(chunk)  # stream the output to the frontend
                 yield f"data: {json.dumps(output)}\n\n"
-        except Exception as e: # pragma: no cover
-            print(f"Error during streaming: {e}") # pragma: no cover
+        except Exception as e:  # pragma: no cover
+            print(f"Error during streaming: {e}")  # pragma: no cover

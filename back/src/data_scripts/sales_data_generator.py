@@ -10,9 +10,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
-
-from ..database.product_db import fetch_product_data
 from .. import config
+from ..database.product_db import fetch_product_data
 from ..models import models
 
 load_dotenv()
@@ -36,8 +35,8 @@ def generate_sales_data(num_days: int, output_path: Path):
     for id, price in products.items():
         product_ids.append(id)
         prices[id] = price
-    
-    print("tässä prodyucts length: ",len(products))
+
+    print("tässä prodyucts length: ", len(products))
 
     # prices = {}
     # for name in product_names:

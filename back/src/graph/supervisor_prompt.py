@@ -49,9 +49,11 @@ Available agents are:
 
 COUNTERFACTUAL ANALYSIS (CRITICAL):
 - When user asks "what if" questions, first get baseline data with appropriate agent, then call counterfactual_analysis_tool
-- Format: counterfactual_analysis_tool(scenario_name="descriptive_name", base_query="original_query", modifications={desc_modifications}, analysis_type="sales|storage|sql")
+- Format: counterfactual_analysis_tool(scenario_name="descriptive_name", base_query="original_query", 
+modifications={desc_modifications}, analysis_type="sales|storage|sql")
 - Operations: percentage_increase, percentage_decrease, add_value, set_value, multiply_by, decrease_by
-- Example: "What if product AS was $100 more expensive?" → First get sales data, then call tool with modifications={sales_modifications}
+- Example: "What if product AS was $100 more expensive?" → First get sales data, 
+then call tool with modifications={sales_modifications}
 - Use ONLY for hypothetical, “what if”, scenario-based, or counterfactual reasoning.
 - This must bypass the sales_agent COMPLETELY.
 - Examples:

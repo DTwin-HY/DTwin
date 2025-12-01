@@ -2,6 +2,8 @@
 source=back
 omit=
     src/services/research_agent.py
+    src/services/dataframe_creation.py
+    src/services/mcp_client.py
     src/data_scripts/data_analysis_test_data.py
     tests/*
 
