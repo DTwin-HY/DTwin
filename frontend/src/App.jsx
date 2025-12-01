@@ -10,11 +10,13 @@ import LandingPage from './components/LandingPage/LandingPage';
 const App = () => {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
+
       <Route element={<GuestRoute />}>
-        <Route path="/" element={<LandingPage />} />
         <Route path="/signin" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
       </Route>
+
       <Route path="/dashboard" element={<Layout />}>
         <Route element={<PrivateRoute />}>
           <Route index element={<Home />} />
