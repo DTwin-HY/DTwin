@@ -204,9 +204,9 @@ const Chatbot = () => {
               {[...Array(3)].map((_, i) => (
                 <span
                   key={i}
-                  className="h-4 w-4 animate-bounce rounded-full bg-[hsl(var(--accent))]"
+                  className="w-6 h-6 rounded-full dot-base animate-bounce-colorwave"
                   style={{ animationDelay: `${i * 0.2}s` }}
-                />
+                ></span>
               ))}
             </div>
           </div>
