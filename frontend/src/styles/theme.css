@@ -1,6 +1,6 @@
 @import 'tailwindcss/theme' theme;
 
-.landing-page-theme {
+:root {
   --background: 222 47% 5%;
   --foreground: 210 40% 98%;
 
