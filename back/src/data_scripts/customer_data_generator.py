@@ -29,24 +29,24 @@ def generate_customers_data(num_days: int):
 
     customer_records = []
     for date in dates:
-        for _ in range(num_days):
-            prop = random.uniform(0, 100)
+        # for _ in range(num_days):
+        prop = random.uniform(0, 100)
 
-            if prop > 75:
-                customer_count = random.randint(12, 25)
-            elif prop > 50:
-                customer_count = random.randint(25, 50)
-            elif prop > 25:
-                customer_count = random.randint(50, 75)
-            else:
-                customer_count = random.randint(75, 100)
+        if prop > 75:
+            customer_count = random.randint(12, 25)
+        elif prop > 50:
+            customer_count = random.randint(25, 50)
+        elif prop > 25:
+            customer_count = random.randint(50, 75)
+        else:
+            customer_count = random.randint(75, 100)
 
-            customer_records.append(
-                {
-                    "amount": customer_count,
-                    "date": datetime.combine(date, datetime.min.time()),
-                }
-            )
+        customer_records.append(
+            {
+                "daily_customer_amount": customer_count,
+                "date": datetime.combine(date, datetime.min.time()),
+            }
+        )
 
     engine = create_engine(CONNECTION_STRING)
 
@@ -67,7 +67,7 @@ def generate_customers_data(num_days: int):
     customer_df = pd.DataFrame(
         [
             {
-                "amount": record["amount"],
+                "daily_customer_amount": record["daily_customer_amount"],
                 "date": record["date"].date()
             }
             for record in customer_records
