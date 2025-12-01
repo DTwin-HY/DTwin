@@ -5,7 +5,7 @@ import DemoAdSection from './DemoAd';
 
 const LandingPage = () => {
   return (
-    <div className="landing-page-theme">
+    <div>
       <Header />
       <HeroSection />
       <ScrollGraphSection />
