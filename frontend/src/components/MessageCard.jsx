@@ -12,17 +12,15 @@ const MessageCard = ({ finalMessage, steps, defaultOpen = false }) => {
   };
 
   return (
-    <div className="mt-6 rounded-lg border-l-4 border-violet-400 bg-violet-50 p-4">
+    <div className="mt-6 rounded-2xl border border-[hsl(var(--accent))]/30 bg-[hsl(var(--background))]/50 p-5 shadow-lg backdrop-blur-xl transition-all hover:border-[hsl(var(--accent))]/60">
       <button
         type="button"
         onClick={handleClick}
         className="group flex w-full cursor-pointer items-start justify-between px-0 py-3 text-left"
       >
         <div>
-          <p className="mb-1 text-gray-800 font-semibold">DTwin Assistant:</p>
-          <p className="cursor-text whitespace-pre-wrap text-gray-700 select-text text-lg">
-            {finalMessage}
-          </p>
+          <p className="mb-1 font-semibold text-[hsl(var(--accent))]">DTwin Assistant:</p>
+          <p className="cursor-text whitespace-pre-wrap select-text">{finalMessage}</p>
         </div>
         <span className={`mt-1 transition-transform ${open ? 'rotate-90' : ''}`} aria-hidden>
           ›

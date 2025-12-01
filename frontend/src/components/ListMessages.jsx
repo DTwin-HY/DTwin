@@ -30,10 +30,10 @@ const ListMessages = ({ messages }) => {
             return (
               <div
                 key={`msg-${idx}`}
-                className="mt-6 rounded-lg border-l-4 border-teal-400 bg-teal-50 p-4"
+                className="mt-6 rounded-2xl border border-[hsl(var(--cyan))]/30 bg-[hsl(var(--background))]/50 p-5 shadow-lg backdrop-blur-xl"
               >
-                <p className="text-black-800 mb-1">You:</p>
-                <p className="whitespace-pre-wrap text-gray-700 text-lg">{userMessage}</p>
+                <p className="mb-1 font-semibold text-[hsl(var(--cyan))]">You:</p>
+                <p className="whitespace-pre-wrap text-[hsl(var(--foreground))]">{userMessage}</p>
               </div>
             );
           }

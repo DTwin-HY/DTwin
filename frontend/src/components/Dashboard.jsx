@@ -5,8 +5,8 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({});
-  const [isCollapsed, setIsCollapsed] = useState(true);
-  const [stageCompact, setStageCompact] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [stageCompact, setStageCompact] = useState(true);
   const [animatingCompact, setAnimatingCompact] = useState(false);
 
   useEffect(() => {
@@ -38,25 +38,29 @@ const Dashboard = () => {
 
   return (
     <div className="w-full transition-all duration-300 ease-in-out">
-      <div className="bg-gradient-to-r from-slate-50 to-blue-50 border border-gray-200 rounded-lg shadow-sm transition-all duration-300">
-        <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+      <div className="bo rounded-2xl border border-[hsl(var(--accent))]/30 shadow-sm transition-all duration-300">
+        <div className="flex items-center justify-between p-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h2>
-            <p className="text-lg text-gray-500 mt-1">Real-time performance metrics</p>
+            <h2 className="text-gradient text-2xl font-bold">Analytics Dashboard</h2>
+            <p className="mt-1 text-lg text-gray-500">Real-time performance metrics</p>
           </div>
 
           <div className="flex items-center gap-1">
             <button
               aria-label="collapse dashboard"
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+              className="rounded-lg p-2 text-[hsl(var(--foreground))]/60 transition-colors hover:bg-white/5"
               onClick={() => setIsCollapsed((s) => !s)}
             >
-              {isCollapsed ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+              {isCollapsed ? (
+                <ChevronDown className="h-5 w-5" />
+              ) : (
+                <ChevronUp className="h-5 w-5" />
+              )}
             </button>
 
             <button
               aria-label="toggle compact"
-              className="px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-lg font-medium text-gray-600 hover:text-gray-900"
+              className="rounded-lg px-3 py-2 text-lg font-medium text-[hsl(var(--foreground))]/60 transition-colors hover:bg-white/5"
               onClick={toggleCompact}
             >
               {stageCompact ? 'Full' : 'Compact'}
@@ -102,4 +106,4 @@ const Dashboard = () => {
   );
 };
 
-  export default Dashboard;
+export default Dashboard;

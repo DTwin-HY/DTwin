@@ -134,7 +134,7 @@ const Chatbot = () => {
             }
             return effective;
           });
-        }
+        },
       );
     } catch (err) {
       console.error(err);
@@ -146,40 +146,65 @@ const Chatbot = () => {
     }
   };
 
-
   return (
-    <div className="w-full max-w-full p-1">
-      <div className="rounded-xl bg-white p-6 shadow-md relative">
-        <div className="absolute top-6 right-6 group">
+    <div className="w-full max-w-full">
+      <div className="relative rounded-2xl border border-[hsl(var(--accent))]/30 p-6">
+        <div className="group absolute top-6 right-6">
           <button
             type="button"
             onClick={handleNewChat}
             disabled={loading || userId === null}
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-gray-700 transition-colors duration-200 hover:bg-gray-100 disabled:opacity-50"
+            className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200 hover:cursor-pointer hover:opacity-80 disabled:opacity-50"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              <circle cx="18" cy="6" r="5" fill="white" stroke="currentColor" strokeWidth={1.5}/>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18 3.5v5M15.5 6h5" stroke="currentColor" strokeWidth={1}/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-10 w-10"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+              <circle
+                cx="18"
+                cy="6"
+                r="5"
+                fill="hsl(var(--background))"
+                stroke="currentColor"
+                strokeWidth={1}
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M18 3.5v5M15.5 6h5"
+                stroke="currentColor"
+                strokeWidth={1}
+              />
             </svg>
           </button>
 
-          <div className="absolute right-0 bottom-full mb-2 whitespace-nowrap rounded bg-gray-800 px-3 py-1.5 text-lg text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 pointer-events-none">
+          <div className="pointer-events-none absolute right-0 bottom-full mb-2 rounded-md bg-black/80 px-3 py-1.5 text-xs whitespace-nowrap text-[hsl(var(--foreground))] opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
             Start a new chat
           </div>
         </div>
 
-        <h3 className="mb-6 text-center text-3xl font-semibold text-gray-800">Your Digital Twin Assistant</h3>
+        <h3 className="text-gradient mb-6 text-center text-3xl font-semibold">
+          Your Digital Twin Assistant
+        </h3>
 
         <ListMessages messages={chats} />
 
         {loading && (
           <div className="mt-4 flex justify-center">
-            <div className="flex justify-center items-center gap-2 h-12">
+            <div className="flex h-12 items-center justify-center gap-2">
               {[...Array(3)].map((_, i) => (
                 <span
                   key={i}
-                  className="w-4 h-4 bg-black rounded-full animate-bounce"
+                  className="h-4 w-4 animate-bounce rounded-full bg-[hsl(var(--accent))]"
                   style={{ animationDelay: `${i * 0.2}s` }}
                 />
               ))}
@@ -187,7 +212,8 @@ const Chatbot = () => {
           </div>
         )}
 
-        {loading && responses.length > 0 &&
+        {loading &&
+          responses.length > 0 &&
           (() => {
             const last = responses[responses.length - 1];
             return last ? (
@@ -198,8 +224,7 @@ const Chatbot = () => {
                 imageData={last.imageData}
               />
             ) : null;
-          })()
-        }
+          })()}
 
         <form onSubmit={handleSubmit} className="mt-4">
           <div className="relative flex items-center">
@@ -207,8 +232,8 @@ const Chatbot = () => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               disabled={loading || userId === null}
-              className="w-full rounded-full border border-gray-300 py-4 pl-6 pr-16 text-base resize-none focus:ring-2 focus:ring-purple-500 focus:outline-none"
-              placeholder={userId === null ? 'Loading user...' : "How can I help you today?"}
+              className="w-full resize-none rounded-full border border-[hsl(var(--accent))]/40 bg-[hsl(var(--background))]/70 py-4 pr-16 pl-6 text-base text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--foreground))]/40 focus:ring-2 focus:ring-[hsl(var(--accent))] focus:outline-none"
+              placeholder={userId === null ? 'Loading user...' : 'How can I help you today?'}
               rows={1}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -221,13 +246,18 @@ const Chatbot = () => {
             <button
               type="submit"
               disabled={loading || userId === null || !inputValue.trim()}
-              className={`absolute right-2 flex h-11 w-11 items-center justify-center rounded-full text-white transition-colors duration-200 disabled:bg-gray-200 ${
+              className={`absolute right-2 flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium text-[hsl(var(--accent-foreground))] transition-colors duration-200 disabled:opacity-40 ${
                 inputValue.trim() && !loading && userId !== null
-                  ? 'bg-purple-500 hover:bg-purple-600'
-                  : 'bg-gray-300 hover:bg-gray-400'
+                  ? 'bg-[hsl(var(--accent))] hover:bg-[hsl(var(--violet-light))]'
+                  : 'bg-[hsl(var(--foreground))]/15'
               }`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
               </svg>
             </button>
@@ -237,14 +267,22 @@ const Chatbot = () => {
         {/* Success and error messages */}
         {successMessage && !loading && !errorMessage && (
           <div className="mt-4 flex justify-center">
-            <div className={`w-full max-w-md rounded-lg border border-green-300 bg-green-100 p-4 text-green-800 shadow transition-opacity duration-1000 ${showSuccess ? 'opacity-100' : 'opacity-0'}`}>
+            <div
+              className={`w-full max-w-md rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-300 shadow transition-opacity duration-1000 ${
+                showSuccess ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
               <p className="font-medium">{successMessage}</p>
             </div>
           </div>
         )}
         {errorMessage && !loading && (
           <div className="mt-4 flex justify-center">
-            <div className={`w-full max-w-md rounded-lg border border-red-300 bg-red-100 p-4 text-red-800 shadow transition-opacity duration-1000 ${showError ? 'opacity-100' : 'opacity-0'}`}>
+            <div
+              className={`w-full max-w-md rounded-lg border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-300 shadow transition-opacity duration-1000 ${
+                showError ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
               <p className="font-medium">{errorMessage}</p>
             </div>
           </div>
