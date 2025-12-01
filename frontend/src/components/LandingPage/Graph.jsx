@@ -34,7 +34,7 @@ const Graph = ({ activeNodeId }) => {
   ];
 
   return (
-    <div className="relative h-full w-full rounded-3xl border border-slate-800">
+    <div className="rounded-3x relative h-full w-full">
       {/* Edges */}
       <svg className="h-full w-full">
         {edges.map((edge) => {
