@@ -51,11 +51,13 @@ class Product(db.Model):
     name = db.Column(db.String(250), nullable=False)
     price = db.Column(db.Numeric(10, 2), nullable=False)
 
+
 class Customer(db.Model):
     __tablename__ = "customers"
     id = db.Column(db.Integer, primary_key=True)
     daily_customer_amount = db.Column(db.Integer, nullable=False, default=0)
     date = db.Column(db.DateTime, nullable=False)
+
 
 class Inventory(db.Model):
     __tablename__ = "inventory"

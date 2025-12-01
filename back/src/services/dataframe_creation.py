@@ -1,29 +1,27 @@
-import os
 import json
+import os
 
 import pandas as pd
+from langchain.agents import create_agent
 from langchain.messages import HumanMessage
 from langchain.tools import ToolRuntime, tool
-from langchain.agents import create_agent
 
 from ..utils.csv_to_pd import csv_to_pd  # temp
-from .sql_agent import sql_agent_tool
 from .mcp_client import mcp_agent_tool
+from .sql_agent import sql_agent_tool
+
 
 @tool
 def create_dataframe_tool(
-    sales_data: str,
-    customer_data: str,
-    runtime: ToolRuntime,
-    weather_data: str
+    sales_data: str, customer_data: str, runtime: ToolRuntime, weather_data: str
 ) -> str:
     """
     Create a DataFrame by combining sales data and weather data, then save as CSV.
-    
+
     Parameters:
     sales_data: JSON string with database data from sql agent
     customer_data: JSON string with customer data from sql agent
-    
+
     Returns path to the saved CSV file.
     """
     if not os.path.exists("dataframes"):
@@ -37,42 +35,40 @@ def create_dataframe_tool(
     try:
         # Parse both JSON inputs
         sales_data_json = json.loads(sales_data) if isinstance(sales_data, str) else sales_data
-        customer_data_json = json.loads(customer_data) if isinstance(customer_data, str) else customer_data
-        weather_data_json = json.loads(weather_data) if isinstance(weather_data, str) else weather_data
+        customer_data_json = (
+            json.loads(customer_data) if isinstance(customer_data, str) else customer_data
+        )
+        weather_data_json = (
+            json.loads(weather_data) if isinstance(weather_data, str) else weather_data
+        )
 
         # Create DataFrames
         sales_data_df = pd.DataFrame(sales_data_json)
         customer_data_df = pd.DataFrame(customer_data_json)
         weather_data_df = pd.DataFrame(weather_data_json)
-        print("tässä df weather ",weather_data_df)
-        print("tässä df_sales ",sales_data_df)
-        print("tässä df_customer ",customer_data_df)
+        print("tässä df weather ", weather_data_df)
+        print("tässä df_sales ", sales_data_df)
+        print("tässä df_customer ", customer_data_df)
 
-        df_tmp = pd.merge(
-            sales_data_df,
-            weather_data_df,
-            on='date',
-            how='left'
-        )
+        df_tmp = pd.merge(sales_data_df, weather_data_df, on="date", how="left")
 
-        df_final = pd.merge(
-            df_tmp,
-            customer_data_df,
-            on='date',
-            how='left'
-        )
+        df_final = pd.merge(df_tmp, customer_data_df, on="date", how="left")
 
-        print("mergetty df tässä ",df_final)
+        print("mergetty df tässä ", df_final)
 
         # Save to CSV
         df_final.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")
-        
-        print(f"[create_dataframe_tool] Combined DataFrame saved to {file_path}, shape {df_final.shape}")
+
+        print(
+            f"[create_dataframe_tool] Combined DataFrame saved to {file_path}"
+            f", shape {df_final.shape}"
+        )
         return f"DataFrame created and saved to: {file_path}"
-        
+
     except Exception as e:
         print(f"[create_dataframe_tool] Error: {e}")
         return f"Error creating DataFrame: {str(e)}"
+
 
 dataframe_agent = create_agent(
     name="dataframe_agent",
@@ -81,12 +77,13 @@ dataframe_agent = create_agent(
     system_prompt=(
         "You are an agent responsible for creating dataframe for simulation agent. "
         "Weather data is fetched from mcp_agent_tool. NOT DATABASE. "
-        "Dataframes are created from real data. Fetch all other data than weather using the sql_agent_tool ONLY. "
+        "Dataframes are created from real data. Fetch all other"
+        " data than weather using the sql_agent_tool ONLY. "
         "Set date column as 'date' in all data fetched from database. "
         "Make the dataframe columns from the prompt that the user gives. "
         "When asked to create a dataframe: "
         "1. First, use sql_agent_tool to fetch the required data from the database. "
-        "   Ask the SQL agent to return data as JSON." 
+        "   Ask the SQL agent to return data as JSON."
         "   ONLY ACCEPT JSON AS RETURN DATA FROM SQL AGENT."
         "   Give the prompt in natural language to the sql_agent_tool, it will generate the query"
         "2. If user asks for weather data, fetch it from mcp_agent_tool."
@@ -94,6 +91,7 @@ dataframe_agent = create_agent(
         " DO NOT MAKE UP ANY DATA YOURSELF"
     ),
 )
+
 
 @tool
 def dataframe_agent_tool(prompt: str) -> str:
@@ -109,6 +107,7 @@ def dataframe_agent_tool(prompt: str) -> str:
     """
     result = dataframe_agent.invoke({"messages": [HumanMessage(content=prompt)]})
     return result["messages"][-1].content
+
 
 @tool
 def csv_dataframe_test_tool(dataframe_path: str) -> str:

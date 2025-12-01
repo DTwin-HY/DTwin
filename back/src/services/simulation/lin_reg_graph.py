@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from langgraph.graph import END, StateGraph
 from sklearn.linear_model import LinearRegression
 
-
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 

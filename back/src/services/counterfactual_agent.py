@@ -5,10 +5,10 @@ from typing import Any, Dict
 
 from dotenv import load_dotenv
 from langchain.agents import create_agent
-from langchain.tools import tool, ToolRuntime
+from langchain.tools import ToolRuntime, tool
 
-from .sql_agent import sql_agent_tool
 from .sales_agent import sales_agent_tool
+from .sql_agent import sql_agent_tool
 from .storage_agent import storage_agent_tool
 
 load_dotenv()
@@ -26,10 +26,7 @@ class CounterfactualDataManager:
         self.scenario_metadata = {}
 
     def create_counterfactual_scenario(
-        self,
-        scenario_name: str,
-        base_data: Dict[str, Any],
-        modifications: Dict[str, Any]
+        self, scenario_name: str, base_data: Dict[str, Any], modifications: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Create a new counterfactual scenario by modifying base data."""
         cf_data = copy.deepcopy(base_data)
@@ -43,20 +40,18 @@ class CounterfactualDataManager:
             "name": scenario_name,
             "created_at": datetime.now().isoformat(),
             "modifications": modifications,
-            "base_data_hash": hash(json.dumps(base_data, sort_keys=True, default=str))
+            "base_data_hash": hash(json.dumps(base_data, sort_keys=True, default=str)),
         }
 
         return {
             "scenario_id": scenario_id,
             "data": cf_data,
-            "metadata": self.scenario_metadata[scenario_id]
+            "metadata": self.scenario_metadata[scenario_id],
         }
 
     def _apply_modifications_recursive(
-        self,
-        data: Any,
-        modifications: Dict[str, Any]
-    ) -> None: # pragma: no cover
+        self, data: Any, modifications: Dict[str, Any]
+    ) -> None:  # pragma: no cover
         """Recursively apply modifications to handle nested data structures."""
         if isinstance(data, dict):
             for key, modification in modifications.items():
@@ -72,19 +67,14 @@ class CounterfactualDataManager:
 
             for k, v in data.items():
                 if isinstance(v, (dict, list)) and k != "data":
-                     self._apply_modifications_recursive(v, modifications)
+                    self._apply_modifications_recursive(v, modifications)
 
         elif isinstance(data, list):
             for item in data:
                 if isinstance(item, (dict, list)):
                     self._apply_modifications_recursive(item, modifications)
 
-    def _apply_operation(
-        self,
-        data: Dict[str, Any],
-        key: str,
-        operation: Dict[str, Any]
-    ) -> None:
+    def _apply_operation(self, data: Dict[str, Any], key: str, operation: Dict[str, Any]) -> None:
         """Apply specific operations like percentage increase, set value, etc."""
         op_type = operation.get("operation")
         value = operation.get("value")
@@ -99,9 +89,9 @@ class CounterfactualDataManager:
         try:
             current_value = float(current_value)
             if op_type == "percentage_increase":
-                data[key] = current_value * (1 + value/100)
+                data[key] = current_value * (1 + value / 100)
             elif op_type == "percentage_decrease":
-                data[key] = current_value * (1 - value/100)
+                data[key] = current_value * (1 - value / 100)
             elif op_type == "add_value":
                 data[key] = current_value + value
             elif op_type == "multiply_by":
@@ -118,10 +108,10 @@ class CounterfactualDataManager:
         if "data" in data and isinstance(data["data"], list):
             for item in data["data"]:
                 if isinstance(item, dict):
-                    self._recalculate_item_metrics(item) # pragma: no cover
-        self._recalculate_item_metrics(data) # pragma: no cover
+                    self._recalculate_item_metrics(item)  # pragma: no cover
+        self._recalculate_item_metrics(data)  # pragma: no cover
 
-    def _recalculate_item_metrics(self, item: Dict[str, Any]) -> None: # pragma: no cover"
+    def _recalculate_item_metrics(self, item: Dict[str, Any]) -> None:  # pragma: no cover"
         """Helper to recalculate metrics for a single dictionary item"""
         if "total_revenue" in item and "total_items_sold" in item:
             try:
@@ -138,9 +128,9 @@ class CounterfactualDataManager:
             except (ValueError, TypeError):
                 pass
         elif "unit_price" in item and "total_items_sold" in item:
-             try:
+            try:
                 item["total_revenue"] = item["unit_price"] * item["total_items_sold"]
-             except (ValueError, TypeError):
+            except (ValueError, TypeError):
                 pass
 
     def cache_real_data(self, data_key: str, data: Dict[str, Any]) -> None:
@@ -148,7 +138,7 @@ class CounterfactualDataManager:
         self.real_data_cache[data_key] = {
             "data": data,
             "hash": hash(json.dumps(data, sort_keys=True, default=str)),
-            "cached_at": datetime.now().isoformat()
+            "cached_at": datetime.now().isoformat(),
         }
 
 
@@ -158,13 +148,10 @@ class CounterfactualAgent:
         self.analysis_tools = {
             "sql": sql_agent_tool,
             "sales": sales_agent_tool,
-            "storage": storage_agent_tool
+            "storage": storage_agent_tool,
         }
 
-    def handle_counterfactual_request(
-        self,
-        request: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def handle_counterfactual_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Handle counterfactual requests with proper data separation and analysis."""
         try:
             base_query = request.get("base_query")
@@ -185,35 +172,30 @@ class CounterfactualAgent:
                 return real_data_result
 
             self.data_manager.cache_real_data(
-                f"{analysis_type}_{hash(base_query)}",
-                real_data_result
+                f"{analysis_type}_{hash(base_query)}", real_data_result
             )
 
-            scenario_name = request.get("scenario_name", f"what_if_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            scenario_name = request.get(
+                "scenario_name", f"what_if_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            )
             modifications = request.get("modifications", {})
 
             cf_scenario = self.data_manager.create_counterfactual_scenario(
-                scenario_name,
-                real_data_result,
-                modifications
+                scenario_name, real_data_result, modifications
             )
 
             cf_analysis_result = self._run_analysis_on_counterfactual(
-                cf_scenario["data"],
-                analysis_type
+                cf_scenario["data"], analysis_type
             )
 
             return self._format_counterfactual_response(
-                real_data_result,
-                cf_scenario,
-                cf_analysis_result,
-                analysis_type
+                real_data_result, cf_scenario, cf_analysis_result, analysis_type
             )
 
         except Exception as e:
             return {
                 "error": f"Counterfactual analysis failed: {str(e)}",
-                "scenario_id": request.get("scenario_name", "unknown")
+                "scenario_id": request.get("scenario_name", "unknown"),
             }
 
     def _get_base_data(self, query: str, analysis_type: str) -> Dict[str, Any]:
@@ -236,11 +218,13 @@ class CounterfactualAgent:
         except Exception as e:
             return {"error": f"Failed to get base data: {str(e)}"}
 
-    def _run_analysis_on_counterfactual(self, cf_data: Dict[str, Any], analysis_type: str) -> Dict[str, Any]:
+    def _run_analysis_on_counterfactual(
+        self, cf_data: Dict[str, Any], analysis_type: str
+    ) -> Dict[str, Any]:
         return {
             "counterfactual_data": cf_data,
             "analysis_type": analysis_type,
-            "status": "analyzed"
+            "status": "analyzed",
         }
 
     def _format_counterfactual_response(
@@ -248,7 +232,7 @@ class CounterfactualAgent:
         real_data: Dict[str, Any],
         cf_scenario: Dict[str, Any],
         cf_analysis: Dict[str, Any],
-        analysis_type: str
+        analysis_type: str,
     ) -> Dict[str, Any]:
         """Format response with clear separation between real and counterfactual data"""
 
@@ -262,21 +246,18 @@ class CounterfactualAgent:
             "scenario_id": cf_scenario["scenario_id"],
             "scenario_name": cf_scenario["metadata"]["name"],
             "date": datetime.now().isoformat(),
-            "real_data": {
-                "summary": real_metrics,
-                "full_data_reference": "cached_real_data"
-            },
+            "real_data": {"summary": real_metrics, "full_data_reference": "cached_real_data"},
             "counterfactual_data": {
                 "summary": cf_metrics,
                 "scenario_metadata": cf_scenario["metadata"],
-                "modifications_applied": cf_scenario["metadata"]["modifications"]
+                "modifications_applied": cf_scenario["metadata"]["modifications"],
             },
             "comparison": {
                 "differences": differences,
-                "impact_summary": self._generate_impact_summary(differences)
+                "impact_summary": self._generate_impact_summary(differences),
             },
             "analysis_type": analysis_type,
-            "data_separation_verified": True
+            "data_separation_verified": True,
         }
 
     def _extract_key_metrics(self, data, analysis_type):
@@ -289,20 +270,17 @@ class CounterfactualAgent:
                 else:
                     total_revenue = data.get("total_revenue", 0)
                     total_items_sold = data.get("total_items_sold", 1)
-                avg_order_value = (
-                    total_revenue / total_items_sold if total_items_sold else 0
-                )
+                avg_order_value = total_revenue / total_items_sold if total_items_sold else 0
                 return {
                     "total_revenue": total_revenue,
                     "total_items_sold": total_items_sold,
                     "average_order_value": round(avg_order_value, 2),
                 }
 
-            elif analysis_type == "storage":
+            if analysis_type == "storage":
                 if isinstance(data, dict) and "data" in data and isinstance(data["data"], list):
                     total_inventory = sum(
-                        item.get("amount", 0) or item.get("quantity", 0)
-                        for item in data["data"]
+                        item.get("amount", 0) or item.get("quantity", 0) for item in data["data"]
                     )
                     item_count = len(data["data"])
                 else:
@@ -313,29 +291,32 @@ class CounterfactualAgent:
                     "item_count": item_count,
                 }
 
-            else:
-                if isinstance(data, dict):
-                    if "raw_result" in data:
-                        return {"raw_result": str(data["raw_result"])[:200] + "..."}
+            if isinstance(data, dict):
+                if "raw_result" in data:
+                    return {"raw_result": str(data["raw_result"])[:200] + "..."}
 
-                    return {
-                        k: v for k, v in data.items()
-                        if k not in ["metadata", "status"]
-                    }
+                return {k: v for k, v in data.items() if k not in ["metadata", "status"]}
 
-                return {"raw_result": str(data)[:200] + "..."}
+            return {"raw_result": str(data)[:200] + "..."}
 
         except Exception as e:
             return {"error": f"metric extraction failed: {e}"}
 
-    def _calculate_differences(self, real_metrics: Dict[str, Any], cf_metrics: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    def _calculate_differences(
+        self, real_metrics: Dict[str, Any], cf_metrics: Dict[str, Any]
+    ) -> Dict[str, Dict[str, Any]]:
         """Calculate differences between real and counterfactual metrics"""
         differences = {}
         for key in real_metrics:
-            if key in cf_metrics and isinstance(real_metrics[key], (int, float)) and isinstance(cf_metrics[key], (int, float)):
+            if (
+                key in cf_metrics
+                and isinstance(real_metrics[key], (int, float))
+                and isinstance(cf_metrics[key], (int, float))
+            ):
                 real_value = float(real_metrics[key])
                 cf_value = float(cf_metrics[key])
-                if real_value == cf_value: continue
+                if real_value == cf_value:
+                    continue
 
                 absolute_diff = cf_value - real_value
                 percentage_diff = (absolute_diff / real_value * 100) if real_value != 0 else 0
@@ -345,7 +326,11 @@ class CounterfactualAgent:
                     "counterfactual_value": cf_value,
                     "absolute_difference": absolute_diff,
                     "percentage_difference": percentage_diff,
-                    "direction": "increase" if absolute_diff > 0 else "decrease" if absolute_diff < 0 else "no_change"
+                    "direction": (
+                        "increase"
+                        if absolute_diff > 0
+                        else "decrease" if absolute_diff < 0 else "no_change"
+                    ),
                 }
         return differences
 
@@ -354,7 +339,7 @@ class CounterfactualAgent:
         significant_changes = [
             f"{key}: {diff['direction']} of {abs(diff['percentage_difference']):.1f}%"
             for key, diff in differences.items()
-            if abs(diff['percentage_difference']) > 0.01
+            if abs(diff["percentage_difference"]) > 0.01
         ]
         if not significant_changes:
             return "No significant changes detected in the counterfactual scenario."
@@ -363,12 +348,10 @@ class CounterfactualAgent:
 
 counterfactual_agent_instance = CounterfactualAgent()
 
+
 @tool
 def run_what_if_scenario_utility(
-    scenario_name: str,
-    base_query: str,
-    modifications: Dict[str, Any],
-    analysis_type: str = "sql"
+    scenario_name: str, base_query: str, modifications: Dict[str, Any], analysis_type: str = "sql"
 ) -> str:
     """
     INTERNAL UTILITY: Perform counterfactual analysis.
@@ -378,10 +361,11 @@ def run_what_if_scenario_utility(
         "scenario_name": scenario_name,
         "base_query": base_query,
         "modifications": modifications,
-        "analysis_type": analysis_type
+        "analysis_type": analysis_type,
     }
     result_dict = counterfactual_agent_instance.handle_counterfactual_request(request)
     return json.dumps(result_dict, indent=2)
+
 
 COUNTERFACTUAL_SYSTEM_PROMPT = """
 You are a "what-if" analysis coordinator. Your job is to translate the user's

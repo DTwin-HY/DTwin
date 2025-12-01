@@ -15,10 +15,7 @@ def fetch_product_data():
         try:
             rows = db.session.execute(sql_query).mappings().all()
 
-            product_price_map = {
-                str(row["id"]): float(row["price"])
-                for row in rows
-            }
+            product_price_map = {str(row["id"]): float(row["price"]) for row in rows}
 
             return product_price_map
 

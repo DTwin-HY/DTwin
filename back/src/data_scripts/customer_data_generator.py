@@ -7,7 +7,6 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
-
 from ..models import models
 
 load_dotenv()
@@ -68,12 +67,11 @@ def generate_customers_data(num_days: int):
         [
             {
                 "daily_customer_amount": record["daily_customer_amount"],
-                "date": record["date"].date()
+                "date": record["date"].date(),
             }
             for record in customer_records
         ]
     )
-
 
     print(f"Generated {len(customer_df)} customer records for {num_days} days")
     print(customer_df.head())
@@ -88,6 +86,7 @@ def main():
     num_days = 1000
 
     generate_customers_data(num_days)
+
 
 if __name__ == "__main__":
     main()
