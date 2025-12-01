@@ -183,7 +183,7 @@ const ScrollGraphSection = () => {
         </div>
 
         {/* Right side, graph */}
-        <div className="h-[420px] sm:h-[500px] md:h-[560px] lg:sticky lg:top-40 lg:h-[640px]">
+        <div className="h-[460px] sm:h-[520px] md:h-[580px] lg:sticky lg:top-20 lg:h-[640px] xl:h-[720px] 2xl:h-[820px]">
           <Graph activeNodeId={activeNodeId} />
         </div>
       </div>
