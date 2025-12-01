@@ -1,5 +1,4 @@
 import Chatbot from './Chatbot';
-import InfoPanel from './InfoPanel';
 import Dashboard from './Dashboard';
 
 const Home = () => {
