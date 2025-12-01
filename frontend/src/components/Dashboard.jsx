@@ -7,7 +7,6 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({});
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [stageCompact, setStageCompact] = useState(true);
-  const [animatingCompact, setAnimatingCompact] = useState(false);
 
   useEffect(() => {
     (async () => {
