@@ -83,6 +83,7 @@ dataframe_agent = create_agent(
         "Weather data is fetched from mcp_agent_tool. NOT DATABASE. "
         "Dataframes are created from real data. Fetch all other data than weather using the sql_agent_tool ONLY. "
         "Set date column as 'date' in all data fetched from database. "
+        "Make the dataframe columns from the prompt that the user gives. "
         "When asked to create a dataframe: "
         "1. First, use sql_agent_tool to fetch the required data from the database. "
         "   Ask the SQL agent to return data as JSON." 

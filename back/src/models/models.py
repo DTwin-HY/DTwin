@@ -54,7 +54,7 @@ class Product(db.Model):
 class Customer(db.Model):
     __tablename__ = "customers"
     id = db.Column(db.Integer, primary_key=True)
-    amount = db.Column(db.Integer, nullable=False, default=0)
+    daily_customer_amount = db.Column(db.Integer, nullable=False, default=0)
     date = db.Column(db.DateTime, nullable=False)
 
 class Inventory(db.Model):
