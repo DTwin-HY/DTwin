@@ -33,7 +33,7 @@ def analysis_node(state: ToolState) -> ToolState:
 
     y_col = state.get("y_value")
 
-    numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    numeric_cols = df.select_dtypes(include=["number", "boolean"]).columns.tolist()
 
     if not y_col:
         if not numeric_cols:
