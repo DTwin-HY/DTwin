@@ -122,9 +122,12 @@ export const MetricCard = ({
     const pct = growth != null ? `${(growth * 100).toFixed(1)}%` : '—';
     const isPositive = growth != null ? growth >= 0 : null;
     return (
-      <div className="flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-[hsl(var(--accent))]/30 bg-[hsl(var(--background))]/60 p-3 transition-all hover:border-[hsl(var(--accent))]/60 hover:shadow-lg">
+      <div 
+        className="flex items-center justify-between gap-3 overflow-hidden rounded-xl border p-3 transition-all hover:shadow-lg"
+        style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff' }}
+      >
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold text-[hsl(var(--foreground))] md:text-base">
+          <div className="truncate text-sm font-semibold md:text-base" style={{ color: '#1f2937' }}>
             {title}
           </div>
         </div>
@@ -133,10 +136,10 @@ export const MetricCard = ({
           <div
             className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold md:text-sm ${
               isPositive
-                ? 'bg-emerald-500/10 text-emerald-300'
+                ? 'bg-emerald-500/10 text-emerald-600'
                 : isPositive === false
-                  ? 'bg-rose-500/10 text-rose-300'
-                  : 'bg-white/5 text-[hsl(var(--foreground))]/70'
+                  ? 'bg-rose-500/10 text-rose-600'
+                  : 'bg-gray-100 text-gray-600'
             }`}
           >
             {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
@@ -150,9 +153,12 @@ export const MetricCard = ({
   const rows = buildRowsFromMetric(metric);
 
   return (
-    <div className="rounded-2xl border border-[hsl(var(--accent))]/30 bg-[hsl(var(--background))]/40 p-5 shadow-lg backdrop-blur-xl transition-all hover:border-[hsl(var(--accent))]/60">
-      <div className="mb-4 border-b border-[hsl(var(--accent))]/20 pb-4">
-        <p className="text-lg font-bold text-[hsl(var(--foreground))] md:text-xl">{title}</p>
+    <div 
+      className="rounded-2xl border p-5 shadow-lg transition-all"
+      style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff' }}
+    >
+      <div className="mb-4 border-b pb-4" style={{ borderColor: '#e5e7eb' }}>
+        <p className="text-lg font-bold md:text-xl" style={{ color: '#1f2937' }}>{title}</p>
       </div>
       <div className="grid grid-cols-1 gap-3">
         <div className="space-y-4">
@@ -183,18 +189,18 @@ export const MetricCard = ({
               >
                 <div className="flex items-center justify-between pb-3">
                   <div>
-                    <div className="text-[11px] font-medium tracking-wide text-[hsl(var(--foreground))]/60 uppercase">
+                    <div className="text-[13px] font-medium tracking-wide uppercase" style={{ color: '#6b7280' }}>
                       {r.label}
                     </div>
-                    <div className="mt-1 text-xl font-bold text-[hsl(var(--foreground))]">
+                    <div className="mt-1 text-xl font-bold" style={{ color: '#1f2937' }}>
                       {formatNumber(r.amount)}
                     </div>
                   </div>
                   <div
                     className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold md:text-sm ${
                       isPositive
-                        ? 'bg-emerald-500/10 text-emerald-300'
-                        : 'bg-rose-500/10 text-rose-300'
+                        ? 'bg-emerald-500/10 text-emerald-600'
+                        : 'bg-rose-500/10 text-rose-600'
                     }`}
                   >
                     {isPositive ? (
@@ -215,12 +221,12 @@ export const MetricCard = ({
                         >
                           <CartesianGrid
                             strokeDasharray="4 4"
-                            stroke="rgba(148,163,184,0.25)"
+                            stroke="rgba(209,213,219,0.5)"
                             vertical
                           />
                           <XAxis
                             dataKey="week"
-                            tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
+                            tick={{ fontSize: 13, fill: '#1f2937' }}
                             tickLine={false}
                             ticks={seriesArr.map((d) => d.week)}
                             tickFormatter={(week) => {
@@ -271,8 +277,8 @@ export const MetricCard = ({
                             type="number"
                             domain={[0, isCurrentQuarter ? 12 : 'dataMax']}
                             tick={{
-                              fontSize: 12,
-                              fill: 'hsl(var(--foreground))',
+                              fontSize: 13,
+                              fill: '#1f2937',
                             }}
                             tickLine={false}
                             ticks={isCurrentQuarter ? [0, 5, 9] : seriesArr.map((d) => d.week)}
@@ -320,7 +326,7 @@ export const MetricCard = ({
                             type="monotone"
                             dataKey="value"
                             stroke={color}
-                            strokeWidth={2.5}
+                            strokeWidth={5}
                             fill={`url(#gradient-${title}-${i})`}
                             dot={false}
                             activeDot={{

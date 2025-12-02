@@ -148,13 +148,14 @@ const Chatbot = () => {
 
   return (
     <div className="w-full max-w-full">
-      <div className="relative rounded-2xl border border-[hsl(var(--accent))]/30 p-6">
+      <div className="relative rounded-2xl border p-6 shadow-lg" style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff'}}>
         <div className="group absolute top-6 right-6">
           <button
             type="button"
             onClick={handleNewChat}
             disabled={loading || userId === null}
             className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200 hover:cursor-pointer hover:opacity-80 disabled:opacity-50"
+            style={{ color: '#1f2937' }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -173,7 +174,7 @@ const Chatbot = () => {
                 cx="18"
                 cy="6"
                 r="5"
-                fill="hsl(var(--background))"
+                fill="#ffffff"
                 stroke="currentColor"
                 strokeWidth={1}
               />
@@ -187,12 +188,12 @@ const Chatbot = () => {
             </svg>
           </button>
 
-          <div className="pointer-events-none absolute right-0 bottom-full mb-2 rounded-md bg-black/80 px-3 py-1.5 text-xs whitespace-nowrap text-[hsl(var(--foreground))] opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
+          <div className="pointer-events-none absolute right-0 bottom-full mb-2 rounded-md px-3 py-1.5 text-xs whitespace-nowrap shadow-lg transition-opacity duration-200 group-hover:opacity-100 opacity-0" style={{ backgroundColor: 'rgba(0,0,0,0.8)', color: '#ffffff' }}>
             Start a new chat
           </div>
         </div>
 
-        <h3 className="text-gradient mb-6 text-center text-3xl font-semibold">
+        <h3 className="bg-clip-text text-transparent mb-6 text-center text-4xl font-bold leading-relaxed" style={{ backgroundImage: 'linear-gradient(to right, #0e0f38ff, rgba(59, 87, 165, 1), #508ce7ff)' }}>
           Your Digital Twin Assistant
         </h3>
 
@@ -232,7 +233,12 @@ const Chatbot = () => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               disabled={loading || userId === null}
-              className="w-full resize-none rounded-full border border-[hsl(var(--accent))]/40 bg-[hsl(var(--background))]/70 py-4 pr-16 pl-6 text-base text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--foreground))]/40 focus:ring-2 focus:ring-[hsl(var(--accent))] focus:outline-none"
+              className="w-full resize-none rounded-full border py-4 pr-16 pl-6 text-base focus:ring-2 focus:outline-none"
+              style={{ 
+                borderColor: '#d1d5db', 
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                color: '#1f2937'
+              }}
               placeholder={userId === null ? 'Loading user...' : 'How can I help you today?'}
               rows={1}
               onKeyDown={(e) => {
@@ -246,11 +252,11 @@ const Chatbot = () => {
             <button
               type="submit"
               disabled={loading || userId === null || !inputValue.trim()}
-              className={`absolute right-2 flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium text-[hsl(var(--accent-foreground))] transition-colors duration-200 disabled:opacity-40 ${
-                inputValue.trim() && !loading && userId !== null
-                  ? 'bg-[hsl(var(--accent))] hover:bg-[hsl(var(--violet-light))]'
-                  : 'bg-[hsl(var(--foreground))]/15'
-              }`}
+              className="absolute right-2 flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium transition-colors duration-200 disabled:opacity-40"
+              style={{
+                backgroundColor: inputValue.trim() && !loading && userId !== null ? 'hsl(263 70% 60%)' : 'rgba(0,0,0,0.15)',
+                color: '#ffffff'
+              }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -268,9 +274,10 @@ const Chatbot = () => {
         {successMessage && !loading && !errorMessage && (
           <div className="mt-4 flex justify-center">
             <div
-              className={`w-full max-w-md rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-300 shadow transition-opacity duration-1000 ${
+              className={`w-full max-w-md rounded-lg border p-4 text-sm shadow transition-opacity duration-1000 ${
                 showSuccess ? 'opacity-100' : 'opacity-0'
               }`}
+              style={{ borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}
             >
               <p className="font-medium">{successMessage}</p>
             </div>
@@ -279,9 +286,10 @@ const Chatbot = () => {
         {errorMessage && !loading && (
           <div className="mt-4 flex justify-center">
             <div
-              className={`w-full max-w-md rounded-lg border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-300 shadow transition-opacity duration-1000 ${
+              className={`w-full max-w-md rounded-lg border p-4 text-sm shadow transition-opacity duration-1000 ${
                 showError ? 'opacity-100' : 'opacity-0'
               }`}
+              style={{ borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}
             >
               <p className="font-medium">{errorMessage}</p>
             </div>
