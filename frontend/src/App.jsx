@@ -5,17 +5,21 @@ import PrivateRoute from './components/PrivateRoute';
 import GuestRoute from './components/GuestRoute';
 import Layout from './components/Layout';
 import Home from './components/Home';
+import LandingPage from './components/LandingPage/LandingPage';
 
 const App = () => {
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
+      <Route path="/" element={<LandingPage />} />
+
+      <Route element={<GuestRoute />}>
+        <Route path="/signin" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+      </Route>
+
+      <Route path="/dashboard" element={<Layout />}>
         <Route element={<PrivateRoute />}>
           <Route index element={<Home />} />
-        </Route>
-        <Route element={<GuestRoute />}>
-          <Route path="/signin" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
         </Route>
       </Route>
     </Routes>

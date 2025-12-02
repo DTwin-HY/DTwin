@@ -58,8 +58,8 @@ const Chatbot = () => {
       console.log('Last message and steps:', last, steps);
 
       setChats((prevChats) => [
+        { role: 'supervisor', steps, finalMessage: last.body },
         ...(prevChats || []),
-        { role: 'supervisor', finalMessage: last.body, steps },
       ]);
       console.log('Updated chats:', chats);
       return steps;
@@ -85,16 +85,20 @@ const Chatbot = () => {
       setErrorMessage('Input cannot be empty');
       return;
     }
+
+    const messageToSend = inputValue;
+    setInputValue('');
+
     finalizedRef.current = false;
     setLoading(true);
     setSuccessMessage('');
     setErrorMessage('');
     setResponses([]);
-    setChats((prevChats) => [...(prevChats || []), { role: 'user', message: inputValue }]);
+    setChats((prevChats) => [{ role: 'user', message: messageToSend }, ...(prevChats || [])]);
 
     try {
       await streamMessage(
-        inputValue,
+        messageToSend,
         threadId,
         (chunk) => {
           console.log('Received chunk:', chunk);
@@ -132,8 +136,6 @@ const Chatbot = () => {
           });
         },
       );
-      setSuccessMessage('Prompt and response saved to database!');
-      setInputValue('');
     } catch (err) {
       console.error(err);
       setErrorMessage(`Error in backend/database${err?.message ? `: ${err.message}` : ''}`);
@@ -145,39 +147,73 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="w-full max-w-full p-6">
-      <div className="rounded-xl bg-white p-6 shadow-md">
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">Ask the DTwin assistant</h3>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+    <div className="w-full max-w-full">
+      <div
+        className="relative rounded-2xl border p-6 shadow-lg"
+        style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff' }}
+      >
+        <div className="group absolute top-6 right-6">
+          <button
+            type="button"
+            onClick={handleNewChat}
             disabled={loading || userId === null}
-            className="min-h-[100px] rounded-lg border border-gray-300 p-4 text-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            placeholder={userId === null ? 'Loading user...' : 'Type your message...'}
-          />
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={loading || userId === null}
-              className="flex-1 rounded-lg bg-purple-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-purple-600 disabled:bg-gray-400"
+            className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200 hover:cursor-pointer hover:opacity-80 disabled:opacity-50"
+            style={{ color: '#1f2937' }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-10 w-10"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.2}
             >
-              {loading ? 'Streaming...' : 'Send Message'}
-            </button>
-            <button
-              type="button"
-              onClick={handleNewChat}
-              disabled={loading || userId === null}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-100 disabled:opacity-50"
-            >
-              New chat
-            </button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+              <circle cx="18" cy="6" r="5" fill="#ffffff" stroke="currentColor" strokeWidth={1} />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M18 3.5v5M15.5 6h5"
+                stroke="currentColor"
+                strokeWidth={1}
+              />
+            </svg>
+          </button>
+
+          <div
+            className="pointer-events-none absolute right-0 bottom-full mb-2 rounded-md px-3 py-1.5 text-xs whitespace-nowrap opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100"
+            style={{ backgroundColor: 'rgba(0,0,0,0.8)', color: '#ffffff' }}
+          >
+            Start a new chat
           </div>
-        </form>
+        </div>
+
+        <h3
+          className="mb-6 bg-clip-text text-center text-4xl leading-relaxed font-bold text-transparent"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, #0e0f38ff, rgba(59, 87, 165, 1), #508ce7ff)',
+          }}
+        >
+          Your Digital Twin Assistant
+        </h3>
+
+        <ListMessages messages={chats} />
+
         {loading && (
           <div className="mt-4 flex justify-center">
-            <div className="w-full max-w-md rounded-lg border border-blue-300 bg-blue-100 p-4 text-blue-800 shadow">
-              <p className="font-medium">Streaming response...</p>
+            <div className="flex h-12 items-center justify-center gap-2">
+              {[...Array(3)].map((_, i) => (
+                <span
+                  key={i}
+                  className="dot-base animate-bounce-colorwave h-6 w-6 rounded-full"
+                  style={{ animationDelay: `${i * 0.2}s` }}
+                ></span>
+              ))}
             </div>
           </div>
         )}
@@ -196,31 +232,85 @@ const Chatbot = () => {
             ) : null;
           })()}
 
+        <form onSubmit={handleSubmit} className="mt-4">
+          <div className="relative flex items-center">
+            <textarea
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              disabled={loading || userId === null}
+              className="w-full resize-none rounded-full border py-4 pr-16 pl-6 text-base focus:ring-2 focus:outline-none"
+              style={{
+                borderColor: '#d1d5db',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                color: '#1f2937',
+              }}
+              placeholder={userId === null ? 'Loading user...' : 'How can I help you today?'}
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
+            />
+
+            <button
+              type="submit"
+              disabled={loading || userId === null || !inputValue.trim()}
+              className="absolute right-2 flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium transition-colors duration-200 disabled:opacity-40"
+              style={{
+                backgroundColor:
+                  inputValue.trim() && !loading && userId !== null
+                    ? 'hsl(263 70% 60%)'
+                    : 'rgba(0,0,0,0.15)',
+                color: '#ffffff',
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        {/* Success and error messages */}
         {successMessage && !loading && !errorMessage && (
           <div className="mt-4 flex justify-center">
             <div
-              className={`w-full max-w-md rounded-lg border border-green-300 bg-green-100 p-4 text-green-800 shadow transition-opacity duration-1000 ${
+              className={`w-full max-w-md rounded-lg border p-4 text-sm shadow transition-opacity duration-1000 ${
                 showSuccess ? 'opacity-100' : 'opacity-0'
               }`}
+              style={{
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                color: '#10b981',
+              }}
             >
               <p className="font-medium">{successMessage}</p>
             </div>
           </div>
         )}
-
         {errorMessage && !loading && (
           <div className="mt-4 flex justify-center">
             <div
-              className={`w-full max-w-md rounded-lg border border-red-300 bg-red-100 p-4 text-red-800 shadow transition-opacity duration-1000 ${
+              className={`w-full max-w-md rounded-lg border p-4 text-sm shadow transition-opacity duration-1000 ${
                 showError ? 'opacity-100' : 'opacity-0'
               }`}
+              style={{
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
+              }}
             >
               <p className="font-medium">{errorMessage}</p>
             </div>
           </div>
         )}
-
-        <ListMessages messages={chats} />
       </div>
     </div>
   );

@@ -23,8 +23,8 @@ export default defineConfig([
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
       'no-trailing-spaces': 'error',
-      indent: ['error', 2],
-      eqeqeq: 'error',
+      indent: 'off',
+      eqeqeq: ['error', 'smart'],
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'func-style': ['error', 'expression'],

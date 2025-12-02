@@ -8,7 +8,7 @@ const GuestRoute = () => {
   if (loading)
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
 
-  return !isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
+  return !isAuthenticated ? <Outlet /> : <Navigate to="/dashboard" replace />;
 };
 
 export default GuestRoute;

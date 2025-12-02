@@ -54,12 +54,12 @@ const SignIn = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4">
-      <div className="mb-5 text-3xl font-bold">Sign in</div>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[hsl(var(--background))] p-4 text-[hsl(var(--foreground))]">
+      <div className="text-gradient mb-5 text-3xl leading-relaxed font-bold">Sign in</div>
 
       <form
         onSubmit={handleSubmit}
-        className="flex w-full max-w-md flex-col gap-4 rounded-xl bg-white p-6 shadow-md"
+        className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-[hsl(var(--accent))]/30 bg-[hsl(var(--background))]/60 p-6 shadow-lg backdrop-blur-xl"
       >
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-gray-700">Username</span>
@@ -69,7 +69,7 @@ const SignIn = () => {
             value={form.username}
             onChange={handleChange}
             disabled={loading}
-            className="rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="rounded-lg border border-[hsl(var(--accent))]/40 bg-[hsl(var(--background))]/70 p-3 text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--foreground))]/40 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             placeholder="Your username"
           />
         </label>
@@ -82,7 +82,7 @@ const SignIn = () => {
             value={form.password}
             onChange={handleChange}
             disabled={loading}
-            className="rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="rounded-lg border border-[hsl(var(--accent))]/40 bg-[hsl(var(--background))]/70 p-3 text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--foreground))]/40 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             placeholder="Your password"
           />
         </label>
@@ -90,7 +90,7 @@ const SignIn = () => {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-blue-500 py-3 font-semibold text-white shadow transition-colors duration-200 hover:bg-blue-600 disabled:opacity-60"
+          className="rounded-lg bg-[hsl(var(--accent))] py-3 font-semibold text-[hsl(var(--accent-foreground))] shadow transition-colors duration-200 hover:bg-[hsl(var(--violet-light))] disabled:opacity-60"
         >
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
