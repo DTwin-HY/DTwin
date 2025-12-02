@@ -38,17 +38,18 @@ const Dashboard = () => {
 
   return (
     <div className="w-full transition-all duration-300 ease-in-out">
-      <div className="bo rounded-2xl border border-[hsl(var(--accent))]/30 shadow-sm transition-all duration-300">
+      <div className="bo rounded-2xl border shadow-sm transition-all duration-300" style={{ borderColor: '#e5e7eb', background: 'linear-gradient(135deg, #e6eaf8ff 0%, #ffffffff 50%, #fcf8ffff 100%)' }}>
         <div className="flex items-center justify-between p-4">
           <div>
-            <h2 className="text-gradient text-2xl font-bold">Analytics Dashboard</h2>
-            <p className="mt-1 text-lg text-gray-500">Real-time performance metrics</p>
+            <h2 className="text-3xl font-extrabold leading-relaxed bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, #383054ff, #514475ff, #776c97ff)' }} >Analytics Dashboard</h2>
+            <p className="mt-1 text-xl font-semibold" style={{ color: '#000000ff' }}>Real-time performance metrics</p>
           </div>
 
           <div className="flex items-center gap-1">
             <button
               aria-label="collapse dashboard"
-              className="rounded-lg p-2 text-[hsl(var(--foreground))]/60 transition-colors hover:bg-white/5"
+              className="rounded-lg p-2 transition-colors"
+              style={{ color: '#000000ff' }}
               onClick={() => setIsCollapsed((s) => !s)}
             >
               {isCollapsed ? (
@@ -60,7 +61,8 @@ const Dashboard = () => {
 
             <button
               aria-label="toggle compact"
-              className="rounded-lg px-3 py-2 text-lg font-medium text-[hsl(var(--foreground))]/60 transition-colors hover:bg-white/5"
+              className="rounded-lg px-3 py-2 text-xl font-medium transition-colors"
+              style={{ color: '#000000ff' }}
               onClick={toggleCompact}
             >
               {stageCompact ? 'Full' : 'Compact'}
@@ -90,15 +92,15 @@ const Dashboard = () => {
             title="Transactions"
             metric={transactions}
             compact={stageCompact}
-            color="hsl(140 60% 40%)"
-            dotOutlineColor="#0d893dff"
+            color="hsla(280, 71%, 59%, 1.00)"
+            dotOutlineColor="#8247b6ff"
           />
           <MetricCard
             title="Revenue"
             metric={revenue}
             compact={stageCompact}
-            color="hsl(30 90% 50%)"
-            dotOutlineColor="#c96717ff"
+            color="hsla(198, 90%, 50%, 1.00)"
+            dotOutlineColor="#194aa5ff"
           />
         </div>
       </div>
