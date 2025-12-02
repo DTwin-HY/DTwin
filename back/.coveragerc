@@ -1,9 +1,12 @@
 [run]
 source=back
 omit=
-    src/services/math_agent.py
     src/services/research_agent.py
+    src/services/dataframe_creation.py
+    src/services/mcp_client.py
     src/data_scripts/data_analysis_test_data.py
+    src/database/product_db.py
+    src/services/simulation/lin_reg_graph.py
     tests/*
 
 [report]

@@ -1,10 +1,14 @@
 import pytest
+import sys
+from pathlib import Path
 import json
 from unittest.mock import MagicMock, patch
 
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 with patch("langchain.agents.create_agent"), \
      patch("dotenv.load_dotenv"):
-    from back.src.services.counterfactual_agent import (
+    from src.services.counterfactual_agent import (
         CounterfactualDataManager,
         CounterfactualAgent,
         run_what_if_scenario_utility,
@@ -207,7 +211,7 @@ def test_cache_real_data(data_manager):
 
 def test_tool_run_what_if_scenario_utility():
     """Test the @tool function for running scenarios."""
-    with patch("back.src.services.counterfactual_agent.counterfactual_agent_instance") as mock_agent_instance:
+    with patch("src.services.counterfactual_agent.counterfactual_agent_instance") as mock_agent_instance:
         mock_agent_instance.handle_counterfactual_request.return_value = {
             "status": "success",
             "scenario_id": "123"

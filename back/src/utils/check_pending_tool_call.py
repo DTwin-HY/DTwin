@@ -27,7 +27,11 @@ def check_pending_tool_call(snapshot) -> bool:
 
         # Collect tool_call_id from ToolMessage responses
         if msg.__class__.__name__ == "ToolMessage":
-            tcid = getattr(msg, "tool_call_id", None) or (msg.additional_kwargs.get("tool_call_id") if hasattr(msg, "additional_kwargs") and isinstance(msg.additional_kwargs, dict) else None)
+            tcid = getattr(msg, "tool_call_id", None) or (
+                msg.additional_kwargs.get("tool_call_id")
+                if hasattr(msg, "additional_kwargs") and isinstance(msg.additional_kwargs, dict)
+                else None
+            )
             if tcid:
                 responded_ids.add(tcid)
 

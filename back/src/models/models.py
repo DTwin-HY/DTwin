@@ -39,9 +39,9 @@ class Sale(db.Model):
     __tablename__ = "sales"
     id = db.Column(db.Integer, primary_key=True)
     transaction_id = db.Column(db.String(36), nullable=False)
-    item_id = db.Column(db.String(100), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=True)
 
 
@@ -50,6 +50,13 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
     price = db.Column(db.Numeric(10, 2), nullable=False)
+
+
+class Customer(db.Model):
+    __tablename__ = "customers"
+    id = db.Column(db.Integer, primary_key=True)
+    daily_customer_amount = db.Column(db.Integer, nullable=False, default=0)
+    date = db.Column(db.DateTime, nullable=False)
 
 
 class Inventory(db.Model):

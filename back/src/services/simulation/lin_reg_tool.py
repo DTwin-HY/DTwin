@@ -13,19 +13,19 @@ def csv_fetch(dataframe_path: str) -> dict:
     dataframe_path: str : path to the dataframe csv file.
     """
     path = dataframe_path
-    dataframe = pd.read_csv(path).to_dict()
+    dataframe = pd.read_csv(path, sep=";").to_dict()
 
     return dataframe
 
 
 @tool
-def lin_reg_tool(data_location: str,y_value) -> Dict[str, Any]:
+def lin_reg_tool(data_location: str, y_value) -> Dict[str, Any]:
     """
     Runs the linear regression simulation graph on given data. \n
     Args:
         data_location (str): disk location of a csv file in str format
-        y_value (str): Name of the value to be explained, y value in the linear 
-            regression    
+        y_value (str): Name of the value to be explained, y value in the linear
+            regression
     """
 
     try:
@@ -34,6 +34,6 @@ def lin_reg_tool(data_location: str,y_value) -> Dict[str, Any]:
         return "Failed to load data."
 
     graph = build_lin_reg_graph()
-    result = graph.invoke({"df": data, "y_value":y_value})
+    result = graph.invoke({"df": data, "y_value": y_value})
 
     return result.get("results", {"errors": result.get("errors", [])})
