@@ -24,6 +24,10 @@ ENV MPLCONFIGDIR=/tmp/matplotlib_cache
 
 EXPOSE 5000
 
+RUN mkdir -p /app/dataframes \
+    && chgrp -R 0 /app/dataframes \
+    && chmod -R g+rwX /app/dataframes
+
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
