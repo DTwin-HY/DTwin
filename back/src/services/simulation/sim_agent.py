@@ -22,7 +22,7 @@ class SimulationState(AgentState):
 
 sim_agent = create_agent(
     model="openai:gpt-4.1",
-    tools=[lin_reg_tool],  # TODO: Remove fetch_data tool before merge
+    tools=[lin_reg_tool],
     system_prompt=(
         "You are a simulation agent responsible for running company data simulations.\n"
         "You can use the lin_reg_tool to analyze how product sales are affected by "
