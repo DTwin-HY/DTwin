@@ -4,13 +4,13 @@ const StepCard = ({ title, content, imageData, defaultOpen = false }) => {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="mt-3 rounded-lg border border-[hsl(var(--accent))]/30 bg-[hsl(var(--background))]/50 shadow-sm transition-shadow hover:border-[hsl(var(--accent))]/70 hover:shadow-md">
+    <div className="mt-3 rounded-lg border border-[hsl(var(--accent))]/30  shadow-sm transition-shadow hover:border-[hsl(var(--accent))]/70 hover:shadow-md">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex w-full cursor-pointer items-center justify-between px-4 py-3"
       >
-        <span className="font-medium">{title}</span>
+        <span className="font-medium text-gray-600">{title}</span>
         <span className={`transition-transform ${open ? 'rotate-90' : ''}`} aria-hidden>
           ›
         </span>
@@ -26,7 +26,7 @@ const StepCard = ({ title, content, imageData, defaultOpen = false }) => {
             />
           </div>
         ) : (
-          <pre className="px-4 pt-3 pb-4 text-xs leading-relaxed text-[hsl(var(--foreground))]/80">
+          <pre className="px-4 pt-3 pb-4 text-s leading-relaxed text-gray-800 whitespace-pre-wrap break-words overflow-x-auto">
             {content}
           </pre>
         )}
