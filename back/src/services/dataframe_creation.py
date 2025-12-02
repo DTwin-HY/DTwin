@@ -46,15 +46,15 @@ def create_dataframe_tool(
         sales_data_df = pd.DataFrame(sales_data_json)
         customer_data_df = pd.DataFrame(customer_data_json)
         weather_data_df = pd.DataFrame(weather_data_json)
-        print("tässä df weather ", weather_data_df)
-        print("tässä df_sales ", sales_data_df)
-        print("tässä df_customer ", customer_data_df)
+        print("df weather ", weather_data_df)
+        print("df_sales ", sales_data_df)
+        print("df_customer ", customer_data_df)
 
         df_tmp = pd.merge(sales_data_df, weather_data_df, on="date", how="left")
 
         df_final = pd.merge(df_tmp, customer_data_df, on="date", how="left")
 
-        print("mergetty df tässä ", df_final)
+        print("merged df ", df_final)
 
         # Save to CSV
         df_final.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")

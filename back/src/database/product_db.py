@@ -10,7 +10,6 @@ def fetch_product_data():
     """
     sql_query = text("""SELECT id, price FROM products;""")
 
-    # Tarvitaan app-konteksti, jotta db.session toimii
     with app.app_context():
         try:
             rows = db.session.execute(sql_query).mappings().all()

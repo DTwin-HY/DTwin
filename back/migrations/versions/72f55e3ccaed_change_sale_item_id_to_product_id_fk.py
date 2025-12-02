@@ -16,11 +16,9 @@ depends_on = None
 
 
 def upgrade():
-    # 1) Lisää product_id ensin nullable=True
     with op.batch_alter_table("sales", schema=None) as batch_op:
         batch_op.add_column(sa.Column("product_id", sa.Integer(), nullable=True))
 
-    # 2) Täytä product_id arvoilla 1,2,3,... sales.id-järjestyksessä
     op.execute(
         """
         WITH numbered AS (
@@ -34,7 +32,6 @@ def upgrade():
         """
     )
 
-    # 3) Tee sarakkeesta NOT NULL
     with op.batch_alter_table("sales", schema=None) as batch_op:
         batch_op.alter_column(
             "product_id",
