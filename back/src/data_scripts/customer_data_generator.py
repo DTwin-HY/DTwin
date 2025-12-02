@@ -60,7 +60,7 @@ def generate_customers_data(num_days: int):
 
             customer_records.append(
                 {
-                    "amount": customer_count,
+                    "daily_customer_amount": customer_count,
                     "date": datetime.combine(date, datetime.min.time()),
                 }
             )
