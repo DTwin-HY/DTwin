@@ -46,17 +46,17 @@ def query_sales(start,end):
     sql = text(
         """
         SELECT 
-                timestamp,
+                date,
                 SUM(quantity) as quantity,
                 SUM(amount)  as revenue 
         FROM 
                 sales
         WHERE 
-                timestamp BETWEEN :start_date AND :end_date
+                date BETWEEN :start_date AND :end_date
         GROUP BY 
-                timestamp
+                date
         ORDER BY
-                timestamp; 
+                date; 
         """
     )
     try:
@@ -79,13 +79,13 @@ def query_timeperiod_sales(start, end, time_interval):
     sql = text(
         """
         SELECT 
-            date_part(:time_interval, timestamp) as timeperiod,
+            date_part(:time_interval, date) as timeperiod,
             SUM(quantity) as quantity,
             SUM(amount)  as revenue 
         FROM 
             sales
         WHERE 
-            timestamp BETWEEN :start_date AND :end_date
+            date BETWEEN :start_date AND :end_date
         GROUP BY 
             timeperiod
         ORDER BY
@@ -113,16 +113,16 @@ def query_transactions(start, end):
     sql = text(
         """
         SELECT 
-            timestamp, 
+            date, 
             COUNT(transaction_id) as transactions
         FROM 
             sales 
         WHERE 
-            timestamp BETWEEN :start_date AND :end_date 
+            date BETWEEN :start_date AND :end_date 
         GROUP BY 
-            timestamp 
+            date 
         ORDER BY 
-            timestamp;
+            date;
         """
     )
     try:
@@ -145,12 +145,12 @@ def query_timeperiod_transactions(start, end, time_interval):
     sql = text(
         """
         SELECT 
-                date_part(:time_interval, timestamp) as timeperiod, 
+                date_part(:time_interval, date) as timeperiod, 
                 COUNT(transaction_id) as transactions
         FROM 
                 sales 
         WHERE 
-                timestamp BETWEEN :start_date AND :end_date 
+                date BETWEEN :start_date AND :end_date 
         GROUP BY 
                 timeperiod 
         ORDER BY 
