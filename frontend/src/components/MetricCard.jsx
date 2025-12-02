@@ -43,8 +43,8 @@ const seriesObjToArray = (obj, isCurrentQuarter = false, totalWeeksInQuarter = 1
   const dataArray = Array.isArray(obj)
     ? obj.map((v, i) => ({ week: i, value: +v }))
     : Object.keys(obj)
-      .sort((a, b) => a - b)
-      .map((k) => ({ week: +k, value: obj[k] }));
+        .sort((a, b) => a - b)
+        .map((k) => ({ week: +k, value: obj[k] }));
 
   if (isCurrentQuarter && dataArray.length < totalWeeksInQuarter) {
     const lastWeek = dataArray[dataArray.length - 1].week;
@@ -158,7 +158,9 @@ export const MetricCard = ({
       style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff' }}
     >
       <div className="mb-4 border-b pb-4" style={{ borderColor: '#e5e7eb' }}>
-        <p className="text-lg font-bold md:text-xl" style={{ color: '#1f2937' }}>{title}</p>
+        <p className="text-lg font-bold md:text-xl" style={{ color: '#1f2937' }}>
+          {title}
+        </p>
       </div>
       <div className="grid grid-cols-1 gap-3">
         <div className="space-y-4">
@@ -189,7 +191,10 @@ export const MetricCard = ({
               >
                 <div className="flex items-center justify-between pb-3">
                   <div>
-                    <div className="text-[13px] font-medium tracking-wide uppercase" style={{ color: '#6b7280' }}>
+                    <div
+                      className="text-[13px] font-medium tracking-wide uppercase"
+                      style={{ color: '#6b7280' }}
+                    >
                       {r.label}
                     </div>
                     <div className="mt-1 text-xl font-bold" style={{ color: '#1f2937' }}>
@@ -285,14 +290,14 @@ export const MetricCard = ({
                             tickFormatter={(week) => {
                               if (isCurrentQuarter) {
                                 switch (week) {
-                                case 0:
-                                  return monthLabels[0] || '';
-                                case 5:
-                                  return monthLabels[1] || '';
-                                case 9:
-                                  return monthLabels[2] || '';
-                                default:
-                                  return '';
+                                  case 0:
+                                    return monthLabels[0] || '';
+                                  case 5:
+                                    return monthLabels[1] || '';
+                                  case 9:
+                                    return monthLabels[2] || '';
+                                  default:
+                                    return '';
                                 }
                               }
                               const weeksPerMonth = Math.ceil(

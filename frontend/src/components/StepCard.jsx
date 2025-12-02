@@ -4,7 +4,7 @@ const StepCard = ({ title, content, imageData, defaultOpen = false }) => {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="mt-3 rounded-lg border border-[hsl(var(--accent))]/30  shadow-sm transition-shadow hover:border-[hsl(var(--accent))]/70 hover:shadow-md">
+    <div className="mt-3 rounded-lg border border-[hsl(var(--accent))]/30 shadow-sm transition-shadow hover:border-[hsl(var(--accent))]/70 hover:shadow-md">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -26,7 +26,7 @@ const StepCard = ({ title, content, imageData, defaultOpen = false }) => {
             />
           </div>
         ) : (
-          <pre className="px-4 pt-3 pb-4 text-s leading-relaxed text-gray-800 whitespace-pre-wrap break-words overflow-x-auto">
+          <pre className="text-s overflow-x-auto px-4 pt-3 pb-4 leading-relaxed break-words whitespace-pre-wrap text-gray-800">
             {content}
           </pre>
         )}

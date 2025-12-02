@@ -17,7 +17,7 @@ const MessageCard = ({ finalMessage, steps, defaultOpen = false }) => {
       style={{
         borderColor: '#dbb6f3ff',
         backgroundColor: '#f7ecffff',
-        fontSize: 19
+        fontSize: 19,
       }}
     >
       <button
@@ -26,10 +26,18 @@ const MessageCard = ({ finalMessage, steps, defaultOpen = false }) => {
         className="group flex w-full cursor-pointer items-start justify-between px-0 py-3 text-left"
       >
         <div>
-          <p className="mb-1 font-bold" style={{ color: '#8b5cf6' }}>DTwin Assistant:</p>
-          <p className="cursor-text whitespace-pre-wrap select-text" style={{ color: '#1f2937' }}>{finalMessage}</p>
+          <p className="mb-1 font-bold" style={{ color: '#8b5cf6' }}>
+            DTwin Assistant:
+          </p>
+          <p className="cursor-text whitespace-pre-wrap select-text" style={{ color: '#1f2937' }}>
+            {finalMessage}
+          </p>
         </div>
-        <span className={`mt-1 transition-transform ${open ? 'rotate-90' : ''}`} style={{ color: '#1f2937' }} aria-hidden>
+        <span
+          className={`mt-1 transition-transform ${open ? 'rotate-90' : ''}`}
+          style={{ color: '#1f2937' }}
+          aria-hidden
+        >
           ›
         </span>
       </button>

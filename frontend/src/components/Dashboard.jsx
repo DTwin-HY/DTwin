@@ -7,7 +7,7 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({});
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [stageCompact, setStageCompact] = useState(true);
-  const [animatingCompact, setAnimatingCompact] = useState(false); // eslint-disable-line
+  const [_, setAnimatingCompact] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -38,11 +38,26 @@ const Dashboard = () => {
 
   return (
     <div className="w-full transition-all duration-300 ease-in-out">
-      <div className="bo rounded-2xl border shadow-sm transition-all duration-300" style={{ borderColor: '#e5e7eb', background: 'linear-gradient(135deg, #e6eaf8ff 0%, #ffffffff 50%, #fcf8ffff 100%)' }}>
+      <div
+        className="bo rounded-2xl border shadow-sm transition-all duration-300"
+        style={{
+          borderColor: '#e5e7eb',
+          background: 'linear-gradient(135deg, #e6eaf8ff 0%, #ffffffff 50%, #fcf8ffff 100%)',
+        }}
+      >
         <div className="flex items-center justify-between p-4">
           <div>
-            <h2 className="text-3xl font-extrabold leading-relaxed bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, #383054ff, #514475ff, #776c97ff)' }} >Analytics Dashboard</h2>
-            <p className="mt-1 text-xl font-semibold" style={{ color: '#000000ff' }}>Real-time performance metrics</p>
+            <h2
+              className="bg-clip-text text-3xl leading-relaxed font-extrabold text-transparent"
+              style={{
+                backgroundImage: 'linear-gradient(to right, #383054ff, #514475ff, #776c97ff)',
+              }}
+            >
+              Analytics Dashboard
+            </h2>
+            <p className="mt-1 text-xl font-semibold" style={{ color: '#000000ff' }}>
+              Real-time performance metrics
+            </p>
           </div>
 
           <div className="flex items-center gap-1">

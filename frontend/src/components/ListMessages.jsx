@@ -31,10 +31,18 @@ const ListMessages = ({ messages }) => {
               <div
                 key={`msg-${idx}`}
                 className="mt-6 rounded-2xl border p-5 shadow-lg"
-                style={{ borderColor: '#67e8f9', backgroundColor: 'rgba(103, 232, 249, 0.05)', fontSize: 19}}
+                style={{
+                  borderColor: '#67e8f9',
+                  backgroundColor: 'rgba(103, 232, 249, 0.05)',
+                  fontSize: 19,
+                }}
               >
-                <p className="mb-1 font-semibold" style={{ color: '#0891b2' }}>You:</p>
-                <p className="whitespace-pre-wrap" style={{ color: '#1f2937' }}>{userMessage}</p>
+                <p className="mb-1 font-semibold" style={{ color: '#0891b2' }}>
+                  You:
+                </p>
+                <p className="whitespace-pre-wrap" style={{ color: '#1f2937' }}>
+                  {userMessage}
+                </p>
               </div>
             );
           }

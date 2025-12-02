@@ -148,7 +148,10 @@ const Chatbot = () => {
 
   return (
     <div className="w-full max-w-full">
-      <div className="relative rounded-2xl border p-6 shadow-lg" style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff'}}>
+      <div
+        className="relative rounded-2xl border p-6 shadow-lg"
+        style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff' }}
+      >
         <div className="group absolute top-6 right-6">
           <button
             type="button"
@@ -170,14 +173,7 @@ const Chatbot = () => {
                 strokeLinejoin="round"
                 d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
               />
-              <circle
-                cx="18"
-                cy="6"
-                r="5"
-                fill="#ffffff"
-                stroke="currentColor"
-                strokeWidth={1}
-              />
+              <circle cx="18" cy="6" r="5" fill="#ffffff" stroke="currentColor" strokeWidth={1} />
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -188,12 +184,21 @@ const Chatbot = () => {
             </svg>
           </button>
 
-          <div className="pointer-events-none absolute right-0 bottom-full mb-2 rounded-md px-3 py-1.5 text-xs whitespace-nowrap shadow-lg transition-opacity duration-200 group-hover:opacity-100 opacity-0" style={{ backgroundColor: 'rgba(0,0,0,0.8)', color: '#ffffff' }}>
+          <div
+            className="pointer-events-none absolute right-0 bottom-full mb-2 rounded-md px-3 py-1.5 text-xs whitespace-nowrap opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100"
+            style={{ backgroundColor: 'rgba(0,0,0,0.8)', color: '#ffffff' }}
+          >
             Start a new chat
           </div>
         </div>
 
-        <h3 className="bg-clip-text text-transparent mb-6 text-center text-4xl font-bold leading-relaxed" style={{ backgroundImage: 'linear-gradient(to right, #0e0f38ff, rgba(59, 87, 165, 1), #508ce7ff)' }}>
+        <h3
+          className="mb-6 bg-clip-text text-center text-4xl leading-relaxed font-bold text-transparent"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, #0e0f38ff, rgba(59, 87, 165, 1), #508ce7ff)',
+          }}
+        >
           Your Digital Twin Assistant
         </h3>
 
@@ -237,7 +242,7 @@ const Chatbot = () => {
               style={{
                 borderColor: '#d1d5db',
                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                color: '#1f2937'
+                color: '#1f2937',
               }}
               placeholder={userId === null ? 'Loading user...' : 'How can I help you today?'}
               rows={1}
@@ -254,8 +259,11 @@ const Chatbot = () => {
               disabled={loading || userId === null || !inputValue.trim()}
               className="absolute right-2 flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium transition-colors duration-200 disabled:opacity-40"
               style={{
-                backgroundColor: inputValue.trim() && !loading && userId !== null ? 'hsl(263 70% 60%)' : 'rgba(0,0,0,0.15)',
-                color: '#ffffff'
+                backgroundColor:
+                  inputValue.trim() && !loading && userId !== null
+                    ? 'hsl(263 70% 60%)'
+                    : 'rgba(0,0,0,0.15)',
+                color: '#ffffff',
               }}
             >
               <svg
@@ -277,7 +285,11 @@ const Chatbot = () => {
               className={`w-full max-w-md rounded-lg border p-4 text-sm shadow transition-opacity duration-1000 ${
                 showSuccess ? 'opacity-100' : 'opacity-0'
               }`}
-              style={{ borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}
+              style={{
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                color: '#10b981',
+              }}
             >
               <p className="font-medium">{successMessage}</p>
             </div>
@@ -289,7 +301,11 @@ const Chatbot = () => {
               className={`w-full max-w-md rounded-lg border p-4 text-sm shadow transition-opacity duration-1000 ${
                 showError ? 'opacity-100' : 'opacity-0'
               }`}
-              style={{ borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}
+              style={{
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
+              }}
             >
               <p className="font-medium">{errorMessage}</p>
             </div>
