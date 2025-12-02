@@ -12,10 +12,10 @@ const MessageCard = ({ finalMessage, steps, defaultOpen = false }) => {
   };
 
   return (
-    <div 
+    <div
       className="mt-6 rounded-2xl border p-5 shadow-lg transition-all"
-      style={{ 
-        borderColor: '#dbb6f3ff', 
+      style={{
+        borderColor: '#dbb6f3ff',
         backgroundColor: '#f7ecffff',
         fontSize: 19
       }}

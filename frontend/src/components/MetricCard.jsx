@@ -43,8 +43,8 @@ const seriesObjToArray = (obj, isCurrentQuarter = false, totalWeeksInQuarter = 1
   const dataArray = Array.isArray(obj)
     ? obj.map((v, i) => ({ week: i, value: +v }))
     : Object.keys(obj)
-        .sort((a, b) => a - b)
-        .map((k) => ({ week: +k, value: obj[k] }));
+      .sort((a, b) => a - b)
+      .map((k) => ({ week: +k, value: obj[k] }));
 
   if (isCurrentQuarter && dataArray.length < totalWeeksInQuarter) {
     const lastWeek = dataArray[dataArray.length - 1].week;
@@ -119,10 +119,10 @@ export const MetricCard = ({
   if (compact) {
     const combined = Object.values(metric?.raw_graph_data?.current_quarter || {});
     const growth = metric?.current_quarter?.growth;
-    const pct = growth != null ? `${(growth * 100).toFixed(1)}%` : '—';
-    const isPositive = growth != null ? growth >= 0 : null;
+    const pct = growth !== null ? `${(growth * 100).toFixed(1)}%` : '—';
+    const isPositive = growth !== null ? growth >= 0 : null;
     return (
-      <div 
+      <div
         className="flex items-center justify-between gap-3 overflow-hidden rounded-xl border p-3 transition-all hover:shadow-lg"
         style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff' }}
       >
@@ -153,7 +153,7 @@ export const MetricCard = ({
   const rows = buildRowsFromMetric(metric);
 
   return (
-    <div 
+    <div
       className="rounded-2xl border p-5 shadow-lg transition-all"
       style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff' }}
     >
@@ -163,7 +163,7 @@ export const MetricCard = ({
       <div className="grid grid-cols-1 gap-3">
         <div className="space-y-4">
           {rows.map((r, i) => {
-            const change = r.growth != null ? (r.growth * 100).toFixed(1) + '%' : '—';
+            const change = r.growth !== null ? (r.growth * 100).toFixed(1) + '%' : '—';
             const isPositive = change !== '—' && !change.startsWith('-');
 
             let monthLabels = [];
@@ -285,14 +285,14 @@ export const MetricCard = ({
                             tickFormatter={(week) => {
                               if (isCurrentQuarter) {
                                 switch (week) {
-                                  case 0:
-                                    return monthLabels[0] || '';
-                                  case 5:
-                                    return monthLabels[1] || '';
-                                  case 9:
-                                    return monthLabels[2] || '';
-                                  default:
-                                    return '';
+                                case 0:
+                                  return monthLabels[0] || '';
+                                case 5:
+                                  return monthLabels[1] || '';
+                                case 9:
+                                  return monthLabels[2] || '';
+                                default:
+                                  return '';
                                 }
                               }
                               const weeksPerMonth = Math.ceil(

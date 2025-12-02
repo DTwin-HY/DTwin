@@ -6,7 +6,7 @@ const Layout = () => {
   const { logout, loading, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const isDashboard = location.pathname === '/dashboard';
 
   useEffect(() => {
@@ -37,8 +37,8 @@ const Layout = () => {
             <button
               onClick={logout}
               className="rounded-lg border px-4 py-2 transition-colors hover:cursor-pointer hover:opacity-70"
-              style={isDashboard ? { 
-                borderColor: '#d1d5db', 
+              style={isDashboard ? {
+                borderColor: '#d1d5db',
                 color: '#1f2937',
                 backgroundColor: 'transparent'
               } : {

@@ -234,8 +234,8 @@ const Chatbot = () => {
               onChange={(e) => setInputValue(e.target.value)}
               disabled={loading || userId === null}
               className="w-full resize-none rounded-full border py-4 pr-16 pl-6 text-base focus:ring-2 focus:outline-none"
-              style={{ 
-                borderColor: '#d1d5db', 
+              style={{
+                borderColor: '#d1d5db',
                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
                 color: '#1f2937'
               }}
