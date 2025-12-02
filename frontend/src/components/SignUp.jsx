@@ -55,7 +55,7 @@ const SignUp = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[hsl(var(--background))] p-4 text-[hsl(var(--foreground))]">
-      <div className="text-gradient mb-5 text-3xl font-bold">Sign up</div>
+      <div className="text-gradient mb-5 text-3xl font-bold leading-relaxed">Sign up</div>
 
       <form
         onSubmit={handleSubmit}
