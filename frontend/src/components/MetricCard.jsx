@@ -122,10 +122,7 @@ export const MetricCard = ({
     const pct = growth !== null ? `${(growth * 100).toFixed(1)}%` : '—';
     const isPositive = growth !== null ? growth >= 0 : null;
     return (
-      <div
-        className="flex items-center justify-between gap-3 overflow-hidden rounded-xl border p-3 transition-all hover:shadow-lg"
-        style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff' }}
-      >
+      <div className="flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-[#ced3eb] bg-[#F6F7FB] p-3 transition-all hover:shadow-lg">
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold md:text-base" style={{ color: '#1f2937' }}>
             {title}
