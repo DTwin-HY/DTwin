@@ -20,6 +20,9 @@ The Nginx Frontend Pod functions as a reverse proxy and a static file server for
 ### Flask Backend Pod
 The Flask Backend Pod contains all the backend logic of the project, implemented as a WSGI server using Gunicorn and Flask.
 
+### MCP Pod
+The MCP Pod runs an [MCP weather server](https://github.com/jensjvh/mcp_historical_weather_server/tree/main/src/mcp_historical_weather_server), which lets agents access data from the [Open-Meteo](https://open-meteo.com/) weather API.
+
 ### PostgreSQL Pod
 The PostgreSQL Pod is implemented with OKD's (or CSC's Rahti's) default PostgreSQL template with persistent storage.
 
