@@ -10,3 +10,7 @@ This document describes the Definition of Done of this project for each of its s
 ## Sprint 2
 * The quality of the code is high and has been refactored.
 * The code is thoroughly tested.
+
+## Final Definition of Done
+* The previous requirements.
+* Testing can be ignored for some features, if the code has more to do with LangGraph than business logic, and the entire team agrees.
