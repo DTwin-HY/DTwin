@@ -77,6 +77,11 @@ def generate_query(state: MessagesState) -> Dict[str, Any]:
     examples in the database. Never query for all the columns from a specific table,
     only ask for the relevant columns given the question.
 
+    If you are asked about aggregate metrics, use {sql_db.dialect} appropriate aggregate queries
+    to answer to create the metric. E.g. when asked about total sales, aggregate sales numbers to daily sums.
+    
+    ALWAYS include a date column in your queries.
+
     DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
     DO NOT come up with any data, only return real data present in the database.
 
