@@ -13,11 +13,11 @@ RUN npm run build
 
 FROM nginx:alpine
 
-# These cause some permission errors on openshift
 RUN rm -rf /usr/share/nginx/html/* \
  && mkdir -p /var/cache/nginx/client_temp /var/cache/nginx/proxy_temp /var/cache/nginx/fastcgi_temp \
                /var/cache/nginx/uwsgi_temp /var/cache/nginx/scgi_temp /var/run /var/log/nginx \
- && chmod -R 0777 /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d
+ && chgrp -R 0 /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d \
+ && chmod -R g=u /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
