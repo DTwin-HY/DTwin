@@ -36,10 +36,10 @@ CRITICAL INSTRUCTION:
 
 Available agents are:
 - research_agent:- Agent responsible for searching in-depth information from the web, especially when real time data is needed.
-- simulation_agent:- Agent responsible for conducting data analysis and simulations.
+- analytics_agent:- Agent responsible for conducting data analysis and simulations.
 - storage_agent:- Agent responsible for keeping track of inventory data.
 - sales_agent:- Agent responsible for generating sales reports and sales graphs from sales data.
-- dataframe_agent_tool:- Agent responsible for creating dataframes from data. Call this everytime you need to create a dataframe. Prompt it using natural language.
+- dataframe_agent_tool:- Agent responsible for creating dataframes from data. Call this everytime you need to create a dataframe.
 - csv_dataframe_test_tool:- Tool responsible for checking the dataframe saved as csv.
   Takes the dataframe path as a parameter. If you don't have the parameter, you have no access to csv files. Used in development only.
 - mcp_agent:- Agent responsible for providing weather and climate data.

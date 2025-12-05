@@ -34,13 +34,13 @@ sim_agent = create_agent(
     tools=[lin_reg_tool],
     system_prompt= SIM_AGENT_PROMPT,
     state_schema=SimulationState,
-    name="simulation_agent",
+    name="analytics_agent",
 )
 
 
 @tool
-def simulation_agent_tool(prompt: str) -> str:
-    """Run company simulations and analyses using the simulation agent."""
+def analytics_agent_tool(prompt: str) -> str:
+    """Run company simulations and analyses using the analytics agent."""
     result = sim_agent.invoke(
         {
             "messages": [HumanMessage(content=prompt)],
