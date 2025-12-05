@@ -51,7 +51,7 @@ const Layout = () => {
                   ? {
                       borderColor: '#d1d5db',
                       color: '#1f2937',
-                      backgroundColor: 'transparent',
+                      backgroundColor: '#F6F7FB',
                     }
                   : {
                       borderColor: 'hsl(var(--accent))',

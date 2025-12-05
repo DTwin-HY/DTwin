@@ -125,7 +125,7 @@ const ScrollGraphSection = () => {
             <div className="max-w-xl rounded-3xl px-5 py-6">
               <p className="text-accent text-xs font-semibold uppercase">Example scenario</p>
               <h3 className="mt-3 text-2xl font-semibold">
-                “If I raise this product’s price by
+                “If I raise this product’s price by{' '}
                 <span className="text-accent font-semibold">10%</span>, how much revenue do we
                 make?”
               </h3>

@@ -148,21 +148,18 @@ const Chatbot = () => {
 
   return (
     <div className="w-full max-w-full">
-      <div
-        className="relative rounded-2xl border p-6 shadow-lg"
-        style={{ borderColor: '#e5e7eb', backgroundColor: '#ffffff' }}
-      >
+      <div className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
         <div className="group absolute top-6 right-6">
           <button
             type="button"
             onClick={handleNewChat}
             disabled={loading || userId === null}
-            className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200 hover:cursor-pointer hover:opacity-80 disabled:opacity-50"
+            className="flex items-center justify-center rounded-lg transition-colors duration-200 hover:cursor-pointer hover:opacity-80 disabled:opacity-50"
             style={{ color: '#1f2937' }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-10 w-10"
+              className="h-8 w-8"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -192,13 +189,7 @@ const Chatbot = () => {
           </div>
         </div>
 
-        <h3
-          className="mb-6 bg-clip-text text-center text-4xl leading-relaxed font-bold text-transparent"
-          style={{
-            backgroundImage:
-              'linear-gradient(to right, #0e0f38ff, rgba(59, 87, 165, 1), #508ce7ff)',
-          }}
-        >
+        <h3 className="mb-6 bg-clip-text text-center text-4xl leading-relaxed font-bold text-[#222F68]">
           Your Digital Twin Assistant
         </h3>
 
@@ -238,12 +229,7 @@ const Chatbot = () => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               disabled={loading || userId === null}
-              className="w-full resize-none rounded-full border py-4 pr-16 pl-6 text-base focus:ring-2 focus:outline-none"
-              style={{
-                borderColor: '#d1d5db',
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                color: '#1f2937',
-              }}
+              className="w-full resize-none rounded-full border border-[#ced3eb] bg-[#F6F7FB] py-3.5 pr-16 pl-6 text-base text-slate-800 shadow-sm backdrop-blur-sm transition-all focus:border-slate-300 focus:ring-slate-200/60 focus:outline-none"
               placeholder={userId === null ? 'Loading user...' : 'How can I help you today?'}
               rows={1}
               onKeyDown={(e) => {
@@ -257,13 +243,9 @@ const Chatbot = () => {
             <button
               type="submit"
               disabled={loading || userId === null || !inputValue.trim()}
-              className="absolute right-2 flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium transition-colors duration-200 disabled:opacity-40"
+              className="absolute right-2 flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium transition-colors duration-200 hover:cursor-pointer disabled:opacity-40"
               style={{
-                backgroundColor:
-                  inputValue.trim() && !loading && userId !== null
-                    ? 'hsl(263 70% 60%)'
-                    : 'rgba(0,0,0,0.15)',
-                color: '#ffffff',
+                backgroundColor: 'hsl(263 70% 60%)',
               }}
             >
               <svg
