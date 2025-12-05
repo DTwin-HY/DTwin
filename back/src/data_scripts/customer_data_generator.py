@@ -1,14 +1,15 @@
 # pylint: disable=too-many-branches, too-many-locals
 import os
 import random
+import sys
 from datetime import datetime, timedelta
 
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
-
 from ..models import models
+from ..utils.logger import logger
 
 load_dotenv()
 
@@ -29,7 +30,6 @@ def generate_customers_data(num_days: int):
 
     customer_records = []
     for date in dates:
-        # for _ in range(num_days):
         prop = random.uniform(0, 100)
 
         if prop > 75:
@@ -98,14 +98,14 @@ def generate_customers_data(num_days: int):
         ]
     )
 
-    print(f"Generated {len(customer_df)} customer records for {num_days} days")
-    print(customer_df.head())
-    print("Customer data generated successfully")
+    logger.info(f"Generated {len(customer_df)} customer records for {num_days} days")
+    logger.debug(customer_df.head())
+    logger.info("Customer data generated successfully")
 
 
 def main():
     if customer_data_exists():
-        print("Database already contains customer data, skipping population...")
+        logger.info("Database already contains customer data, skipping population...")
         return
 
     num_days = 1000

@@ -14,18 +14,9 @@ from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from ..data.mcp_data import WeatherData
+from ..utils.logger import logger
 
 load_dotenv()
-
-logger.remove()
-logger.add(
-    sys.stdout,
-    level="INFO",
-    backtrace=True,
-    diagnose=True,
-    colorize=True,
-    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | {message}",
-)
 
 
 def _run_in_new_loop(coroutine):

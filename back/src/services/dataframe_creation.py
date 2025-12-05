@@ -7,6 +7,7 @@ from langchain.messages import HumanMessage
 from langchain.tools import ToolRuntime, tool
 
 from ..utils.csv_to_pd import csv_to_pd  # temp
+from ..utils.logger import logger
 from .mcp_client import mcp_agent_tool
 from .sql_agent import sql_agent_tool
 
@@ -27,11 +28,9 @@ def create_dataframe_tool(
     if not os.path.exists("dataframes"):
         os.makedirs("dataframes")
     file_path = f"dataframes/dataframe_{runtime.tool_call_id}.csv"
-    # print("weather_data type in create_dataframe_tool:", type(weather_data))
-    # print("weather_data[0] type in create_dataframe_tool:", type(weather_data[0]))
-    print("weather_data in create_dataframe_tool:", weather_data)
-    print("sales data in create_dataframe_tool:", sales_data)
-    print("customer data in create_dataframe_tool:", customer_data)
+    logger.debug("weather_data in create_dataframe_tool:", weather_data)
+    logger.debug("sales data in create_dataframe_tool:", sales_data)
+    logger.debug("customer data in create_dataframe_tool:", customer_data)
     try:
         # Parse both JSON inputs
         sales_data_json = json.loads(sales_data) if isinstance(sales_data, str) else sales_data
@@ -46,27 +45,26 @@ def create_dataframe_tool(
         sales_data_df = pd.DataFrame(sales_data_json)
         customer_data_df = pd.DataFrame(customer_data_json)
         weather_data_df = pd.DataFrame(weather_data_json)
-        print("df weather ", weather_data_df)
-        print("df_sales ", sales_data_df)
-        print("df_customer ", customer_data_df)
+        logger.debug("df weather ", weather_data_df)
+        logger.debug("df_sales ", sales_data_df)
+        logger.debug("df_customer ", customer_data_df)
 
         df_tmp = pd.merge(sales_data_df, weather_data_df, on="date", how="left")
 
         df_final = pd.merge(df_tmp, customer_data_df, on="date", how="left")
 
-        print("merged df ", df_final)
+        logger.debug("merged df ", df_final)
 
-        # Save to CSV
         df_final.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")
 
-        print(
+        logger.info(
             f"[create_dataframe_tool] Combined DataFrame saved to {file_path}"
             f", shape {df_final.shape}"
         )
         return f"DataFrame created and saved to: {file_path}"
 
     except Exception as e:
-        print(f"[create_dataframe_tool] Error: {e}")
+        logger.error(f"[create_dataframe_tool] Error: {e}")
         return f"Error creating DataFrame: {str(e)}"
 
 
@@ -118,9 +116,9 @@ def csv_dataframe_test_tool(dataframe_path: str) -> str:
     """
     try:
         path = dataframe_path  # pragma: no cover
-        print("path:", path)  # pragma: no cover
+        logger.debug("path:", path)  # pragma: no cover
         dataframe = csv_to_pd(path)  # pragma: no cover
-        print("fetched dataframe from csv file:", dataframe)  # pragma: no cover
+        logger.debug("fetched dataframe from csv file:", dataframe)  # pragma: no cover
         return dataframe  # pragma: no cover
     except Exception as e:
         return f"Error fetching dataframe from csv file. {e}"  # pragma: no cover

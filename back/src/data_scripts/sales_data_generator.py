@@ -1,6 +1,7 @@
 # pylint: disable=too-many-branches, too-many-locals
 import os
 import random
+import sys
 import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -13,6 +14,7 @@ from sqlalchemy import create_engine, text
 from .. import config
 from ..database.product_db import fetch_product_data
 from ..models import models
+from ..utils.logger import logger
 
 load_dotenv()
 
@@ -29,21 +31,13 @@ def sales_data_exists():
 
 def generate_sales_data(num_days: int, output_path: Path):
     products = fetch_product_data()
-    # num_products = len(products)
     product_ids = []
     prices = {}
     for id, price in products.items():
         product_ids.append(id)
         prices[id] = price
 
-    print("tässä prodyucts length: ", len(products))
-
-    # prices = {}
-    # for name in product_names:
-    #     if random.random() < 0.8:
-    #         prices[name] = round(random.uniform(1, 20), 2)
-    #     else:
-    #         prices[name] = round(random.uniform(20, 100), 2)
+    logger.info("products data length: ", len(products))
 
     start_date = datetime.now() - timedelta(days=num_days)
     dates = [(start_date + timedelta(days=i)).date() for i in range(num_days)]
@@ -106,21 +100,20 @@ def generate_sales_data(num_days: int, output_path: Path):
     if config.get("write_to_csv", False):
         sales_df.to_csv(output_path, index=False)
 
-    print(f"Generated {len(sales_df)} sales records for {num_days} days")
-    print(f"Total revenue: ${sales_df['revenue'].sum():.2f}")
-    print(f"Total items sold: {sales_df['items_sold'].sum()}")
-    print(sales_df.head())
-    print("Sales data generated successfully")
+    logger.info(f"Generated {len(sales_df)} sales records for {num_days} days")
+    logger.info(f"Total revenue: ${sales_df['revenue'].sum():.2f}")
+    logger.info(f"Total items sold: {sales_df['items_sold'].sum()}")
+    logger.debug(sales_df.head())
+    logger.info("Sales data generated successfully")
 
 
 def main():
     if sales_data_exists():
-        print("Database already contains sales data, skipping population...")
+        logger.info("Database already contains sales data, skipping population...")
         return
     output_filename = config.get("data.sales_filename", "sales_data.csv")
     output_path = Path(__file__).resolve().parent / output_filename
 
-    # num_days = config.get("data.sales_days_to_generate", 100)
     num_days = 1000
 
     generate_sales_data(num_days, output_path)

@@ -1,8 +1,9 @@
 import os
 import sys
-from pathlib import Path
-from datetime import datetime, timedelta
 import types
+from datetime import datetime, timedelta
+from pathlib import Path
+
 import pytest
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -45,6 +46,7 @@ def test_sales_valid_dates_returns_summary(client, monkeypatch):
 def test_sales_daily_data(client, monkeypatch):
     """Should query a single day when start_date equals end_date"""
     from src.routes import sales
+
     captured = {}
 
     def fake_fetch_sales_data(start, end):
@@ -62,6 +64,7 @@ def test_sales_daily_data(client, monkeypatch):
     assert resp.json["sales"] == 5
     assert resp.json["transactions"] == 2
 
+
 def test_sales_exception_rolls_back_and_returns_500(client, monkeypatch):
     """Should rollback DB and return error JSON when exception occurs"""
     from src.routes import sales
@@ -69,7 +72,9 @@ def test_sales_exception_rolls_back_and_returns_500(client, monkeypatch):
     def fake_fetch_sales_data(start, end):
         raise Exception("DB error")
 
-    fake_db = types.SimpleNamespace(session=types.SimpleNamespace(rollback=lambda: setattr(fake_db, "rolled", True)))
+    fake_db = types.SimpleNamespace(
+        session=types.SimpleNamespace(rollback=lambda: setattr(fake_db, "rolled", True))
+    )
     monkeypatch.setattr(sales, "fetch_sales_data", fake_fetch_sales_data)
     monkeypatch.setattr(sales, "db", fake_db)
 

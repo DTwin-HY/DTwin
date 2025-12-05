@@ -1,11 +1,20 @@
-import pytest
 from types import SimpleNamespace
+
+import pytest
+
 from ..src.services import storage_agent
+
 
 def test_storage_agent_is_created_correctly(monkeypatch):
     fake_agent = SimpleNamespace(
         name="storage_agent",
-        nodes={"tools": SimpleNamespace(bound=SimpleNamespace(tools_by_name={"sql_agent_tool": SimpleNamespace(name="sql_agent_tool")}))}
+        nodes={
+            "tools": SimpleNamespace(
+                bound=SimpleNamespace(
+                    tools_by_name={"sql_agent_tool": SimpleNamespace(name="sql_agent_tool")}
+                )
+            )
+        },
     )
     monkeypatch.setattr(storage_agent, "storage_react_agent", fake_agent)
 

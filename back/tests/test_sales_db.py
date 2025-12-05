@@ -1,6 +1,8 @@
-import pytest
-from unittest.mock import MagicMock, patch
 from datetime import datetime
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 
 @patch("src.database.sales.db")
 def test_fetch_sales_data_returns_correct_values(mock_db):
