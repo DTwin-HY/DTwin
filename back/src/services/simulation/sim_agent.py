@@ -19,16 +19,20 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 class SimulationState(AgentState):
     dataframe: dict
 
+SIM_AGENT_PROMPT = """
+    You are a simulation agent responsible for running company simulations and analyses.
+
+    You have a linear regression tool available for use to conduct analysis. The linear regression tool
+    should be used to analyze how different variables affect the variable of interest. The y_value input in the linear regression
+    tool should correspond to the variable of interest.
+
+    Return all results as structured JSON.
+    """
 
 sim_agent = create_agent(
     model="openai:gpt-4.1",
     tools=[lin_reg_tool],
-    system_prompt=(
-        "You are a simulation agent responsible for running company data simulations.\n"
-        "You can use the lin_reg_tool to analyze how product sales are affected by "
-        "different variables.\n"
-        "Return results as structured JSON.\n"
-    ),
+    system_prompt= SIM_AGENT_PROMPT,
     state_schema=SimulationState,
     name="simulation_agent",
 )
