@@ -11,6 +11,8 @@ import {
   clearThreadIdForUser,
 } from '../utils/threadCookie';
 
+const PHRASES = ['sales development?', 'warehouse inventory?', 'other company related things?'];
+
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
   const [responses, setResponses] = useState([]);
@@ -20,6 +22,39 @@ const Chatbot = () => {
   const [chats, setChats] = useState([]);
   const [threadId, setThreadId] = useState(null);
   const [userId, setUserId] = useState(null);
+
+  const [placeholderSuffix, setPlaceholderSuffix] = useState('');
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentPhrase = PHRASES[phraseIndex];
+
+    if (!isDeleting && placeholderSuffix === currentPhrase) {
+      const timeout = setTimeout(() => setIsDeleting(true), 2000);
+      return () => clearTimeout(timeout);
+    }
+
+    if (isDeleting && placeholderSuffix === '') {
+      setIsDeleting(false);
+      setPhraseIndex((prev) => (prev + 1) % PHRASES.length);
+      return;
+    }
+
+    const timeout = setTimeout(
+      () => {
+        setPlaceholderSuffix((prev) => {
+          if (isDeleting) {
+            return prev.slice(0, -1);
+          }
+          return currentPhrase.slice(0, prev.length + 1);
+        });
+      },
+      isDeleting ? 50 : 100,
+    );
+
+    return () => clearTimeout(timeout);
+  }, [placeholderSuffix, isDeleting, phraseIndex]);
 
   const finalizedRef = useRef(false); // Prevent double-finalize
 
@@ -229,8 +264,15 @@ const Chatbot = () => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               disabled={loading || userId === null}
-              className="w-full resize-none rounded-full border border-[#ced3eb] bg-[#F6F7FB] py-3.5 pr-16 pl-6 text-base text-slate-800 shadow-sm backdrop-blur-sm transition-all focus:border-slate-300 focus:ring-slate-200/60 focus:outline-none"
-              placeholder={userId === null ? 'Loading user...' : 'How can I help you today?'}
+              className="w-full resize-none rounded-full border py-4 pr-16 pl-6 text-base focus:ring-2 focus:outline-none"
+              style={{
+                borderColor: '#d1d5db',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                color: '#1f2937',
+              }}
+              placeholder={
+                userId === null ? 'Loading user...' : `Ask me about ${placeholderSuffix}`
+              }
               rows={1}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
