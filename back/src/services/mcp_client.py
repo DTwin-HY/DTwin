@@ -97,6 +97,9 @@ async def invoke_mcp_agent(prompt: str):
 
 IMPORTANT:
 Return ONLY valid JSON.
+
+The result should include all dates between and including the date range given.
+
 NO markdown code fences.
 Format each weather entry exactly like this:
 
