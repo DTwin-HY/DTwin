@@ -1,14 +1,17 @@
-from types import SimpleNamespace
 import os
+from types import SimpleNamespace
+
 import pytest
-# Aseta tarvittavat envit testejä varten
+
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
 import src.services.sql_agent as sql_agent
 
+
 def test_get_env_or_raise_ok(monkeypatch):
     monkeypatch.setenv("FOO", "bar")
     assert sql_agent._get_env_or_raise("FOO") == "bar"
+
 
 def make_msg(content="", tool_calls=None, id="mid"):
     if tool_calls is None:
@@ -29,7 +32,6 @@ def test_should_continue_with_tool_calls():
 
 
 def test_run_sql_agent_invokes_graph(monkeypatch):
-    # Korvaa get_sql_agent_graph keinotekoisella graafilla
     class DummyGraph:
         def invoke(self, _):
             return {"messages": [make_msg("first"), make_msg("final answer")]}
@@ -40,9 +42,7 @@ def test_run_sql_agent_invokes_graph(monkeypatch):
 
 
 def test_list_tables_uses_correct_tool(monkeypatch):
-    # Luo feikki työkalu, jolla on name ja invoke
     def fake_invoke(call):
-        # Palautetaan olio, jolla on .content kuten oikeassa työkalussa
         return SimpleNamespace(content="users,orders")
 
     fake_tool = SimpleNamespace(name="sql_db_list_tables", invoke=fake_invoke)
@@ -51,7 +51,6 @@ def test_list_tables_uses_correct_tool(monkeypatch):
         def get_tools(self):
             return [fake_tool]
 
-    # Patchaa _make_toolkit palauttamaan meidän FakeToolkit
     monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
 
     res = sql_agent.list_tables({"messages": []})
@@ -74,13 +73,11 @@ def _patch_llm_and_toolkit(monkeypatch, response_text="ok"):
         def bind_tools(self, tools, tool_choice=None):
             return FakeBound()
 
-    # Feikki run/list/schema -työkalut (vain name + invoke stub)
     class FakeTool:
         def __init__(self, name):
             self.name = name
 
         def invoke(self, call):
-            # Palauta sama muoto kuin oikea työkalu: .content-attribuutti
             return SimpleNamespace(content="stub")
 
     class FakeToolkit:
@@ -96,14 +93,12 @@ def _patch_llm_and_toolkit(monkeypatch, response_text="ok"):
 
     monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
     monkeypatch.setattr(sql_agent, "_make_toolkit", lambda: FakeToolkit())
-    return fake_response  # jos testissä halutaan tarkistaa sama olio
+    return fake_response
 
 
 def test_check_query_sets_response_id(monkeypatch):
-    # Patchaa LLM ja toolkit
     fake_resp = _patch_llm_and_toolkit(monkeypatch, response_text="checked query")
 
-    # State, jossa viimeisessä viestissä on tool_call ja id
     last_msg = make_msg(
         content="",
         tool_calls=[{"args": {"query": "SELECT 1"}}],
@@ -113,13 +108,11 @@ def test_check_query_sets_response_id(monkeypatch):
 
     out = sql_agent.check_query(state)
     msg = out["messages"][0]
-    # Koodi asettaa response.id = state["messages"][-1].id
     assert msg.id == "orig-id"
     assert msg.content == "checked query"
 
 
 def test_generate_query_invokes_llm(monkeypatch):
-    # Patchaa LLM ja toolkit sekä kaappaa invokeen syötetyt viestit
     captured = {}
 
     class FakeResponse(SimpleNamespace):
@@ -158,7 +151,6 @@ def test_generate_query_invokes_llm(monkeypatch):
 
     assert out["messages"][0].content == "generated answer"
     assert isinstance(captured.get("msgs"), list)
-    # Ensimmäinen viesti on system-ohje (buildattu funktiossa)
     assert captured["msgs"][0]["role"] == "system"
 
 
@@ -167,7 +159,6 @@ def test_call_get_schema_forwards_messages(monkeypatch):
 
     class FakeBound:
         def invoke(self, msgs):
-            # varmista että state["messages"] välittyy (ei pakollinen ehto)
             assert msgs[-1]["content"] == "show schema"
             return fake_response
 
@@ -209,7 +200,6 @@ def test_should_retry_query_with_error_tool():
 
 
 def test_should_retry_query_max_queries():
-    # Simuloi kaksi suoritettua query-viestiä
     msg1 = SimpleNamespace(type="tool", content="stub query sql_db_query")
     msg2 = SimpleNamespace(type="tool", content="stub query sql_db_query")
     state = {"messages": [msg1, msg2]}
@@ -217,7 +207,6 @@ def test_should_retry_query_max_queries():
 
 
 def test_analyze_results_returns_ai_message(monkeypatch):
-    # Patchataan _make_llm, jotta invoke palauttaa tunnetun vastauksen
     class FakeLLM:
         def invoke(self, msgs):
             return SimpleNamespace(content="final answer", id=None)
@@ -231,29 +220,31 @@ def test_analyze_results_returns_ai_message(monkeypatch):
     assert hasattr(msg, "content")
     assert msg.content == "final answer"
 
+
 def test_should_retry_query_edge(monkeypatch):
-    # Viesti, jossa type ei ole 'tool', mutta content on error
     msg = SimpleNamespace(type="other", content="Some error occurred")
     state = {"messages": [msg]}
     assert sql_agent.should_retry_query(state) == "analyze_results"
+
 
 def test_analyze_results_empty_state(monkeypatch):
     class FakeLLM:
         def invoke(self, msgs):
             return SimpleNamespace(content="no data", id=None)
+
     monkeypatch.setattr(sql_agent, "_make_llm", lambda: FakeLLM())
-    state = {"messages": []}  # tyhjä state edge-case
+    state = {"messages": []}
     out = sql_agent.analyze_results(state)
     assert out["messages"][0].content == "no data"
 
 
 def test_make_llm_and_toolkit_types(monkeypatch):
-    # Patchataan dummy envit
     monkeypatch.setenv("OPENAI_API_KEY", "test")
     monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
     llm = sql_agent._make_llm()
     toolkit = sql_agent._make_toolkit()
-    from langchain_openai import ChatOpenAI
     from langchain_community.agent_toolkits import SQLDatabaseToolkit
+    from langchain_openai import ChatOpenAI
+
     assert isinstance(llm, ChatOpenAI)
     assert isinstance(toolkit, SQLDatabaseToolkit)

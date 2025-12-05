@@ -10,9 +10,9 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(250), unique=True, nullable=False)
     password = db.Column(db.String(250), nullable=False)
-    # lazy="dynamic" -> palauttaa Query-olion (ei listaa)
-    # cascade="all, delete-orphan" -> ketjuttaa operaatiot; poistaa orvot
-    # passive_deletes=True -> anna DB:n ON DELETE CASCADE hoitaa poistot
+    # lazy="dynamic" -> returns Query-object (not a list)
+    # cascade="all, delete-orphan" -> chains operations; removes orphans
+    # passive_deletes=True -> let DB's ON DELETE CASCADE handle deletes
     chats = db.relationship(
         "Chat", backref="user", lazy="dynamic", cascade="all, delete-orphan", passive_deletes=True
     )
@@ -24,13 +24,13 @@ class Chat(db.Model):
     user_id = db.Column(
         db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    # JSONB = Postgresin natiivi JSON-tyyppi (haku/indeksointi mahdollista)
-    # default=list = luo uuden tyhjän listan per rivi (ei jaettua []-objektia)
+    # JSONB = Postgres native JSON-type (enables searching/indexing)
+    # default=list = creates new empty list per row (no shared []-object)
     messages = db.Column(JSONB, nullable=False, default=list)
     thread_id = db.Column(db.String(128), unique=True, index=True, nullable=False)
-    # server_default=now() = DB täyttää arvon INSERTissä
+    # server_default=now() = DB fills values in INSERT
     created_at = db.Column(db.DateTime, server_default=db.func.now())
-    # onupdate.db.func.=now() = päivittää updated_at-arvon UPDATE:ssa
+    # onupdate.db.func.=now() = updates updated_at value in UPDATE
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
     raw_stream = db.Column(db.Text)
 

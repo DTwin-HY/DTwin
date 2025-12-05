@@ -1,17 +1,14 @@
 from unittest.mock import MagicMock, patch
+
 from langchain.messages import HumanMessage
 
 from ..src.services.simulation import sim_agent as sim_module
 
+
 def test_simulation_agent_tool_invoke_works_with_tool_wrapper(monkeypatch):
     prompt = "Run a linear regression simulation"
 
-    fake_result = {
-        "messages": [
-            HumanMessage(content=prompt),
-            HumanMessage(content="final reply")
-        ]
-    }
+    fake_result = {"messages": [HumanMessage(content=prompt), HumanMessage(content="final reply")]}
 
     fake_agent = MagicMock()
     fake_agent.invoke.return_value = fake_result

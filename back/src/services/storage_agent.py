@@ -9,25 +9,20 @@ load_dotenv()
 
 
 def call_sql_agent(state: MessagesState):
-    """Kutsu SQL-agenttia kerran ilman LLM:n päätöksentekoa."""
-    # Ota käyttäjän viesti
+    """Call SQL agent once without LLM decision making."""
     user_message = state["messages"][0].content
 
-    # Kutsu sql agenttia suoraan
     result = sql_agent_tool.invoke(user_message)
 
-    # Palauta tulos AI Messagena
     return {"messages": [AIMessage(content=result)]}
 
 
 def build_storage_agent():
-    """Yksinkertainen graafi: kutsu SQL-agenttia kerran ja lopeta."""
+    """Simple graph: call SQL agent once and go to end."""
     workflow = StateGraph(MessagesState)
 
-    # Vain yksi node eli kutsu SQL agenttia
     workflow.add_node("call_sql", call_sql_agent)
 
-    # Suora polku: START -> call_sql -> END
     workflow.add_edge(START, "call_sql")
     workflow.add_edge("call_sql", END)
 
@@ -36,7 +31,6 @@ def build_storage_agent():
     return compiled
 
 
-# Luo react agentti
 storage_react_agent = build_storage_agent()
 
 
@@ -51,5 +45,7 @@ def storage_agent_tool(prompt: str) -> str:
 
 
 if __name__ == "__main__":  # pragma: no cover
-    result = storage_react_agent.invoke({"messages": [HumanMessage(content="Hae varaston saldot")]})
+    result = storage_react_agent.invoke(
+        {"messages": [HumanMessage(content="Get the storage levels")]}
+    )
     print(result["messages"][-1].content)

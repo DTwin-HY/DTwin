@@ -1,16 +1,23 @@
-import os
 import importlib
+import os
+
 import pytest
+
+from ..src.database.supervisor_db import (
+    check_thread_id_exists,
+    create_new_chat,
+    get_chat_by_thread_id,
+    get_chats_by_user,
+)
 from ..src.extensions import db
 from ..src.models.models import User
-from ..src.database.supervisor_db import create_new_chat, get_chats_by_user, check_thread_id_exists, get_chat_by_thread_id
 
 
 @pytest.fixture
 def app():
-    # conftest juostaan ensin ja vasta sen jälkeen importataan index
     from ..src import index as index_mod
-    importlib.reload(index_mod)  # varmistaa että lukee environmentin
+
+    importlib.reload(index_mod)
     app = index_mod.app
 
     app.config["TESTING"] = True
@@ -18,9 +25,8 @@ def app():
 
     with app.app_context():
         db.create_all()
-        # kun testit on tehty, pudotetaan taulut
         yield app
-        db.session.remove()  # tärkeä ennen drop_all()
+        db.session.remove()
         db.drop_all()
 
 
@@ -33,6 +39,7 @@ def test_user(app):
         db.session.commit()
         return db.session.get(User, user.id)
 
+
 class TestSupervisorDB:
     def test_create_new_chat(self, app, test_user):
         """Test creating a new chat."""
@@ -42,7 +49,7 @@ class TestSupervisorDB:
                 user_id=test_user.id,
                 messages=messages,
                 thread_id="test-thread-123",
-                raw_stream="test stream data"
+                raw_stream="test stream data",
             )
 
             assert chat.user_id == test_user.id
@@ -59,7 +66,7 @@ class TestSupervisorDB:
                 user_id=test_user.id,
                 messages=messages1,
                 thread_id="same-thread",
-                raw_stream="first stream"
+                raw_stream="first stream",
             )
 
             # Create/update chat with same thread_id
@@ -68,7 +75,7 @@ class TestSupervisorDB:
                 user_id=test_user.id,
                 messages=messages2,
                 thread_id="same-thread",
-                raw_stream="second stream"
+                raw_stream="second stream",
             )
 
             # Should update existing chat, not create new one
@@ -84,23 +91,23 @@ class TestSupervisorDB:
                 user_id=test_user.id,
                 messages=[{"role": "user", "content": "chat 1"}],
                 thread_id="thread-1",
-                raw_stream="stream 1"
+                raw_stream="stream 1",
             )
             create_new_chat(
                 user_id=test_user.id,
                 messages=[{"role": "user", "content": "chat 2"}],
                 thread_id="thread-2",
-                raw_stream="stream 2"
+                raw_stream="stream 2",
             )
 
             # Get all chats for the user
             chats = get_chats_by_user(test_user.id)
-            
+
             assert len(chats) == 2
             assert all(chat.user_id == test_user.id for chat in chats)
             assert {chat.thread_id for chat in chats} == {"thread-1", "thread-2"}
 
-    def test_thread_id_exists(self, app,test_user):
+    def test_thread_id_exists(self, app, test_user):
 
         with app.app_context():
             messages = [{"role": "user", "content": "test message"}]
@@ -108,12 +115,11 @@ class TestSupervisorDB:
                 user_id=test_user.id,
                 messages=messages,
                 thread_id="test-thread-123",
-                raw_stream="test stream data"
+                raw_stream="test stream data",
             )
 
             thread_id_exists = check_thread_id_exists("test-thread-123")
             assert thread_id_exists == True
-
 
     def test_get_chat_by_thread_id(self, app, test_user):
 
@@ -123,9 +129,8 @@ class TestSupervisorDB:
                 user_id=test_user.id,
                 messages=messages,
                 thread_id="test-thread-123",
-                raw_stream="test stream data"
+                raw_stream="test stream data",
             )
 
             get_chat = get_chat_by_thread_id("test-thread-123")
-            print(get_chat)
             assert chat.user_id == get_chat.user_id

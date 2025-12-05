@@ -1,16 +1,12 @@
 import os
 import sys
 import types
-
 from pathlib import Path
 
-
-# Aseta testitietokanta ennen app-importia
 os.environ.setdefault("TAVILY_API_KEY", "test")
 
 import pytest
 
-# Lisää back/src import-pathiin
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from src.index import app  # noqa: E402
@@ -116,6 +112,7 @@ def test_fetch_chats_serializes_models(client, monkeypatch):
     assert data["chats"][0]["id"] == 1
     assert data["chats"][1]["thread_id"] == "t2"
 
+
 def test_supervisor_uses_client_thread_id(client, monkeypatch):
     from src.routes import supervisor_route
 
@@ -137,7 +134,6 @@ def test_supervisor_uses_client_thread_id(client, monkeypatch):
 
     client_thread_id = "existing-thread-id-123"
 
-    # Kun route kutsuu get_chat_by_thread_id, palautetaan "olemassa oleva" chatti
     def fake_get_chat_by_thread_id(thread_id):
         assert thread_id == client_thread_id
         return FakeChat(user_id=123, thread_id=thread_id)
@@ -146,14 +142,11 @@ def test_supervisor_uses_client_thread_id(client, monkeypatch):
         supervisor_route, "get_chat_by_thread_id", fake_get_chat_by_thread_id, raising=False
     )
 
-    # Kerätään talteen mitä thread_id:tä stream_process ja create_new_chat käyttävät
     seen = {"stream_thread_id": None, "saved_thread_id": None}
 
     def fake_stream(prompt, thread_id):
-        # Varmistetaan, että prompt tulee läpi oikein
         assert prompt == "hello"
         seen["stream_thread_id"] = thread_id
-        # Pieni feikki SSE-vastaus
         yield 'data: {"step":"one"}\n\n'
 
     monkeypatch.setattr(supervisor_route, "stream_process", fake_stream)
@@ -166,7 +159,6 @@ def test_supervisor_uses_client_thread_id(client, monkeypatch):
 
     monkeypatch.setattr(supervisor_route, "create_new_chat", fake_save)
 
-    # Jos generate_unique_thread_id kutsuttaisiin tässä branchissa, testi räjähtää
     def boom():
         raise AssertionError(
             "generate_unique_thread_id should not be called when valid client_thread_id is provided"
@@ -179,21 +171,17 @@ def test_supervisor_uses_client_thread_id(client, monkeypatch):
         json={"message": "hello", "thread_id": client_thread_id},
     )
 
-    # Perusassertit
     assert resp.status_code == 200
     assert resp.mimetype == "text/event-stream"
 
     body = resp.data.decode("utf-8")
 
-    # SSE:n alussa pitäisi olla event: thread_id jossa sama id
     assert f'"thread_id": "{client_thread_id}"' in body
 
-    # Varmistetaan, että sama thread_id kulki koko matkan
     assert seen["stream_thread_id"] == client_thread_id
     assert seen["saved_thread_id"] == client_thread_id
     assert seen["user_id"] == 123
     assert seen["messages"][0]["role"] == "user"
-
 
 
 def test_supervisor_creates_new_client_thread_id(client, monkeypatch):
@@ -217,7 +205,6 @@ def test_supervisor_creates_new_client_thread_id(client, monkeypatch):
 
     client_thread_id = "existing-thread-id-123"
 
-    # Kun route kutsuu get_chat_by_thread_id, palautetaan että ei ole olemassa chattia
     def fake_get_chat_by_thread_id(thread_id):
         return None
 
@@ -225,14 +212,11 @@ def test_supervisor_creates_new_client_thread_id(client, monkeypatch):
         supervisor_route, "get_chat_by_thread_id", fake_get_chat_by_thread_id, raising=False
     )
 
-    # Kerätään talteen mitä thread_id:tä stream_process ja create_new_chat käyttävät
     seen = {"stream_thread_id": None, "saved_thread_id": None}
 
     def fake_stream(prompt, thread_id):
-        # Varmistetaan, että prompt tulee läpi oikein
         assert prompt == "hello"
         seen["stream_thread_id"] = thread_id
-        # Pieni feikki SSE-vastaus
         yield 'data: {"step":"one"}\n\n'
 
     monkeypatch.setattr(supervisor_route, "stream_process", fake_stream)
@@ -245,10 +229,9 @@ def test_supervisor_creates_new_client_thread_id(client, monkeypatch):
 
     monkeypatch.setattr(supervisor_route, "create_new_chat", fake_save)
 
-    #Jos generate_unique_thread_id kutsuttaisiin tässä branchissa, testi räjähtää
     def new_id():
         return "new_created_id"
-    
+
     monkeypatch.setattr(supervisor_route, "generate_unique_thread_id", new_id)
 
     resp = client.post(
@@ -256,21 +239,18 @@ def test_supervisor_creates_new_client_thread_id(client, monkeypatch):
         json={"message": "hello", "thread_id": client_thread_id},
     )
 
-    # Perusassertit
     assert resp.status_code == 200
     assert resp.mimetype == "text/event-stream"
 
-
     body = resp.data.decode("utf-8")
 
-    # SSE:n alussa pitäisi olla event: thread_id jossa sama id
     assert f'"thread_id": "{"new_created_id"}"' in body
 
-    # Varmistetaan, että sama thread_id kulki koko matkan
     assert seen["stream_thread_id"] == "new_created_id"
     assert seen["saved_thread_id"] == "new_created_id"
     assert seen["user_id"] == 123
     assert seen["messages"][0]["role"] == "user"
+
 
 def test_stream_process_removal_loop(monkeypatch):
     # Patch supervisor module internals

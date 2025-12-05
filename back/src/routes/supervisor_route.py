@@ -7,6 +7,7 @@ from ..database.supervisor_db import create_new_chat, get_chat_by_thread_id
 from ..graph.supervisor import stream_process
 from ..index import app
 from ..utils.generate_thread_id import generate_unique_thread_id
+from ..utils.logger import logger
 
 
 @app.post("/api/supervisor")
@@ -27,16 +28,14 @@ def supervisor_route():
         existing_chat = get_chat_by_thread_id(client_thread_id)
         # Continuing an existing chat
         if existing_chat and existing_chat.user_id == current_user.id:
-            # OK → tämä thread kuuluu tälle userille
             thread_id = client_thread_id
-            print(f"Continuing chat with existing thread_id: {thread_id}")
+            logger.info(f"Continuing chat with existing thread_id: {thread_id}")
         else:
-            # Either no such chat or belongs to another user → ÄLÄ käytä
-            print("Client supplied invalid or foreign thread_id, creating a new one")
+            logger.warning("Client supplied invalid or foreign thread_id, creating a new one")
             thread_id = generate_unique_thread_id()
     else:
         # New chat → create a new unique id
-        print("Starting a new chat with a new thread_id")
+        logger.info("Starting a new chat with a new thread_id")
         thread_id = generate_unique_thread_id()
 
     def event_stream():
@@ -54,7 +53,7 @@ def supervisor_route():
             # Saves the chat to the database when done
             create_new_chat(
                 current_user.id,
-                messages + [{"role": "assistant", "content": ""}],  # halutessa tyhjä/placeholder
+                messages + [{"role": "assistant", "content": ""}],
                 thread_id,
                 raw_stream="".join(raw),
             )

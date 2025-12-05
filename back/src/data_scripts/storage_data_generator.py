@@ -11,6 +11,7 @@ from sqlalchemy import create_engine, text
 
 from .. import config
 from ..models import models
+from ..utils.logger import logger
 
 load_dotenv()
 
@@ -88,18 +89,18 @@ def generate_data(data_rows: int, output_path: Path):
         products_df.to_csv(products_csv, index=False)
         inventory_df.to_csv(inventory_csv, index=False)
 
-    print(f"Generated {len(products_df)} products and {len(inventory_df)} inventory rows")
-    print(products_df.head())
-    print(inventory_df.head())
-    print("Data generated successfully")
+    logger.info(f"Generated {len(products_df)} products and {len(inventory_df)} inventory rows")
+    logger.debug(products_df.head())
+    logger.debug(inventory_df.head())
+    logger.info("Data generated successfully")
 
 
 def main():
     if inventory_data_exists() or product_data_exists():
         if inventory_data_exists():
-            print("Database already contains inventory data, skipping population...")
+            logger.info("Database already contains inventory data, skipping population...")
         if product_data_exists():
-            print("Database already contains product data, skipping population...")
+            logger.info("Database already contains product data, skipping population...")
         return
     output_filename = config.get("data.filename", "data.csv")
     output_path = Path(__file__).resolve().parent / output_filename  # parent_dir/filename.csv

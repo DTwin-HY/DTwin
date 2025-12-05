@@ -12,6 +12,8 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
 
+from ..utils.logger import logger
+
 load_dotenv()
 
 SELECTED_MODEL = "gpt-4o-mini"
@@ -85,7 +87,7 @@ def generate_query(state: MessagesState) -> Dict[str, Any]:
     system_message = {"role": "system", "content": generate_query_system_prompt}
     llm_with_tools = _make_llm().bind_tools([run_query_tool])
     response = llm_with_tools.invoke([system_message] + state["messages"])
-    print("sql response:", response)
+    logger.debug("sql response:", response)
     return {"messages": [response]}
 
 
@@ -120,7 +122,6 @@ def check_query(state: MessagesState) -> Dict[str, Any]:
         [{"role": "system", "content": check_query_system_prompt}, user_message]
     )
 
-    # varmista, että tool-call id linjassa
     response.id = state["messages"][-1].id
     return {"messages": [response]}
 
@@ -146,20 +147,17 @@ def analyze_results(state: MessagesState) -> Dict[str, Any]:
 def should_continue_after_generate(
     state: MessagesState,
 ) -> Literal["check_query", "analyze_results"]:
-    """Päätä pitääkö kysely ajaa vai onko jo tuloksia analysoitavana."""
+    """Decide if the query should be executed or if there are results to be analyzed."""
     last_message = state["messages"][-1]
 
-    # Jos LLM haluaa ajaa queryn, mene check_query:yn
     if getattr(last_message, "tool_calls", None):
         return "check_query"
 
-    # Jos ei tool_calls:eja, siirry analyysiin
     return "analyze_results"
 
 
 def should_retry_query(state: MessagesState) -> Literal["generate_query", "analyze_results"]:
-    """Päätä pitääkö query ajaa uudelleen vai siirtyä analyysiin."""
-    # Laske kuinka monta kertaa query on ajettu
+    """Decide if the query should be retried or if we should continue to analysis."""
     query_count = sum(
         1
         for msg in state["messages"]
@@ -169,24 +167,21 @@ def should_retry_query(state: MessagesState) -> Literal["generate_query", "analy
     if query_count >= 2:
         return "analyze_results"
 
-    # Tarkista oliko virheitä viimeisimmässä tool-vastauksessa
     last_tool_message = None
     for msg in reversed(state["messages"]):
         if hasattr(msg, "type") and msg.type == "tool":
             last_tool_message = msg
             break
 
-    # Jos virheilmoitus, yritä uudelleen (max 2 kertaa)
     if last_tool_message and "error" in str(last_tool_message.content).lower():
         return "generate_query"
 
-    # Muuten siirry analyysiin
     return "analyze_results"
 
 
 @lru_cache(maxsize=1)
 def build_sql_agent_graph():
-    """Rakenna ja käännä graafi täsmälleen kerran per prosessi."""
+    """Build and compile graph once per process."""
     toolkit = _make_toolkit()
     tools = toolkit.get_tools()
 
@@ -202,13 +197,11 @@ def build_sql_agent_graph():
     builder.add_node("run_query", run_query_node)
     builder.add_node("analyze_results", analyze_results)
 
-    # Lineaarinen polku alkuun
     builder.add_edge(START, "list_tables")
     builder.add_edge("list_tables", "call_get_schema")
     builder.add_edge("call_get_schema", "get_schema")
     builder.add_edge("get_schema", "generate_query")
 
-    # Päätös: aja query vai analysoi tulokset?
     builder.add_conditional_edges(
         "generate_query",
         should_continue_after_generate,
@@ -217,14 +210,12 @@ def build_sql_agent_graph():
 
     builder.add_edge("check_query", "run_query")
 
-    # Päätös query-ajon jälkeen: yritä uudelleen vai analysoi?
     builder.add_conditional_edges(
         "run_query",
         should_retry_query,
         {"generate_query": "generate_query", "analyze_results": "analyze_results"},
     )
 
-    # Analyysi päättyy aina
     builder.add_edge("analyze_results", END)
 
     return builder.compile()
@@ -235,9 +226,9 @@ def get_sql_agent_graph():
 
 
 def run_sql_agent(query: str) -> str:
-    print("Running SQL agent with query:", query)
+    logger.debug("Running SQL agent with query:", query)
     result = get_sql_agent_graph().invoke({"messages": [HumanMessage(content=query)]})
-    print("SQL agent response:", result)
+    logger.debug("SQL agent response:", result)
     return result["messages"][-1].content
 
 
