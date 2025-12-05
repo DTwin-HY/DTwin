@@ -11,6 +11,12 @@ import {
   clearThreadIdForUser,
 } from '../utils/threadCookie';
 
+const PHRASES = [
+  'sales development?',
+  'warehouse inventory?',
+  'other company related things?',
+];
+
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
   const [responses, setResponses] = useState([]);
@@ -20,6 +26,39 @@ const Chatbot = () => {
   const [chats, setChats] = useState([]);
   const [threadId, setThreadId] = useState(null);
   const [userId, setUserId] = useState(null);
+
+  const [placeholderSuffix, setPlaceholderSuffix] = useState('');
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentPhrase = PHRASES[phraseIndex];
+
+    if (!isDeleting && placeholderSuffix === currentPhrase) {
+      const timeout = setTimeout(() => setIsDeleting(true), 2000);
+      return () => clearTimeout(timeout);
+    }
+
+    if (isDeleting && placeholderSuffix === '') {
+      setIsDeleting(false);
+      setPhraseIndex((prev) => (prev + 1) % PHRASES.length);
+      return;
+    }
+
+    const timeout = setTimeout(
+      () => {
+        setPlaceholderSuffix((prev) => {
+          if (isDeleting) {
+            return prev.slice(0, -1);
+          }
+          return currentPhrase.slice(0, prev.length + 1);
+        });
+      },
+      isDeleting ? 50 : 100,
+    );
+
+    return () => clearTimeout(timeout);
+  }, [placeholderSuffix, isDeleting, phraseIndex]);
 
   const finalizedRef = useRef(false); // Prevent double-finalize
 
@@ -244,7 +283,9 @@ const Chatbot = () => {
                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
                 color: '#1f2937',
               }}
-              placeholder={userId === null ? 'Loading user...' : 'How can I help you today?'}
+              placeholder={
+                userId === null ? 'Loading user...' : `Ask me about ${placeholderSuffix}`
+              }
               rows={1}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
