@@ -11,7 +11,6 @@ from langchain.agents import create_agent
 from langchain.tools import tool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from loguru import logger
-from tenacity import retry, stop_after_attempt, wait_fixed
 
 from ..data.mcp_data import WeatherData
 from ..utils.logger import logger
@@ -89,7 +88,6 @@ def extract_json_from_mcp(result):
     return None
 
 
-@retry(wait=wait_fixed(1), stop=stop_after_attempt(3))
 async def invoke_mcp_agent(prompt: str):
     agent = await create_mcp_agent()
 
