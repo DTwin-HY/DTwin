@@ -1,18 +1,29 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowDown } from 'lucide-react';
 import MessageCard from './MessageCard';
 
 const ListMessages = ({ messages }) => {
   const bottomRef = useRef(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  console.log('ListMessages received messages:', messages);
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolledUp =
+        window.scrollY + window.innerHeight < document.body.scrollHeight - 100;
+      setShowScrollButton(scrolledUp);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (!Array.isArray(messages) || messages.length === 0) return null;
 
   return (
-    <div className="space-y-4 overflow-y-auto">
+    <div className="relative">
       {messages
         .slice()
         .reverse()
@@ -22,7 +33,13 @@ const ListMessages = ({ messages }) => {
           if (role === 'supervisor') {
             const finalResponse = message.finalMessage;
             const steps = message.steps ?? [];
-            return <MessageCard key={`msg-${idx}`} finalMessage={finalResponse} steps={steps} />;
+            return (
+              <MessageCard
+                key={`msg-${idx}`}
+                finalMessage={finalResponse}
+                steps={steps}
+              />
+            );
           }
 
           if (role === 'user') {
@@ -42,6 +59,15 @@ const ListMessages = ({ messages }) => {
         })}
 
       <div ref={bottomRef} />
+
+      {showScrollButton && (
+        <button
+          onClick={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="fixed bottom-4 right-10 h-10 w-10 rounded-full bg-purple-600 text-white shadow-lg hover:bg-purple-700 flex items-center justify-center transition-opacity duration-300"
+        >
+          <ArrowDown size={26} strokeWidth={2.3} />
+        </button>
+      )}
     </div>
   );
 };
