@@ -7,7 +7,7 @@ class WeatherData(BaseModel):
     Handles multiple possible field names from different MCP implementations.
     """
 
-    date: str = Field(..., description="Date in dd-mm-YYYY format")
+    date: str = Field(..., description="Date in YYYY-MM-DD format")
     location: str = Field(..., description="Location name or city")
     sunny: bool = Field(..., description="Whether the day is considered sunny")
 
@@ -21,5 +21,5 @@ class WeatherData(BaseModel):
 
     class Config:
         json_schema_extra = {
-            "example": {"date": "25-11-2025", "location": "Helsinki", "sunny": False}
+            "example": {"date": "2025-11-25", "location": "Helsinki", "sunny": False}
         }

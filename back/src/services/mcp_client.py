@@ -102,7 +102,7 @@ NO markdown code fences.
 Format each weather entry exactly like this:
 
 {{
-  "date": "dd-mm-yyyy",
+  "date": "YYYY-MM-DD",
   "location": "city name",
   "sunny": true/false
 }}
