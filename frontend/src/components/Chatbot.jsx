@@ -11,7 +11,11 @@ import {
   clearThreadIdForUser,
 } from '../utils/threadCookie';
 
-const PHRASES = ['sales development?', 'warehouse inventory?', 'other company related things?'];
+const PHRASES = [
+  'sales development...',
+  'warehouse inventory...',
+  'other company related things...',
+];
 
 const EXAMPLE_PROMPTS = [
   'Generate a sales report of Q1',
