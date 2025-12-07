@@ -239,6 +239,18 @@ const Chatbot = () => {
         </h3>
 
         <ListMessages messages={chats} />
+        {Array.isArray(responses) && responses.length > 0 && (
+          <div className="space-y-3 mt-4">
+            {responses.map((resp, i) => (
+              <StepCard
+                key={i}
+                title={resp.title}
+                content={resp.body}
+                imageData={resp.imageData}
+              />
+            ))}
+          </div>
+        )}
 
         {loading && (
           <div className="mt-4 flex justify-center">
@@ -253,20 +265,6 @@ const Chatbot = () => {
             </div>
           </div>
         )}
-
-        {loading &&
-          responses.length > 0 &&
-          (() => {
-            const last = responses[responses.length - 1];
-            return last ? (
-              <StepCard
-                key={responses.length - 1}
-                title={last.title}
-                content={last.body}
-                imageData={last.imageData}
-              />
-            ) : null;
-          })()}
 
         <form onSubmit={handleSubmit} className="mt-4">
           <div className="relative flex items-center">
