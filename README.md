@@ -8,13 +8,19 @@ A LangGraph digital twin project.
 ## Links
 
 * [Backlog](https://github.com/orgs/DTwin-HY/projects/1)
+* [Issues](https://github.com/DTwin-HY/DTwin/issues)
 
 ## Documentation
 
 * [API documentation](./docs/api.md)
 * [Project workflow & branching strategy](./docs/branching.md)
 * [Definition of Done](./docs/dod.md)
-* [Software architecture](./docs/architecture.md)
+* [Deployment & Software architecture](./docs/architecture.md)
+* [Testing & Code style](./docs/testing.md)
+
+## How to contribute
+* Read the instructions below for setting up a local development environment. Basic knowledge of Docker and containers is necessary.
+* The preferred development workflow is described [here](./docs/branching.md). In short, when working on a new feature create a new branch, commit your changes and create a pull request to the main branch. Let someone else review your changes before merging. See [issues](https://github.com/DTwin-HY/DTwin/issues) to find something to work on.
 
 ## Setting up the development environment locally
 

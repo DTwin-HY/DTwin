@@ -1,4 +1,4 @@
-# Software architecture
+# Deployment & Software architecture
 
 ## Table of Contents
 
@@ -9,7 +9,7 @@
 
 ![deployment diagram](./assets/deployment-diagram.png)
 
-This project is designed to be deployed to OpenShift OKD distribution of Kubernetes. The manifests for the deployments, services, image streams, and routes are included in the [manifests](../manifests/) folder. The pods use image streams and triggers to update themselves when the target image is updated.
+This project is designed to be deployed to OpenShift OKD distribution of Kubernetes. The manifests for the deployments, services, image streams, and routes are included in the [manifests](../manifests/) folder. The deployments use image streams and triggers to start an updated pod when the target image is updated.
 
 ### OpenShift Route
 The OpenShift Route node is a route in OpenShift OKD, that exposes the Nginx Frontend Pod's service to external traffic.
@@ -24,7 +24,7 @@ The Flask Backend Pod contains all the backend logic of the project, implemented
 The MCP Pod runs an [MCP weather server](https://github.com/jensjvh/mcp_historical_weather_server/tree/main/src/mcp_historical_weather_server), which lets agents access data from the [Open-Meteo](https://open-meteo.com/) weather API.
 
 ### PostgreSQL Pod
-The PostgreSQL Pod is implemented with OKD's (or CSC's Rahti's) default PostgreSQL template with persistent storage.
+The PostgreSQL Pod is implemented with OKD's (or CSC's Rahti's) default PostgreSQL template with persistent storage. If the connection to the database is set correctly as described in [the project root README](../README.md), Flask-Migrate should automatically create all the required tables into the database upon Backend Pod start-up.
 
 ## CI/CD pipeline diagram
 
