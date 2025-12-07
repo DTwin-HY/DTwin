@@ -13,6 +13,12 @@ import {
 
 const PHRASES = ['sales development?', 'warehouse inventory?', 'other company related things?'];
 
+const EXAMPLE_PROMPTS = [
+  'Generate a sales report of Q1',
+  'Check current inventory levels',
+  'Prompt 3',
+];
+
 const Chatbot = () => {
   const [inputValue, setInputValue] = useState('');
   const [responses, setResponses] = useState([]);
@@ -335,6 +341,20 @@ const Chatbot = () => {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="mt-3 flex flex-wrap justify-center gap-2">
+        {EXAMPLE_PROMPTS.map((prompt, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setInputValue(prompt)}
+            disabled={loading || userId === null}
+            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-all hover:cursor-pointer hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50"
+          >
+            {prompt}
+          </button>
+        ))}
       </div>
     </div>
   );
