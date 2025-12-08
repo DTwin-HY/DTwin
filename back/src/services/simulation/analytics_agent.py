@@ -9,9 +9,8 @@ from langchain.tools import ToolRuntime, tool
 from langgraph.types import Command
 
 from ...data_scripts.data_analysis_test_data import create_product_sales_data
-from ..dataframe_creation import csv_dataframe_test_tool, dataframe_agent_tool
 from ..counterfactual_agent import counterfactual_analysis_tool
-
+from ..dataframe_creation import csv_dataframe_test_tool, dataframe_agent_tool
 from .lin_reg_tool import lin_reg_tool
 
 load_dotenv()
@@ -21,6 +20,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 class SimulationState(AgentState):
     dataframe: dict
+
 
 desc_modifications = '{"field": {"operation": "type", "value": "number: int"}}'
 
@@ -81,7 +81,7 @@ SIM_AGENT_PROMPT = """
 sim_agent = create_agent(
     model="openai:gpt-4.1",
     tools=[lin_reg_tool, dataframe_agent_tool, counterfactual_analysis_tool],
-    system_prompt= SIM_AGENT_PROMPT,
+    system_prompt=SIM_AGENT_PROMPT,
     state_schema=SimulationState,
     name="analytics_agent",
 )

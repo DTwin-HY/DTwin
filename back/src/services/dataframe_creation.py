@@ -1,12 +1,12 @@
 import json
 import os
-
+from datetime import datetime
 from functools import reduce
+
 import pandas as pd
 from langchain.agents import create_agent
 from langchain.messages import HumanMessage
 from langchain.tools import ToolRuntime, tool
-from datetime import datetime
 
 from ..utils.csv_to_pd import csv_to_pd  # temp
 from ..utils.logger import logger
@@ -36,7 +36,7 @@ def create_dataframe_tool(
         if not os.path.exists("dataframes"):
             os.makedirs("dataframes")
         file_path = f"dataframes/dataframe_{runtime.tool_call_id}.csv"
-        
+
         logger.info("weather_data in create_dataframe_tool:", weather_data)
         logger.info("sales data in create_dataframe_tool:", sales_data)
         logger.info("customer data in create_dataframe_tool:", customer_data)
@@ -69,14 +69,16 @@ def create_dataframe_tool(
             pd.DataFrame(weather_data_json) if weather_data_json is not None else pd.DataFrame()
         )
 
-        #create dataframe list excluding empty dataframes
-        data_df_list = [df for df in (sales_data_df, customer_data_df, weather_data_df) if not df.empty]
+        # create dataframe list excluding empty dataframes
+        data_df_list = [
+            df for df in (sales_data_df, customer_data_df, weather_data_df) if not df.empty
+        ]
 
         logger.info("DataFrames to merge:", data_df_list)
 
         if not data_df_list:
             raise ValueError("At least one non-empty dataset must be provided.")
-        
+
         # if only one dataframe, return it directly else merge on date
         join_key = "date"
         how = "inner"
@@ -101,7 +103,8 @@ def create_dataframe_tool(
         logger.error(f"[create_dataframe_tool] Error: {e}")
         return f"Error creating DataFrame: {str(e)}"
 
-today = datetime.today().strftime('%Y-%m-%d')
+
+today = datetime.today().strftime("%Y-%m-%d")
 
 base_prompt = """
         You are a data collection agent responsible for collating datasets on company and external data to be used in analysis.
@@ -200,8 +203,7 @@ dataframe_agent = create_agent(
     name="dataframe_agent",
     model="openai:gpt-4o-mini",
     tools=[sql_agent_tool, create_dataframe_tool, mcp_agent_tool],
-    system_prompt=(DF_SYSTEM_PROMPT
-    ),
+    system_prompt=(DF_SYSTEM_PROMPT),
 )
 
 

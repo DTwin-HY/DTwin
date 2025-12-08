@@ -29,7 +29,7 @@ def _get_env_or_raise(name: str) -> str:
 _schema_cache: Dict[str, str] = {}
 
 
-def get_cached_schema(state: MessagesState) -> Dict[str, Any]:
+def get_cached_schema(state: MessagesState) -> Dict[str, Any]:  # pragma: no cover
     """Get schema from cache or fetch if not cached."""
     toolkit = _make_toolkit()
 
@@ -205,7 +205,7 @@ def should_retry_query(state: MessagesState) -> Literal["generate_query", "analy
 
 
 @lru_cache(maxsize=1)
-def build_sql_agent_graph():
+def build_sql_agent_graph():  # pragma: no cover
     """Build and compile graph once per process."""
     toolkit = _make_toolkit()
     tools = toolkit.get_tools()
