@@ -4,7 +4,7 @@ const Graph = ({ activeNodeId }) => {
   const nodes = [
     { id: 'supervisor', label: 'Supervisor', x: 52, y: 20 },
     { id: 'mcp', label: 'MCP', x: 20, y: 28 },
-    { id: 'whatif', label: 'What-If', x: 82, y: 25 },
+    { id: 'analytics-agent', label: 'Analytics Agent', x: 82, y: 25 },
 
     { id: 'sales-agent', label: 'Sales Agent', x: 34, y: 52 },
     { id: 'sales-tool', label: 'Sales Tool', x: 20, y: 74 },
@@ -20,7 +20,7 @@ const Graph = ({ activeNodeId }) => {
     { source: 'supervisor', target: 'sales-agent' },
     { source: 'supervisor', target: 'storage-agent' },
     { source: 'supervisor', target: 'mcp' },
-    { source: 'supervisor', target: 'whatif' },
+    { source: 'supervisor', target: 'analytics-agent' },
     { source: 'sales-agent', target: 'sales-tool' },
     { source: 'sql-agent', target: 'sales-agent' },
     { source: 'sql-agent', target: 'storage-agent' },
@@ -85,7 +85,12 @@ const Graph = ({ activeNodeId }) => {
       {nodes.map((node) => {
         const isActive = node.id === activeNodeId;
         const isSupervisor = node.id === 'supervisor';
-        const isAgent = ['sales-agent', 'storage-agent', 'sql-agent'].includes(node.id);
+        const isAgent = [
+          'sales-agent',
+          'storage-agent',
+          'sql-agent',
+          'analytics-agent',
+        ].includes(node.id);
 
         const baseSize = isSupervisor
           ? 'h-20 w-20 md:h-24 md:w-24'
