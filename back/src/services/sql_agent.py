@@ -32,21 +32,21 @@ _schema_cache: Dict[str, str] = {}
 def get_cached_schema(state: MessagesState) -> Dict[str, Any]:
     """Get schema from cache or fetch if not cached."""
     toolkit = _make_toolkit()
-    
+
     cache_key = _get_env_or_raise("DATABASE_URL")
-    
+
     if cache_key in _schema_cache:
         return {"messages": [AIMessage(_schema_cache[cache_key])]}
-    
+
     list_tables_tool = _get_tool(toolkit.get_tools(), "sql_db_list_tables")
     get_schema_tool = _get_tool(toolkit.get_tools(), "sql_db_schema")
-    
+
     tables = list_tables_tool.invoke({})
     schema = get_schema_tool.invoke({"table_names": tables})
-    
+
     combined = f"Available tables: {tables}\n\nSchema:\n{schema}"
     _schema_cache[cache_key] = combined
-    
+
     return {"messages": [AIMessage(combined)]}
 
 
@@ -73,6 +73,7 @@ def list_tables(_state: MessagesState) -> Dict[str, Any]:
     list_tables_tool = _get_tool(toolkit.get_tools(), "sql_db_list_tables")
     result = list_tables_tool.invoke({})
     return {"messages": [AIMessage(f"Available tables: {result}")]}
+
 
 def call_get_schema(state: MessagesState) -> Dict[str, Any]:
     toolkit = _make_toolkit()

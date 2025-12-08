@@ -5,6 +5,7 @@ import os
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from datetime import date, datetime
 
 from dotenv import load_dotenv
 from langchain.agents import create_agent
@@ -94,6 +95,9 @@ async def invoke_mcp_agent(prompt: str):
     prompt = f"""{prompt}
 
 IMPORTANT:
+- If the user is asking about dates before today, {date.today()}, use the HISTORICAL weather tool.
+- If the user is asking about TODAY or FUTURE dates, use the CURRENT or FORECAST weather tool.
+
 Return ONLY valid JSON.
 
 The result should include all dates between and including the date range given.
@@ -107,7 +111,7 @@ Format each weather entry exactly like this:
   "sunny": true/false
 }}
 
-If multiple results exist, return a JSON array of objects.
+If multiple results exist, return a JSON array of objects wrapped in square brackets [].
 """
 
     payload = {"messages": [{"role": "user", "content": prompt}]}
@@ -131,6 +135,8 @@ If multiple results exist, return a JSON array of objects.
             lines = result_text.splitlines()
             if lines[0].startswith("```") and lines[-1].startswith("```"):
                 result_text = "\n".join(lines[1:-1]).strip()
+
+        result_text = _fix_comma_separated_json(result_text)
 
         try:
             parsed = json.loads(result_text)
@@ -175,6 +181,40 @@ If multiple results exist, return a JSON array of objects.
     except Exception as e:
         logger.exception("Failed to parse MCP data: {}", e)
         return {"error": str(e), "type": type(e).__name__}
+
+
+def _fix_comma_separated_json(text: str) -> str:
+    """
+    Fix JSON that contains comma-separated objects not wrapped in an array.
+
+    Detect patterns like:
+    {
+      "date": "2025-05-01",
+      ...
+    },
+    {
+      "date": "2025-05-02",
+      ...
+    }
+    """
+    text = text.strip()
+
+    try:
+        json.loads(text)
+        return text
+    except json.JSONDecodeError:
+        pass
+
+    # Check if starts with {, contains },\n{
+    if text.startswith("{") and "},\n{" in text or "},\r\n{" in text:
+        logger.info("Detected comma-separated JSON objects, wrapping in array")
+        return f"[{text}]"
+
+    if text.startswith("{") and re.search(r"\}\s*,\s*\{", text):
+        logger.info("Detected comma-separated JSON objects (whitespace variant), wrapping in array")
+        return f"[{text}]"
+
+    return text
 
 
 def _normalize_weather_item(item: dict) -> dict:
