@@ -7,8 +7,6 @@ from langchain.agents.middleware import AgentState
 from langchain.messages import RemoveMessage
 from langgraph.checkpoint.postgres import PostgresSaver
 
-from ..services.counterfactual_agent import counterfactual_analysis_tool
-from ..services.dataframe_creation import csv_dataframe_test_tool, dataframe_agent_tool
 from ..services.research_agent import research_agent_tool
 from ..services.sales_agent import sales_agent_tool
 from ..services.simulation.analytics_agent import analytics_agent_tool
@@ -48,8 +46,6 @@ def stream_process(prompt: str, thread_id: str = "3"):
                 research_agent_tool,
                 storage_agent_tool,
                 sales_agent_tool,
-                csv_dataframe_test_tool,
-                counterfactual_analysis_tool,
                 analytics_agent_tool,
             ],
             system_prompt=supervisor_prompt,
