@@ -26,10 +26,36 @@ def _get_env_or_raise(name: str) -> str:
     return val
 
 
+_schema_cache: Dict[str, str] = {}
+
+
+def get_cached_schema(state: MessagesState) -> Dict[str, Any]:  # pragma: no cover
+    """Get schema from cache or fetch if not cached."""
+    toolkit = _make_toolkit()
+
+    cache_key = _get_env_or_raise("DATABASE_URL")
+
+    if cache_key in _schema_cache:
+        return {"messages": [AIMessage(_schema_cache[cache_key])]}
+
+    list_tables_tool = _get_tool(toolkit.get_tools(), "sql_db_list_tables")
+    get_schema_tool = _get_tool(toolkit.get_tools(), "sql_db_schema")
+
+    tables = list_tables_tool.invoke({})
+    schema = get_schema_tool.invoke({"table_names": tables})
+
+    combined = f"Available tables: {tables}\n\nSchema:\n{schema}"
+    _schema_cache[cache_key] = combined
+
+    return {"messages": [AIMessage(combined)]}
+
+
+@lru_cache(maxsize=1)
 def _make_llm() -> ChatOpenAI:
     return ChatOpenAI(model=SELECTED_MODEL, api_key=_get_env_or_raise("OPENAI_API_KEY"))
 
 
+@lru_cache(maxsize=1)
 def _make_toolkit() -> SQLDatabaseToolkit:
     db = SQLDatabase.from_uri(_get_env_or_raise("DATABASE_URL"))
     return SQLDatabaseToolkit(db=db, llm=_make_llm())
@@ -43,16 +69,10 @@ def _get_tool(tools, name: str):
 
 
 def list_tables(_state: MessagesState) -> Dict[str, Any]:
-    """Simuloi tool-kutsun viestivirtaa ja palauttaa MessagesState-muotoisen dictin."""
     toolkit = _make_toolkit()
     list_tables_tool = _get_tool(toolkit.get_tools(), "sql_db_list_tables")
-
-    tool_call = {"name": "sql_db_list_tables", "args": {}, "id": "1", "type": "tool_call"}
-    tool_call_message = AIMessage(content="", tool_calls=[tool_call])
-
-    tool_message = list_tables_tool.invoke(tool_call)
-    response = AIMessage(f"Available tables: {tool_message.content}")
-    return {"messages": [tool_call_message, tool_message, response]}
+    result = list_tables_tool.invoke({})
+    return {"messages": [AIMessage(f"Available tables: {result}")]}
 
 
 def call_get_schema(state: MessagesState) -> Dict[str, Any]:
@@ -76,6 +96,11 @@ def generate_query(state: MessagesState) -> Dict[str, Any]:
     You can order the results by a relevant column to return the most interesting
     examples in the database. Never query for all the columns from a specific table,
     only ask for the relevant columns given the question.
+
+    If you are asked about aggregate metrics, use {sql_db.dialect} appropriate aggregate queries
+    to answer to create the metric. E.g. when asked about total sales, aggregate sales numbers to daily sums.
+    
+    ALWAYS include a date column in your queries.
 
     DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
     DO NOT come up with any data, only return real data present in the database.
@@ -180,7 +205,7 @@ def should_retry_query(state: MessagesState) -> Literal["generate_query", "analy
 
 
 @lru_cache(maxsize=1)
-def build_sql_agent_graph():
+def build_sql_agent_graph():  # pragma: no cover
     """Build and compile graph once per process."""
     toolkit = _make_toolkit()
     tools = toolkit.get_tools()
@@ -189,18 +214,14 @@ def build_sql_agent_graph():
     run_query_node = ToolNode([_get_tool(tools, "sql_db_query")])
 
     builder = StateGraph(MessagesState)
-    builder.add_node("list_tables", list_tables)
-    builder.add_node("call_get_schema", call_get_schema)
-    builder.add_node("get_schema", get_schema_node)
+    builder.add_node("get_cached_schema", get_cached_schema)
     builder.add_node("generate_query", generate_query)
     builder.add_node("check_query", check_query)
     builder.add_node("run_query", run_query_node)
     builder.add_node("analyze_results", analyze_results)
 
-    builder.add_edge(START, "list_tables")
-    builder.add_edge("list_tables", "call_get_schema")
-    builder.add_edge("call_get_schema", "get_schema")
-    builder.add_edge("get_schema", "generate_query")
+    builder.add_edge(START, "get_cached_schema")
+    builder.add_edge("get_cached_schema", "generate_query")
 
     builder.add_conditional_edges(
         "generate_query",

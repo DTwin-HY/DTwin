@@ -1,5 +1,7 @@
 import json
 import os
+from datetime import datetime
+from functools import reduce
 
 import pandas as pd
 from langchain.agents import create_agent
@@ -14,46 +16,80 @@ from .sql_agent import sql_agent_tool
 
 @tool
 def create_dataframe_tool(
-    sales_data: str, customer_data: str, runtime: ToolRuntime, weather_data: str
+    sales_data: str = None,
+    customer_data: str = None,
+    weather_data: str = None,
+    runtime: ToolRuntime = None,
 ) -> str:
     """
     Create a DataFrame by combining sales data and weather data, then save as CSV.
 
-    Parameters:
-    sales_data: JSON string with database data from sql agent
-    customer_data: JSON string with customer data from sql agent
+    Args:
+        sales_data: JSON string with database data from sql agent
+        customer_data: JSON string with customer data from sql agent
+        weather_data: JSON string with weather data from MCP agent
+        runtime: ToolRuntime object for accessing tool call metadata.
 
     Returns path to the saved CSV file.
     """
-    if not os.path.exists("dataframes"):
-        os.makedirs("dataframes")
-    file_path = f"dataframes/dataframe_{runtime.tool_call_id}.csv"
-    logger.debug("weather_data in create_dataframe_tool:", weather_data)
-    logger.debug("sales data in create_dataframe_tool:", sales_data)
-    logger.debug("customer data in create_dataframe_tool:", customer_data)
     try:
-        # Parse both JSON inputs
-        sales_data_json = json.loads(sales_data) if isinstance(sales_data, str) else sales_data
-        customer_data_json = (
-            json.loads(customer_data) if isinstance(customer_data, str) else customer_data
-        )
-        weather_data_json = (
-            json.loads(weather_data) if isinstance(weather_data, str) else weather_data
-        )
+        if not os.path.exists("dataframes"):
+            os.makedirs("dataframes")
+        file_path = f"dataframes/dataframe_{runtime.tool_call_id}.csv"
+
+        logger.info("weather_data in create_dataframe_tool:", weather_data)
+        logger.info("sales data in create_dataframe_tool:", sales_data)
+        logger.info("customer data in create_dataframe_tool:", customer_data)
+
+        # Parse the JSON inputs properly
+        def parse_json_or_none(parameter_data):
+            if parameter_data is None:
+                return None
+            if isinstance(parameter_data, (dict, list)):
+                return parameter_data
+            if isinstance(parameter_data, str):
+                parameter_data = parameter_data.strip()
+                if not parameter_data:
+                    return None
+                return json.loads(parameter_data)
+            return None
+
+        sales_data_json = parse_json_or_none(sales_data)
+        customer_data_json = parse_json_or_none(customer_data)
+        weather_data_json = parse_json_or_none(weather_data)
 
         # Create DataFrames
-        sales_data_df = pd.DataFrame(sales_data_json)
-        customer_data_df = pd.DataFrame(customer_data_json)
-        weather_data_df = pd.DataFrame(weather_data_json)
-        logger.debug("df weather ", weather_data_df)
-        logger.debug("df_sales ", sales_data_df)
-        logger.debug("df_customer ", customer_data_df)
+        sales_data_df = (
+            pd.DataFrame(sales_data_json) if sales_data_json is not None else pd.DataFrame()
+        )
+        customer_data_df = (
+            pd.DataFrame(customer_data_json) if customer_data_json is not None else pd.DataFrame()
+        )
+        weather_data_df = (
+            pd.DataFrame(weather_data_json) if weather_data_json is not None else pd.DataFrame()
+        )
 
-        df_tmp = pd.merge(sales_data_df, weather_data_df, on="date", how="left")
+        # create dataframe list excluding empty dataframes
+        data_df_list = [
+            df for df in (sales_data_df, customer_data_df, weather_data_df) if not df.empty
+        ]
 
-        df_final = pd.merge(df_tmp, customer_data_df, on="date", how="left")
+        logger.info("DataFrames to merge:", data_df_list)
 
-        logger.debug("merged df ", df_final)
+        if not data_df_list:
+            raise ValueError("At least one non-empty dataset must be provided.")
+
+        # if only one dataframe, return it directly else merge on date
+        join_key = "date"
+        how = "inner"
+
+        if len(data_df_list) == 1:
+            df_final = data_df_list[0]
+        else:
+            df_final = reduce(
+                lambda left, right: pd.merge(left, right, on=join_key, how=how),
+                data_df_list,
+            )
 
         df_final.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")
 
@@ -68,26 +104,106 @@ def create_dataframe_tool(
         return f"Error creating DataFrame: {str(e)}"
 
 
+today = datetime.today().strftime("%Y-%m-%d")
+
+base_prompt = """
+        You are a data collection agent responsible for collating datasets on company and external data to be used in analysis.
+
+        DO NOT CONDUCT ANY ANALYSIS YOURSELF OR ASK YOUR TOOLS TO DO SO, ONLY COLLECT DATASETS.
+
+        You have the following tools at your disposal:
+
+        1. SQL Agent tool
+        2. MCP Agent tool to retrieve weather data
+        3. Create dataframe tool
+
+        You may use ANY combination of these tools depending on the user request.
+        It is valid to:
+        - create a dataframe from weather data ONLY,
+        - create a dataframe from internal sales/customer data ONLY, or
+        - combine weather and internal data in the same dataframe.
+        The create dataframe tool supports being called with just a single dataset
+        (e.g. only weather), or multiple datasets together.
+
+
+        1. The SQL Agent should be used to query for internal company related datapoints such as sales metrics, customer amounts or other data points directly related to the company's internal database.
+        Prompt the SQL agent using natural language, it will write it's own query. Prompt it only once for the data you need.
+
+        2. The MCP Agent is used to retrieve any weather based data points. If no location for weather data is provided, assume that the location is Helsinki, Finland.
+
+        3. The create dataframe tool is to be used to formulate the final dataset into a pandas DataFrame-object
+        which is stored as a .csv-file on file by the tool. The inputs to the dataframe tool should contain date. 
+
+
+        If the user prompt doesn't provide a date range, assume they want data for the last 7 days. Check todays date at the end of the prompt.
+
+
+        Example task:
+
+        User prompt: "Create a dataset for linear regression that can be used to analyse the effect of sunny weather, prices, customer amounts on total sales. The date range is 30.11-1.12.2025"
+
+        Step 1. Use the SQL agent to retrieve the internal data, i.e. product prices, customer amounts and total sales.
+        Ask the SQL Agent to return data in JSON, if the returned data is not JSON convert it yourself.
+
+        The JSON should be formatted as follows: 
+        For sales data:
+        [
+        {
+            "date":"2025-12-01",
+            "sales":90049.98,
+            "average_product_price":48.44
+            },
+        {
+            "date":"2025-11-30",
+            "sales":60609.08,
+            "average_product_price":48.44
+            },
+        ]
+
+        For customer data:
+        [
+        {
+            "date": "2025-12-01",
+            "sales": 90049.98,
+            "average_product_price": 48.44
+        },
+        {
+            "date": "2025-11-30",
+            "sales": 60609.08,
+            "average_product_price": 48.44
+        }
+        ]
+
+
+        Step 2. Use the MCP Agent tool to retrieve weather data. The data should be formatted in Boolean (True/False) for all relevant days. The returned data should be in JSON, if it isn't, convert it to JSON yourself.
+
+        Step 3. Once the data is collected create a dataframe from the data points using the create dataframe tool. Note that the weather data should NOT have a column for location. Ensure that the dates in both the internal data set and the weather data set match.
+        
+        The format for weather data input should be:
+        [
+            {
+            "date": "2025-12-01",
+            "sunny": True
+            },
+            {
+            "date": "2025-11-30",
+            "sunny": False
+            }
+        ]
+
+        Step 4. Return the file path of the CSV generated by create dataframe and the column names for the generated dataset.
+
+
+        ***CRITICAL***: Do NOT generate any data yourself. Use ONLY the tools provided for data retrieval. If you can't retrieve the data using the tools, inform the user of the issue.
+        """
+
+DF_SYSTEM_PROMPT = base_prompt + f"\nToday is {today}.\n"
+
 dataframe_agent = create_agent(
     name="dataframe_agent",
     model="openai:gpt-4o-mini",
     tools=[sql_agent_tool, create_dataframe_tool, mcp_agent_tool],
-    system_prompt=(
-        "You are an agent responsible for creating dataframe for simulation agent. "
-        "Weather data is fetched from mcp_agent_tool. NOT DATABASE. "
-        "Dataframes are created from real data. Fetch all other"
-        " data than weather using the sql_agent_tool ONLY. "
-        "Set date column as 'date' in all data fetched from database. "
-        "Make the dataframe columns from the prompt that the user gives. "
-        "When asked to create a dataframe: "
-        "1. First, use sql_agent_tool to fetch the required data from the database. "
-        "   Ask the SQL agent to return data as JSON."
-        "   ONLY ACCEPT JSON AS RETURN DATA FROM SQL AGENT."
-        "   Give the prompt in natural language to the sql_agent_tool, it will generate the query"
-        "2. If user asks for weather data, fetch it from mcp_agent_tool."
-        "3. Return the file path to the user."
-        " DO NOT MAKE UP ANY DATA YOURSELF"
-    ),
+    system_prompt=(DF_SYSTEM_PROMPT),
 )
 
 

@@ -56,7 +56,7 @@ def test_list_tables_uses_correct_tool(monkeypatch):
     res = sql_agent.list_tables({"messages": []})
     assert isinstance(res, dict) and "messages" in res
     msgs = res["messages"]
-    assert len(msgs) == 3
+    assert len(msgs) == 1
     assert "Available tables" in msgs[-1].content
 
 
