@@ -34,7 +34,7 @@ def fetch_sales_data(start, end):
         raise
 
 
-def query_sales(start,end):
+def query_sales(start, end):
     """
     Query sales data for date, quantity and revenue per day.
     Returns a SQLALchemy query result object.
@@ -60,13 +60,14 @@ def query_sales(start,end):
         """
     )
     try:
-        result = db.session.execute(sql, {"start_date":start, "end_date":end}).fetchall()
+        result = db.session.execute(sql, {"start_date": start, "end_date": end}).fetchall()
 
         return result
 
     except Exception:
         db.session.rollback()
         raise
+
 
 def query_timeperiod_sales(start, end, time_interval):
     """
@@ -93,8 +94,9 @@ def query_timeperiod_sales(start, end, time_interval):
         """
     )
     try:
-        result = db.session.execute(sql, {"start_date":start, "end_date":end,
-                                    'time_interval':time_interval}).fetchall()
+        result = db.session.execute(
+            sql, {"start_date": start, "end_date": end, "time_interval": time_interval}
+        ).fetchall()
 
         return result
 
@@ -126,12 +128,13 @@ def query_transactions(start, end):
         """
     )
     try:
-        result = db.session.execute(sql, {"start_date":start, "end_date":end}).fetchall()
+        result = db.session.execute(sql, {"start_date": start, "end_date": end}).fetchall()
         return result
 
     except Exception:
         db.session.rollback()
         raise
+
 
 def query_timeperiod_transactions(start, end, time_interval):
     """
@@ -158,8 +161,9 @@ def query_timeperiod_transactions(start, end, time_interval):
         """
     )
     try:
-        result = db.session.execute(sql, {"start_date":start, "end_date":end,
-                                    'time_interval': time_interval}).fetchall()
+        result = db.session.execute(
+            sql, {"start_date": start, "end_date": end, "time_interval": time_interval}
+        ).fetchall()
         return result
 
     except Exception:

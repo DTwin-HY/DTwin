@@ -15,6 +15,7 @@ from ..services.simulation.sim_agent import simulation_agent_tool
 from ..services.storage_agent import storage_agent_tool
 from ..utils.check_pending_tool_call import check_pending_tool_call
 from ..utils.format import format_chunk
+from ..utils.logger import logger
 from .supervisor_prompt import supervisor_prompt
 
 load_dotenv()
@@ -59,7 +60,7 @@ def stream_process(prompt: str, thread_id: str = "3"):
 
         # Remove the last message if there is a pending tool call
         while check_pending_tool_call(supervisor.get_state(config)):
-            print("detected pending tool call, removing the last message")
+            logger.info("detected pending tool call, removing the last message")
             messages = supervisor.get_state(config).values["messages"]
             supervisor.update_state(config, {"messages": [RemoveMessage(id=messages[-1].id)]})
 
@@ -72,4 +73,4 @@ def stream_process(prompt: str, thread_id: str = "3"):
                 output = format_chunk(chunk)  # stream the output to the frontend
                 yield f"data: {json.dumps(output)}\n\n"
         except Exception as e:  # pragma: no cover
-            print(f"Error during streaming: {e}")  # pragma: no cover
+            logger.error(f"Error during streaming: {e}")  # pragma: no cover

@@ -7,6 +7,7 @@ omit=
     src/data_scripts/data_analysis_test_data.py
     src/database/product_db.py
     src/services/simulation/lin_reg_graph.py
+    src/utils/logger.py
     tests/*
 
 [report]
