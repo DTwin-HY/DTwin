@@ -27,7 +27,7 @@ const McpSection = () => {
               Model Context Protocol (MCP)
             </span>{' '}
             to standardize how agents access external data. Whether fetching weather
-            forecasts or querying the database, MCP ensures our LLMs receive
+            forecasts or querying the database, MCP ensures our agents receive
             structured, secure, and relevant context for every decision.
           </p>
         </Motion.div>
