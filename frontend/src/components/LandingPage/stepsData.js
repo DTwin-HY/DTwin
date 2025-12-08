@@ -2,7 +2,7 @@ export const STEPS = [
   {
     id: 'supervisor',
     title: 'Supervisor coordinates everything',
-    body: 'Powered by LangGraph, the Supervisor agent acts as the central brain. It intelligently routes requests through the graph, activates specialized agents in order and ensures every output aligns perfectly matches the request.',
+    body: 'Powered by LangGraph, the Supervisor agent acts as the central brain. It intelligently routes requests through the graph, activates specialized agents in order and ensures every output perfectly matches the request.',
     nodeId: 'supervisor',
   },
   {

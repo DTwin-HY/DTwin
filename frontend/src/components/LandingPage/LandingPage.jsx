@@ -1,6 +1,7 @@
 import Header from './Header';
 import HeroSection from './Hero';
 import ScrollGraphSection from './ScrollGraphSection';
+import McpSection from './McpSection';
 import DemoAdSection from './DemoAd';
 
 const LandingPage = () => {
@@ -9,6 +10,7 @@ const LandingPage = () => {
       <Header />
       <HeroSection />
       <ScrollGraphSection />
+      <McpSection />
       <DemoAdSection />
 
       <footer className="top-8 border border-slate-800 py-6">
