@@ -85,12 +85,9 @@ const Graph = ({ activeNodeId }) => {
       {nodes.map((node) => {
         const isActive = node.id === activeNodeId;
         const isSupervisor = node.id === 'supervisor';
-        const isAgent = [
-          'sales-agent',
-          'storage-agent',
-          'sql-agent',
-          'analytics-agent',
-        ].includes(node.id);
+        const isAgent = ['sales-agent', 'storage-agent', 'sql-agent', 'analytics-agent'].includes(
+          node.id,
+        );
 
         const baseSize = isSupervisor
           ? 'h-20 w-20 md:h-24 md:w-24'

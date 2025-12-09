@@ -20,7 +20,7 @@ const PHRASES = [
 const EXAMPLE_PROMPTS = [
   'Generate a sales report of Q1',
   'Check current inventory levels',
-  'Prompt 3',
+  'How many times have we sold out this year?',
 ];
 
 const Chatbot = () => {
@@ -240,14 +240,9 @@ const Chatbot = () => {
 
         <ListMessages messages={chats} />
         {Array.isArray(responses) && responses.length > 0 && (
-          <div className="space-y-3 mt-4">
+          <div className="mt-4 space-y-3">
             {responses.map((resp, i) => (
-              <StepCard
-                key={i}
-                title={resp.title}
-                content={resp.body}
-                imageData={resp.imageData}
-              />
+              <StepCard key={i} title={resp.title} content={resp.body} imageData={resp.imageData} />
             ))}
           </div>
         )}
@@ -258,7 +253,7 @@ const Chatbot = () => {
               {[...Array(3)].map((_, i) => (
                 <span
                   key={i}
-                  className="dot-base animate-bounce-colorwave h-4 w-4 rounded-full"
+                  className="dot-base animate-bounce-colorwave h-3 w-3 rounded-full"
                   style={{ animationDelay: `${i * 0.2}s` }}
                 ></span>
               ))}
