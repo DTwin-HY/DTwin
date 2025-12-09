@@ -15,6 +15,7 @@ This project was developed during the University of Helsinki BSc Computer Scienc
 
 * [Backlog](https://github.com/orgs/DTwin-HY/projects/1)
 * [Issues](https://github.com/DTwin-HY/DTwin/issues)
+* [MCP Weather Server module](https://github.com/jensjvh/mcp_historical_weather_server)
 
 ## Documentation
 
