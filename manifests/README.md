@@ -1,4 +1,5 @@
-# Kubernetes manifests
+# Kubernetes manifests instructions for OpenShift
+The instructions in this document are designed for CSC's Rahti which uses OpenShift. The manifests should also work on any Kubernetes/OpenShift environment with the applicable commands, but this has not been tested.
 
 * Apply a specific manifest with the command `oc apply -f manifest_name.yaml`
 * Apply all the manifests with the command `oc apply -f .`
