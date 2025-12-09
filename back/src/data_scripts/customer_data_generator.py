@@ -23,12 +23,13 @@ def customer_data_exists():
         count = result.scalar()
     return count > 0
 
+
 def query_sales(engine, start_date, end_date):
     """
     due to unfixed errors this is written twice instead of importing from database/sales
     """
     sales_sql = text(
-    """
+        """
     SELECT 
             date,
             SUM(quantity) as quantity
@@ -43,7 +44,13 @@ def query_sales(engine, start_date, end_date):
     """
     )
     with engine.connect() as conn:
-        rows = conn.execute(sales_sql, {"start_date": start_date.isoformat(), "end_date": end_date.isoformat()}).mappings().all()
+        rows = (
+            conn.execute(
+                sales_sql, {"start_date": start_date.isoformat(), "end_date": end_date.isoformat()}
+            )
+            .mappings()
+            .all()
+        )
         return {row["date"].date().isoformat(): float(row["quantity"]) for row in rows}
 
 
@@ -58,9 +65,9 @@ def generate_customers_data(num_days: int):
 
     customer_records = []
     for d in dates:
-        avg_products = 5.0 # average products per customer
+        avg_products = 5.0  # average products per customer
         total_amount = sales_map.get(d.isoformat(), 0.0)
-        multiplier = random.uniform(0.8, 1.2) # variability in customer spending
+        multiplier = random.uniform(0.8, 1.2)  # variability in customer spending
         customers = int(round((total_amount / avg_products) * multiplier))
         if customers < 0:
             customers = 0

@@ -47,8 +47,9 @@ items = [
     ("Raspberry", 2.70),
     ("Blackberry", 2.85),
     ("Cranberry", 2.95),
-    ("Nectarine", 1.95)
+    ("Nectarine", 1.95),
 ]
+
 
 def inventory_data_exists():
     engine = create_engine(CONNECTION_STRING)
@@ -115,7 +116,11 @@ def generate_data(data_rows: int, output_path: Path):
 
     product_ids = [name_to_id[name] for name, _ in selected] if selected else []
     products_df = pd.DataFrame(
-        {"id": product_ids, "name": [name for name, _ in selected], "price": [price for _, price in selected]}
+        {
+            "id": product_ids,
+            "name": [name for name, _ in selected],
+            "price": [price for _, price in selected],
+        }
     )
     inventory_df = pd.DataFrame({"amount": amounts, "product_id": product_ids})
 

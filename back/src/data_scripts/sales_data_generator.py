@@ -3,12 +3,13 @@ import os
 import random
 import sys
 import uuid
-import requests
-from datetime import datetime, timedelta, date as _date
+from datetime import date as _date
+from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
 import pandas as pd
+import requests
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
@@ -20,6 +21,7 @@ from ..utils.logger import logger
 load_dotenv()
 
 CONNECTION_STRING = os.getenv("DATABASE_URL")
+
 
 def fetch_weather(start_dt: _date, end_dt: _date):
     """
@@ -48,11 +50,12 @@ def fetch_weather(start_dt: _date, end_dt: _date):
             times = j["daily"].get("time", [])
             codes = j["daily"].get("weathercode", [])
             for d, c in zip(times, codes):
-                weather_map[d] = (c <= 3)
+                weather_map[d] = c <= 3
             return weather_map
     except Exception as e:
         print("Failed to fetch weather from Open-Meteo: ", e)
         return {}
+
 
 def sales_data_exists():
     engine = create_engine(CONNECTION_STRING)
