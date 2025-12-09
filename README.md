@@ -3,7 +3,7 @@
 
 # DTwin
 
-A digital twin project based on LangChain and LangGraph. This is a student-made exploratory project to replicate the workings of a business using agentic networks. The network can pull on a company's data and answer user queries of the data and conduct simple analysis of how business variables interact. The purpose of the network is to support decision making in companies by allowing decision maker's easy access to data and analysis from a single source.
+A digital twin project based on LangChain and LangGraph. This is a student-made exploratory project to replicate the workings of a business using agentic networks. The network can pull on a company's data and answer user queries of the data and conduct simple analysis of how business variables interact. The purpose of the network is to support decision making in companies by allowing decision makers easy access to data and analysis from a single source.
 
 The app consists of several standalone agents that are built on top of LangChain's agent framework. These agents are combined in a graph structure to create a network capable of answering complex business queries using LangGraph.
 
