@@ -21,6 +21,7 @@ A more thorough explanation of the agents and the network can be found [here](do
 * [Definition of Done](./docs/dod.md)
 * [Deployment & Software architecture](./docs/architecture.md)
 * [Testing & Code style](./docs/testing.md)
+* [Agent overview](docs/features.md)
 
 ## How to contribute
 * Read the instructions below for setting up a local development environment. Basic knowledge of Docker and containers is necessary.
