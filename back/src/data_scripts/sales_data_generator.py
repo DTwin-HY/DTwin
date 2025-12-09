@@ -3,11 +3,13 @@ import os
 import random
 import sys
 import uuid
+from datetime import date as _date
 from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
 import pandas as pd
+import requests
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
@@ -19,6 +21,40 @@ from ..utils.logger import logger
 load_dotenv()
 
 CONNECTION_STRING = os.getenv("DATABASE_URL")
+
+
+def fetch_weather(start_dt: _date, end_dt: _date):
+    """
+    Fetch daily weather using Open-Meteo (free) and return a map date->sunny (bool).
+    Returns {} on failure.
+    """
+    try:
+        lat, lon = 60.1699, 24.9384
+        url = "https://archive-api.open-meteo.com/v1/era5"
+
+        # Try daily weathercode first
+        params = {
+            "latitude": lat,
+            "longitude": lon,
+            "start_date": start_dt.isoformat(),
+            "end_date": end_dt.isoformat(),
+            "timezone": "Europe/Helsinki",
+            "daily": "weathercode",
+        }
+        resp = requests.get(url, params=params, timeout=20)
+        resp.raise_for_status()
+        j = resp.json()
+
+        weather_map = {}
+        if "daily" in j and "weathercode" in j["daily"]:
+            times = j["daily"].get("time", [])
+            codes = j["daily"].get("weathercode", [])
+            for d, c in zip(times, codes):
+                weather_map[d] = c <= 3
+            return weather_map
+    except Exception as e:
+        print("Failed to fetch weather from Open-Meteo: ", e)
+        return {}
 
 
 def sales_data_exists():
@@ -39,11 +75,22 @@ def generate_sales_data(num_days: int, output_path: Path):
 
     logger.info("products data length: ", len(products))
 
-    start_date = datetime.now() - timedelta(days=num_days)
-    dates = [(start_date + timedelta(days=i)).date() for i in range(num_days)]
+    end_dt = datetime.now().date()
+    start_dt = end_dt - timedelta(days=max(1, num_days) - 1)
+    dates = [start_dt + timedelta(days=i) for i in range(num_days)]
 
     sales_records = []
+
+    weather_map = fetch_weather(start_dt, end_dt)
+
+    # default: if a date missing, assume not sunny
+    def is_sunny(dt):
+        key = dt.isoformat()
+        print(key, "sunny:", weather_map.get(key, False))
+        return bool(weather_map.get(key, False))
+
     for date in dates:
+        sunny = is_sunny(date)
         for product_id in product_ids:
             price = Decimal(str(prices[product_id]))
 
@@ -55,6 +102,11 @@ def generate_sales_data(num_days: int, output_path: Path):
                 items_sold = random.randint(0, 25)
             else:
                 items_sold = random.randint(0, 50)
+
+            # if sunny day, increase sales by 10-40%
+            if sunny:
+                multiplier = random.uniform(1.1, 1.4)
+                items_sold = int(round(items_sold * multiplier))
 
             revenue = Decimal(str(round(items_sold * float(price), 2)))
 
