@@ -1,10 +1,10 @@
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import Chatbot from './Chatbot';
 import Dashboard from './Dashboard';
 
 const Home = () => {
   return (
-    <motion.div
+    <Motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -15,10 +15,10 @@ const Home = () => {
         <Dashboard />
       </div>
 
-      <div className="w-full max-w-[1500px] px-4 py-4 sm:px-6 lg:px-8">
+      <div className="min-h-[60vh] w-full max-w-[1500px] px-4 py-4 sm:px-6 lg:px-8">
         <Chatbot />
       </div>
-    </motion.div>
+    </Motion.div>
   );
 };
 
