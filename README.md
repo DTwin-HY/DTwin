@@ -1,6 +1,5 @@
 [![codecov](https://codecov.io/gh/DTwin-HY/DTwin/graph/badge.svg)](https://app.codecov.io/github/DTwin-HY/DTwin)
 [![Run backend tests](https://github.com/DTwin-HY/DTwin/actions/workflows/main.yml/badge.svg)](https://github.com/DTwin-HY/DTwin/actions/workflows/main.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # DTwin
 
