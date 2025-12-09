@@ -9,6 +9,8 @@ The app consists of several standalone agents that are built on top of LangChain
 
 A more thorough explanation of the agents and the network can be found [here](docs/features.md).
 
+This project was developed during the University of Helsinki BSc Computer Science course [TKT20007 Software Lab](https://www.helsinki.fi/en/innovations-and-cooperation/innovations-and-entrepreneurship/business-collaboration-and-partnership/benefit-expertise-our-students/software-engineering-project).
+
 ## Links
 
 * [Backlog](https://github.com/orgs/DTwin-HY/projects/1)
