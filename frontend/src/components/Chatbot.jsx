@@ -274,7 +274,7 @@ const Chatbot = () => {
                 color: '#1f2937',
               }}
               placeholder={
-                userId === null ? 'Loading user...' : `Ask me about ${placeholderSuffix}`
+                userId === null ? 'Loading user...' : loading ? '' : `Ask me about ${placeholderSuffix}`
               }
               rows={1}
               onKeyDown={(e) => {
