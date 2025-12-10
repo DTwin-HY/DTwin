@@ -239,24 +239,26 @@ const Chatbot = () => {
         </h3>
 
         <ListMessages messages={chats} />
-        {Array.isArray(responses) && responses.length > 0 && (
-          <div className="mt-4 space-y-3">
-            {responses.map((resp, i) => (
-              <StepCard key={i} title={resp.title} content={resp.body} imageData={resp.imageData} />
-            ))}
-          </div>
-        )}
 
         {loading && (
-          <div className="mt-4 flex justify-center">
-            <div className="flex h-12 items-center justify-center gap-2">
-              {[...Array(3)].map((_, i) => (
-                <span
-                  key={i}
-                  className="dot-base animate-bounce-colorwave h-3 w-3 rounded-full"
-                  style={{ animationDelay: `${i * 0.2}s` }}
-                ></span>
-              ))}
+          <div>
+            {Array.isArray(responses) && responses.length > 0 && (
+              <div className="mt-4 space-y-3">
+                {responses.map((resp, i) => (
+                  <StepCard key={i} title={resp.title} content={resp.body} imageData={resp.imageData} />
+                ))}
+              </div>
+            )}
+            <div className="mt-4 flex justify-center">
+              <div className="flex h-12 items-center justify-center gap-2">
+                {[...Array(3)].map((_, i) => (
+                  <span
+                    key={i}
+                    className="dot-base animate-bounce-colorwave h-3 w-3 rounded-full"
+                    style={{ animationDelay: `${i * 0.2}s` }}
+                  ></span>
+                ))}
+              </div>
             </div>
           </div>
         )}
