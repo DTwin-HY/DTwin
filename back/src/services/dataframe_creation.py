@@ -217,9 +217,10 @@ def dataframe_agent_tool(prompt: str) -> str:
     SO IT ONLY NEEDS THE PROMPT TO CREATE THE DATAFRAME AND NOT ANY DATA
     Parameters:
     prompt: str : The prompt to create the dataframe.
-    Returns: str : The result of the dataframe creation.
+    Returns: str : The file path to the created dataframe CSV.
     """
     result = dataframe_agent.invoke({"messages": [HumanMessage(content=prompt)]})
+    print("dataframe agent tool result:", result["messages"][-1].content)
     return result["messages"][-1].content
 
 
