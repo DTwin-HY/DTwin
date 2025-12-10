@@ -95,8 +95,7 @@ async def invoke_mcp_agent(prompt: str):
     prompt = f"""{prompt}
 
 IMPORTANT:
-- If the user is asking about dates before today, {date.today()}, use the HISTORICAL weather tool.
-- If the user is asking about TODAY or FUTURE dates, use the CURRENT or FORECAST weather tool.
+- use get_historical_weather from the mcp server.
 
 Return ONLY valid JSON.
 
