@@ -32,7 +32,7 @@ SIM_AGENT_PROMPT = """
     You have the following tools available:
 
         1. Linear regression tool: used to do statistical analysis on how variables interact. The y_value input in the linear regression
-        tool should correspond to the variable of interest in the query.
+        tool should correspond to the variable of interest in the query. You need to create a dataset first using the dataframe creation tool and pass the file path
 
         2. The dataframe creation tool: used to collate a dataset that can be used in the linear regression tool. Once the data is collected,
         the dataframe agent will return a file path for the dataset. This string must be passed to the linear regression tool along with 
