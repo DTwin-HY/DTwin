@@ -2,7 +2,7 @@ export const STEPS = [
   {
     id: 'supervisor',
     title: 'Supervisor coordinates everything',
-    body: 'Built on LangGraph, the Supervisor agent routes every request through the graph, decides which agents to wake up in which order and makes sure result matches the request.',
+    body: 'Powered by LangGraph, the Supervisor agent acts as the central brain. It intelligently routes requests through the graph, activates specialized agents in order and ensures every output perfectly matches the request.',
     nodeId: 'supervisor',
   },
   {
@@ -18,10 +18,10 @@ export const STEPS = [
     nodeId: 'sql-agent',
   },
   {
-    id: 'whatif',
-    title: 'What-if simulations without touching real data',
-    body: 'Spin up scenario agents that fork the graph state and answer “what if” questions. The Supervisor keeps these sandboxes isolated from your real customers and orders.',
-    nodeId: 'whatif',
+    id: 'analytics-agent',
+    title: 'Analytics Agent runs simulations',
+    body: 'Spin up scenario agents that fork the graph state to answer “what if” questions. Perform price sensitivity analysis, inventory forecasting, and revenue projections without impacting your real data.',
+    nodeId: 'analytics-agent',
   },
 ];
 
@@ -49,8 +49,8 @@ export const SCENARIO_STEPS = [
     caption: 'Sales Agent provides a raport of past sales data for what-if agent to use.',
   },
   {
-    id: 'whatif',
-    nodeId: 'whatif',
-    caption: 'What-If Scenario agent combines margin and demand shift to estimate future revenue.',
+    id: 'analytics',
+    nodeId: 'analytics-agent',
+    caption: 'Analytics Agent combines margin and demand shift to estimate future revenue.',
   },
 ];

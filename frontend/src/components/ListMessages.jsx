@@ -1,18 +1,28 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowDown } from 'lucide-react';
 import MessageCard from './MessageCard';
 
 const ListMessages = ({ messages }) => {
   const bottomRef = useRef(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  console.log('ListMessages received messages:', messages);
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolledUp = window.scrollY + window.innerHeight < document.body.scrollHeight - 100;
+      setShowScrollButton(scrolledUp);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (!Array.isArray(messages) || messages.length === 0) return null;
 
   return (
-    <div className="space-y-4 overflow-y-auto">
+    <div className="relative">
       {messages
         .slice()
         .reverse()
@@ -30,9 +40,9 @@ const ListMessages = ({ messages }) => {
             return (
               <div
                 key={`msg-${idx}`}
-                className="mt-6 rounded-2xl border border-sky-300 bg-sky-50/30 p-5 shadow-sm backdrop-blur-sm"
+                className="mt-6 rounded-2xl border border-[#a7aeec] bg-[#F6F7FB] p-5 shadow-sm backdrop-blur-sm"
               >
-                <p className="mb-1 font-semibold text-sky-600">You:</p>
+                <p className="mb-1 font-semibold text-[#222F68]">You:</p>
                 <p className="whitespace-pre-wrap text-slate-800">{userMessage}</p>
               </div>
             );
@@ -42,6 +52,15 @@ const ListMessages = ({ messages }) => {
         })}
 
       <div ref={bottomRef} />
+
+      {showScrollButton && (
+        <button
+          onClick={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="fixed right-10 bottom-4 flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg transition-opacity duration-300 hover:bg-purple-700"
+        >
+          <ArrowDown size={26} strokeWidth={2.3} />
+        </button>
+      )}
     </div>
   );
 };

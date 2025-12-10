@@ -90,7 +90,7 @@ const ScrollGraphSection = () => {
         transition={{ duration: 0.6 }}
         className="mb-16 text-center"
       >
-        <h2 className="mb-4 text-4xl font-bold md:text-5xl">The Agent Architecture</h2>
+        <h2 className="mb-4 text-4xl font-bold md:text-5xl">Inside the Agent Architecture</h2>
         <p className="text-muted mx-auto max-w-2xl text-lg">
           Scroll to understand each agent, then run a pricing scenario to see how the graph behaves
           and jump into the sandbox to try it yourself.
